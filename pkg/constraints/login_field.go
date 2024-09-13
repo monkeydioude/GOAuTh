@@ -8,6 +8,7 @@ import (
 
 type EntityField func(string) error
 
+// EmailConstraint is a simple and basic email format tester
 func EmailConstraint(email string) error {
 	matched, err := regexp.Match("^.*@[^.]+..+$", []byte(email))
 	if err != nil {

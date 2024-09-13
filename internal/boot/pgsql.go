@@ -1,6 +1,7 @@
 package boot
 
 import (
+	"GOAuTh/internal/consts"
 	"GOAuTh/pkg/tools/result"
 	"fmt"
 	"os"
@@ -9,19 +10,20 @@ import (
 	"gorm.io/gorm"
 )
 
+// postgreSQLBoot returnsand execute DB related config and processes
 func postgreSQLBoot(dbEntities ...any) result.R[gorm.DB] {
-	schema := os.Getenv("DB_SCHEMA")
+	schema := os.Getenv(consts.DB_SCHEMA)
 	if schema == "" {
 		schema = "public"
 	}
 	// Initialize the PostgreSQL connection using Gorm
-	db, err := gorm.Open(postgres.Open(fmt.Sprintf("%s?search_path=%s", os.Getenv("DB_PATH"), schema)), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(fmt.Sprintf("%s?search_path=%s", os.Getenv(consts.DB_PATH), schema)), &gorm.Config{})
 	if err != nil {
 		return result.Error[gorm.DB](err)
 	}
 
 	// Try creating the schema
-	err = db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", os.Getenv("DB_SCHEMA"))).Error
+	err = db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schema)).Error
 	if err != nil {
 		return result.Error[gorm.DB](err)
 	}

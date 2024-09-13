@@ -10,7 +10,7 @@ import (
 
 type Settings struct {
 	Layout *handlers.Layout
-	Api    Api
+	Api    *Api
 }
 
 // Please will sincerely try to boot every mandatory routines,
@@ -23,15 +23,12 @@ func Please(
 	if err != nil {
 		return result.Error[Settings](err)
 	}
-	dbRes := postgreSQLBoot(dbEntities...)
-	if dbRes.IsErr() {
-		return result.Error[Settings](dbRes.Error)
+	layout := layoutBoot(dbEntities, loginConstraint)
+	if layout.IsErr() {
+		return result.Error[Settings](layout.Error)
 	}
 	return result.Ok(&Settings{
-		Layout: &handlers.Layout{
-			DB:              dbRes.Result(),
-			LoginConstraint: loginConstraint,
-		},
-		Api: apiBoot(),
+		Layout: layout.Result(),
+		Api:    apiBoot(),
 	})
 }

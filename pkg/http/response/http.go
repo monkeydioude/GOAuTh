@@ -37,3 +37,17 @@ func InternalServerError(msg string, w http.ResponseWriter) {
 	w.Write(res)
 	w.Header().Set("Content-Type", "application/json")
 }
+
+func Unauthorized(msg string, w http.ResponseWriter) {
+	w.WriteHeader(401)
+	res, err := json.Marshal(HTTPResponse{
+		Code:    401,
+		Message: msg,
+	})
+	if err != nil {
+		w.Write([]byte("Could not marshal matters"))
+		return
+	}
+	w.Write(res)
+	w.Header().Set("Content-Type", "application/json")
+}

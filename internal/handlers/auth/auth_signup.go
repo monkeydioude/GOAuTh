@@ -1,13 +1,15 @@
 package auth
 
 import (
+	"GOAuTh/internal/entities"
 	"GOAuTh/internal/handlers"
-	"GOAuTh/pkg/entities"
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
+	"log"
 	"net/http"
 )
 
+// Signup would be the route user when creating a new user
 func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	rawPayload := request.Json[entities.DefaultUser](req)
 	if rawPayload.IsErr() {
@@ -15,16 +17,18 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	payload := rawPayload.Result()
+	h.HydrateEntity(payload)
+	// payload.Parameters = h.UserParams
 
 	if err := h.LoginConstraint(payload.Login); err != nil {
 		response.UnprocessableContent(err.Error(), w)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:   "Authorization",
-		Value:  "jwt",
-		MaxAge: 60,
-		Path:   "/",
-	})
-	response.JsonOk(w)
+
+	if res := h.DB.Save(payload); res.Error != nil {
+		log.Printf("[ERR ] %s\n", res.Error.Error())
+		response.InternalServerError("Could not save to DB. Possible duplicate entry", w)
+		return
+	}
+	LogIn(h, w, req)
 }

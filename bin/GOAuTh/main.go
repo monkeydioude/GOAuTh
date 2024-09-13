@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"GOAuTh/internal/boot"
+	"GOAuTh/internal/entities"
 	"GOAuTh/internal/handlers"
 	"GOAuTh/internal/handlers/auth"
 	"GOAuTh/internal/handlers/jwt"
 	"GOAuTh/pkg/constraints"
-	"GOAuTh/pkg/entities"
 )
 
 func routing(handlers *handlers.Layout) *http.ServeMux {
@@ -24,7 +24,7 @@ func routing(handlers *handlers.Layout) *http.ServeMux {
 	return mux
 }
 
-func setupServer(api boot.Api, mux *http.ServeMux) *http.Server {
+func setupServer(api *boot.Api, mux *http.ServeMux) *http.Server {
 	return &http.Server{
 		Addr:              fmt.Sprintf(":%s", api.Port),
 		ReadTimeout:       3 * time.Second,
@@ -37,7 +37,7 @@ func setupServer(api boot.Api, mux *http.ServeMux) *http.Server {
 
 func main() {
 	res := boot.Please(
-		[]any{&entities.DefaultUser{}},
+		[]any{entities.NewDefaultUser()},
 		constraints.EmailConstraint,
 	)
 	if res.IsErr() {

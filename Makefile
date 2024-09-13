@@ -12,3 +12,7 @@ db_layout:
 .PHONY: all_up
 all_up:
 	docker compose up -d
+
+.PHONY: test
+test:
+	go test -v ./...

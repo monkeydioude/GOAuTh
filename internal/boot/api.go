@@ -8,12 +8,13 @@ type Api struct {
 
 const DefaultPort = "8100"
 
-func apiBoot() Api {
+// apiBoot returns API start related config
+func apiBoot() *Api {
 	port := os.Getenv("API_PORT")
 	if port == "" {
 		port = DefaultPort
 	}
-	return Api{
+	return &Api{
 		Port: port,
 	}
 }
