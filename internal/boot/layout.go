@@ -1,12 +1,9 @@
 package boot
 
 import (
-	"GOAuTh/internal/consts"
 	"GOAuTh/internal/handlers"
 	"GOAuTh/pkg/constraints"
-	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/tools/result"
-	"os"
 )
 
 // layoutBoot returns handlers and entities related config.
@@ -22,7 +19,7 @@ func layoutBoot(
 	return result.Ok(&handlers.Layout{
 		DB:              dbRes.Result(),
 		LoginConstraint: loginConstraint,
-		SigningMethod:   crypt.HS256(os.Getenv(consts.JWT_SECRET)),
 		UserParams:      usersParamsBoot(),
+		JWTFactory:      jwtBoot(),
 	})
 }

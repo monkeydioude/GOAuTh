@@ -9,20 +9,21 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 )
 
 // JWTClaims is a mandatory part of the JWT generation.
 // Claims make up 2 of the 3 mandatory parts of a JWT
 type JWTClaims interface {
 	GetClaims() []byte
+	Freshness() int
 }
 
 // JWTDefaultClaims should be used as base minimal claims
 type JWTDefaultClaims struct {
-	Iss  string `json:"iss,omitempty"`
-	Exp  int64  `json:"exp"`
-	Sub  string `json:"sub,omitempty"`
-	Name string `json:"name"`
+	Expire  int64  `json:"expire"`
+	Refresh int64  `json:"refresh,omitempty"`
+	Name    string `json:"name"`
 }
 
 // GetClaims implmentation from the JWTClaims interface
@@ -33,6 +34,11 @@ func (c JWTDefaultClaims) GetClaims() []byte {
 		return []byte("{}")
 	}
 	return claims
+}
+
+// Freshness compute the difference between now and the expireiration date of the token
+func (c JWTDefaultClaims) Freshness() int {
+	return int(time.Now().Unix() - c.Expire)
 }
 
 // JWTSigningMethod defines which JWT signing method to use
@@ -71,17 +77,33 @@ func NewJWT(method JWTSigningMethod, p JWTClaims) (string, error) {
 	return strings.Join([]string{hB64, pB64, sign}, "."), nil
 }
 
-// AssertJWT verifies JWT integrity
-func AssertJWT(token string, method JWTSigningMethod) error {
+// DecodeJWT verifies JWT integrity
+func DecodeJWT[T JWTClaims](token string, method JWTSigningMethod) (T, error) {
 	parts := strings.Split(token, ".")
+	var claims T
 	if len(parts) != 3 {
-		return errors.New("invalid token format")
+		return claims, errors.New("invalid token format")
 	}
 	sign := JWTBase64Encode(method.GenerateJWT(fmt.Sprintf("%s.%s", parts[0], parts[1])))
 	if sign != parts[2] {
-		return errors.New("signatures did not match")
+		return claims, errors.New("signatures did not match")
 	}
-	return nil
+	claimsb64, err := Decodechunk(parts[1])
+	if err != nil {
+		return claims, err
+	}
+
+	err = json.Unmarshal(claimsb64, &claims)
+	if err != nil {
+		return claims, err
+	}
+
+	return claims, nil
+}
+
+func Decodechunk(chunk string) ([]byte, error) {
+	chunk += strings.Repeat("=", 4-len(chunk)%4)
+	return base64.URLEncoding.DecodeString(chunk)
 }
 
 // JWTBase64Encode encodes a []byte into a string

@@ -12,13 +12,17 @@ func Json[T any](data T, w http.ResponseWriter) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(OkCode)
 	w.Write(res)
 }
 
 func JsonOk(w http.ResponseWriter) {
+	JsonMsg(w, "Ok")
+}
+
+func JsonMsg(w http.ResponseWriter, msg string) {
 	Json(HTTPResponse{
-		Code:    200,
-		Message: "Ok",
+		Code:    OkCode,
+		Message: msg,
 	}, w)
 }

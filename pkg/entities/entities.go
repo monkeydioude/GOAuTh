@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"time"
+	"GOAuTh/pkg/crypt"
 )
 
 // Entity defines a general entity
@@ -19,9 +19,15 @@ type Parameters interface {
 	// GetArgon2Params() crypt.Argon2Bag
 }
 
-type User[T Parameters] interface {
-	Entity[T]
-	GetLogin() string
-	GetPassword() string
-	GetRevokedAt() *time.Time
+// type User[T Parameters] interface {
+// 	Entity[T]
+// 	GetLogin() string
+// 	GetPassword() string
+// 	GetRevokedAt() *time.Time
+// }
+
+type JWT interface {
+	GetSigningMethod() crypt.JWTSigningMethod
+	GetToken() string
+	GetClaims() crypt.JWTClaims
 }

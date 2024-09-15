@@ -2,6 +2,7 @@ package consts
 
 import (
 	"GOAuTh/pkg/crypt"
+	"time"
 )
 
 // Env labels
@@ -11,6 +12,11 @@ const DB_PASSWD = "DB_PASSWD"
 const DB_SCHEMA = "DB_SCHEMA"
 const JWT_SECRET = "JWT_SECRET"
 const PASSWD_SALT = "PASSWD_SALT"
+
+const AuthorizationCookie = "Authorization"
+
+const JWTExpiresIn = 5 * time.Second
+const JWTRefreshesIn = 10 * time.Second
 
 // Argon2 basic conf
 // Should be replaced with actual passed on from the system conf.

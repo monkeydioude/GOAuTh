@@ -16,12 +16,11 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.InternalServerError(rawPayload.Error.Error(), w)
 		return
 	}
+
 	payload := rawPayload.Result()
 	h.HydrateEntity(payload)
-	// payload.Parameters = h.UserParams
-
 	if err := h.LoginConstraint(payload.Login); err != nil {
-		response.UnprocessableContent(err.Error(), w)
+		response.UnprocessableEntity(err.Error(), w)
 		return
 	}
 
@@ -30,5 +29,6 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.InternalServerError("Could not save to DB. Possible duplicate entry", w)
 		return
 	}
-	LogIn(h, w, req)
+	// LogIn(h, w, req)
+	response.JsonOk(w)
 }

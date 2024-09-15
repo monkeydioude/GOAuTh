@@ -1,9 +1,9 @@
 package auth
 
 import (
+	"GOAuTh/internal/consts"
 	"GOAuTh/internal/entities"
 	"GOAuTh/internal/handlers"
-	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
 	"net/http"
@@ -19,20 +19,24 @@ func LogIn(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 
 	payload := rawPayload.Result()
+	if payload.IsRevoked(time.Now()) {
+		response.Unauthorized("user's access was revoked", w)
+		return
+	}
 	h.HydrateEntity(payload)
 	if err := payload.AssertAuth(h.DB); err != nil {
 		response.Unauthorized("unauthorized for this login and password", w)
 		return
 	}
-	sign, err := crypt.NewJWT(h.SigningMethod, crypt.JWTDefaultClaims{Name: payload.Login, Exp: time.Now().Add(3 * time.Minute).UnixMilli()})
+	sign, err := h.JWTFactory.GenerateToken(payload)
 	if err != nil {
 		response.InternalServerError("error during jwt generation", w)
 		return
 	}
 	res := &http.Cookie{
-		Name:   "Authorization",
-		Value:  sign,
-		MaxAge: 60,
+		Name:   consts.AuthorizationCookie,
+		Value:  sign.Token,
+		MaxAge: int(sign.ExpiresIn.Seconds()),
 		Path:   "/",
 	}
 	http.SetCookie(w, res)

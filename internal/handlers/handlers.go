@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	intEntities "GOAuTh/internal/entities"
 	"GOAuTh/pkg/constraints"
 	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/entities"
@@ -18,6 +19,7 @@ type Layout struct {
 	LoginConstraint constraints.EntityField
 	SigningMethod   crypt.JWTSigningMethod
 	UserParams      entities.Parameters
+	JWTFactory      *intEntities.JWTFactory
 }
 
 // Handler our basic generic route handler

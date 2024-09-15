@@ -67,7 +67,6 @@ func (DefaultUser) TableName() string {
 }
 
 // AssertAuth asserts a user can pass authentification.
-// DefaultUsers's custom impl
 func (u *DefaultUser) AssertAuth(db *gorm.DB) error {
 	if u.Password != "" {
 		u.Password = crypt.HashPassword(
@@ -79,9 +78,21 @@ func (u *DefaultUser) AssertAuth(db *gorm.DB) error {
 	return db.First(u, "login = ? AND password = ?", u.Login, u.Password).Error
 }
 
-// Other
+func (u *DefaultUser) IntoClaims(
+	expiresIn time.Duration,
+	refreshesIn time.Duration,
+) crypt.JWTDefaultClaims {
+	return crypt.JWTDefaultClaims{
+		Expire:  time.Now().Add(expiresIn).Unix(),
+		Refresh: time.Now().Add(refreshesIn).Unix(),
+		Name:    u.Login,
+	}
+}
 
-// NewDefaultUser
+func (u *DefaultUser) IsRevoked(timeRef time.Time) bool {
+	return u.RevokedAt != nil && u.RevokedAt.After(timeRef)
+}
+
 func NewDefaultUser() *DefaultUser {
 	return &DefaultUser{}
 }
