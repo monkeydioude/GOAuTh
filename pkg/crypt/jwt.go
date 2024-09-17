@@ -15,8 +15,7 @@ import (
 // JWTClaims is a mandatory part of the JWT generation.
 // Claims make up 2 of the 3 mandatory parts of a JWT
 type JWTClaims interface {
-	GetClaims() []byte
-	Freshness() int
+	GetRawClaims() []byte
 }
 
 // JWTDefaultClaims should be used as base minimal claims
@@ -26,19 +25,20 @@ type JWTDefaultClaims struct {
 	Name    string `json:"name"`
 }
 
+// RemainingRefresh returns the remaining available refresh time.Duration.
+// timeRef can be time.Now()
+func (c JWTDefaultClaims) RemainingRefresh(timeRef time.Time) time.Duration {
+	return time.Unix(c.Refresh, 0).Sub(timeRef)
+}
+
 // GetClaims implmentation from the JWTClaims interface
-func (c JWTDefaultClaims) GetClaims() []byte {
+func (c JWTDefaultClaims) GetRawClaims() []byte {
 	claims, err := json.Marshal(c)
 	if err != nil {
 		log.Printf("[ERR ] getClaims: %s\n", err.Error())
 		return []byte("{}")
 	}
 	return claims
-}
-
-// Freshness compute the difference between now and the expireiration date of the token
-func (c JWTDefaultClaims) Freshness() int {
-	return int(time.Now().Unix() - c.Expire)
 }
 
 // JWTSigningMethod defines which JWT signing method to use
@@ -70,7 +70,7 @@ func (HS256) Name() string {
 // NewJWT generates a new JWT Token using a signing method and claims
 func NewJWT(method JWTSigningMethod, p JWTClaims) (string, error) {
 	header := fmt.Sprintf(`{"alg":"%s","typ":"JWT"}`, method.Name())
-	claims := p.GetClaims()
+	claims := p.GetRawClaims()
 	hB64 := JWTBase64Encode([]byte(header))
 	pB64 := JWTBase64Encode(claims)
 	sign := JWTBase64Encode(method.GenerateJWT(fmt.Sprintf("%s.%s", hB64, pB64)))
@@ -102,7 +102,10 @@ func DecodeJWT[T JWTClaims](token string, method JWTSigningMethod) (T, error) {
 }
 
 func Decodechunk(chunk string) ([]byte, error) {
-	chunk += strings.Repeat("=", 4-len(chunk)%4)
+	// pad only if number of chars is not a multiple of 4
+	if l := len(chunk) % 4; l > 0 {
+		chunk += strings.Repeat("=", 4-l)
+	}
 	return base64.URLEncoding.DecodeString(chunk)
 }
 

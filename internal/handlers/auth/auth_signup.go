@@ -18,7 +18,11 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 
 	payload := rawPayload.Result()
-	h.HydrateEntity(payload)
+	err := h.HydrateEntity(payload)
+	if err != nil {
+		response.InternalServerError(err.Error(), w)
+		return
+	}
 	if err := h.LoginConstraint(payload.Login); err != nil {
 		response.UnprocessableEntity(err.Error(), w)
 		return

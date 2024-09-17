@@ -13,6 +13,16 @@ db_layout:
 all_up:
 	docker compose up -d
 
+.PHONY: run-test-db
+run-test-db:
+	@echo "[INFO] Starting 'goauth-tests-db-manual' PGSQL test container!"
+	docker run -d --rm -p 5445:5432 --name goauth-tests-db-manual --env POSTGRES_USER=test --env POSTGRES_PASSWORD=test --env POSTGRES_DB=test_db postgres
+
+.PHONY: stop-test-db
+stop-test-db:
+	@echo "[INFO] Stopping 'goauth-tests-db-manual' PGSQL test container!"
+	docker stop "goauth-tests-db-manual"
+
 .PHONY: test
 test:
-	go test -v ./...
+	@sh scripts/tests.sh

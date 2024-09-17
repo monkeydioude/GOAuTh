@@ -68,29 +68,25 @@ func (DefaultUser) TableName() string {
 
 // AssertAuth asserts a user can pass authentification.
 func (u *DefaultUser) AssertAuth(db *gorm.DB) error {
+	passwd := ""
 	if u.Password != "" {
-		u.Password = crypt.HashPassword(
+		passwd = crypt.HashPassword(
 			u.Password,
 			u.Parameters.GetArgon2Params(),
 			u.Parameters.GetPasswordSalt(),
 		)
 	}
-	return db.First(u, "login = ? AND password = ?", u.Login, u.Password).Error
+	return db.First(u, "login = ? AND password = ?", u.Login, passwd).Error
 }
 
-func (u *DefaultUser) IntoClaims(
-	expiresIn time.Duration,
-	refreshesIn time.Duration,
-) crypt.JWTDefaultClaims {
+func (u DefaultUser) IntoClaims() crypt.JWTDefaultClaims {
 	return crypt.JWTDefaultClaims{
-		Expire:  time.Now().Add(expiresIn).Unix(),
-		Refresh: time.Now().Add(refreshesIn).Unix(),
-		Name:    u.Login,
+		Name: u.Login,
 	}
 }
 
-func (u *DefaultUser) IsRevoked(timeRef time.Time) bool {
-	return u.RevokedAt != nil && u.RevokedAt.After(timeRef)
+func (u DefaultUser) IsRevoked(timeRef time.Time) bool {
+	return u.RevokedAt != nil && u.RevokedAt.Before(timeRef)
 }
 
 func NewDefaultUser() *DefaultUser {

@@ -2,6 +2,7 @@ package entities
 
 import (
 	"GOAuTh/pkg/crypt"
+	"time"
 )
 
 // Entity defines a general entity
@@ -14,20 +15,31 @@ type Entity[T Parameters] interface {
 	SetParameters(Parameters) error
 }
 
+// Parameters is no better than "any" for now. Might remove.
 type Parameters interface {
-	// GetPasswordSalt() []byte
-	// GetArgon2Params() crypt.Argon2Bag
 }
 
-// type User[T Parameters] interface {
-// 	Entity[T]
-// 	GetLogin() string
-// 	GetPassword() string
-// 	GetRevokedAt() *time.Time
-// }
+type User[C crypt.JWTClaims] interface {
+	IsRevoked(time.Time) bool
+	IntoClaims() C
+}
 
-type JWT interface {
+// JWT defines a standard JSON Web Token.
+//
+// JWT takes a single generic, so we can provide and use custom Claims
+// while letting the compiler asserting the type for us.
+type JWT[C crypt.JWTClaims] interface {
 	GetSigningMethod() crypt.JWTSigningMethod
 	GetToken() string
-	GetClaims() crypt.JWTClaims
+	GetClaims() C
+	GetExpiresIn() time.Duration
+}
+
+// JWTFactory defines a standard JSON Web Token factory.
+//
+// JWTFactory takes a single generic, so we can provide and use custom Claims
+// while letting the compiler asserting the type for us.
+type JWTFactory[C crypt.JWTClaims, J JWT[C]] interface {
+	GenerateToken(C) (J, error)
+	DecodeToken(string) (J, error)
 }

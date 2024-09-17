@@ -6,9 +6,10 @@ import (
 	"GOAuTh/pkg/http/response"
 	"log"
 	"net/http"
+	"time"
 )
 
-func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
+func Refresh(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
 		log.Printf("[ERR ] while retrieving %s cookie: %s", consts.AuthorizationCookie, err.Error())
@@ -22,13 +23,17 @@ func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	jwt, err = h.JWTFactory.TryRefresh(jwt)
+	if err != nil {
+		response.Unauthorized(err.Error(), w)
+		return
+	}
 	res := &http.Cookie{
 		Name:   consts.AuthorizationCookie,
-		Value:  jwt.Token,
-		MaxAge: int(jwt.ExpiresIn.Seconds()),
+		Value:  jwt.GetToken(),
+		MaxAge: int(jwt.Claims.RemainingRefresh(time.Now()).Seconds()),
 		Path:   "/",
 	}
 	http.SetCookie(w, res)
 	response.Json(res, w)
-
 }

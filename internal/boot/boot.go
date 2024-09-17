@@ -23,7 +23,7 @@ func Please(
 	if err != nil {
 		return result.Error[Settings](err)
 	}
-	layout := layoutBoot(dbEntities, loginConstraint)
+	layout := LayoutBoot(dbEntities, loginConstraint)
 	if layout.IsErr() {
 		return result.Error[Settings](layout.Error)
 	}

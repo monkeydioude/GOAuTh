@@ -8,7 +8,7 @@ import (
 
 // layoutBoot returns handlers and entities related config.
 // Those configs will we brought inside http handlers.
-func layoutBoot(
+func LayoutBoot(
 	dbEntities []any,
 	loginConstraint constraints.EntityField,
 ) result.R[handlers.Layout] {
@@ -20,6 +20,6 @@ func layoutBoot(
 		DB:              dbRes.Result(),
 		LoginConstraint: loginConstraint,
 		UserParams:      usersParamsBoot(),
-		JWTFactory:      jwtBoot(),
+		JWTFactory:      jwtBoot(dbRes.Result()),
 	})
 }
