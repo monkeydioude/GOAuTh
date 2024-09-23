@@ -26,3 +26,7 @@ stop-test-db:
 .PHONY: test
 test:
 	@sh scripts/tests.sh
+
+.PHONY: proto
+proto:
+	protoc --proto_path=./proto --go_out=. --go-grpc_out=. rpc_v1.proto

@@ -6,21 +6,24 @@ import (
 	"net/http"
 	"time"
 
-	"GOAuTh/internal/boot"
-	"GOAuTh/internal/entities"
-	"GOAuTh/internal/handlers"
-	"GOAuTh/internal/handlers/auth"
-	"GOAuTh/internal/handlers/jwt"
-	"GOAuTh/pkg/constraints"
+	"GOAuTh/internal/api/handlers"
+	"GOAuTh/internal/api/handlers/v1/auth"
+	"GOAuTh/internal/api/handlers/v1/jwt"
+	v1 "GOAuTh/internal/api/rpc/v1"
+	"GOAuTh/internal/config/boot"
+	"GOAuTh/internal/domain/entities"
+	"GOAuTh/internal/domain/entities/constraints"
+
+	"google.golang.org/grpc"
 )
 
-func routing(handlers *handlers.Layout) *http.ServeMux {
+func routing(layout *handlers.Layout) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// routes definition
-	mux.HandleFunc("/auth/signup", handlers.Post(auth.Signup))
-	mux.HandleFunc("/auth/login", handlers.Put(auth.LogIn))
-	mux.HandleFunc("/jwt/status", handlers.Get(jwt.Status))
+	mux.HandleFunc("/v1/auth/signup", layout.Post(auth.Signup))
+	mux.HandleFunc("/v1/auth/login", layout.Put(auth.LogIn))
+	mux.HandleFunc("/v1/jwt/status", layout.Get(jwt.Status))
 	return mux
 }
 
@@ -35,9 +38,15 @@ func setupServer(api *boot.Api, mux *http.ServeMux) *http.Server {
 	}
 }
 
+func setupGRPC(layout *handlers.Layout) *grpc.Server {
+	server := grpc.NewServer()
+	v1.RegisterJWTServer(server, v1.NewJWTRPCHandler(layout))
+	return server
+}
+
 func main() {
 	res := boot.Please(
-		[]any{entities.NewDefaultUser()},
+		[]any{entities.NewUser()},
 		constraints.EmailConstraint,
 	)
 	if res.IsErr() {

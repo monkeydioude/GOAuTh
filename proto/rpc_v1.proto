@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package v1;
+
+option go_package = "internal/api/rpc/v1";
+
+service Auth {
+    rpc Signup(UserRequest) returns (Response) {}
+    rpc LogIn(UserRequest) returns (Response) {}
+}
+
+message UserRequest {
+    string login = 1;
+    string password = 2;
+}
+
+message Response {
+    int32 code = 1;
+    string message = 2;
+}
+
+service JWT {
+    rpc Status(JWTRequest) returns (Response) {}
+    rpc Refresh(JWTRequest) returns (Response) {}
+}
+
+message JWTRequest {
+    string token = 1;
+}

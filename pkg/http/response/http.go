@@ -17,6 +17,21 @@ const (
 	InternalServerErrorCode int = 500
 )
 
+// @TODO: impleement GRPC response writer
+// type ResponseWriter interface {
+// 	Write(code int, data []byte)
+// }
+
+// type HTTPJSONWriter struct {
+// 	writer http.ResponseWriter
+// }
+
+// func (w *HTTPJSONWriter) Write(code int, data []byte) {
+// 	w.writer.WriteHeader(code)
+// 	w.writer.Write(data)
+// 	w.writer.Header().Set("Content-Type", "application/json")
+// }
+
 func Unauthorized(msg string, w http.ResponseWriter) {
 	w.WriteHeader(UnauthorizedCode)
 	res, err := json.Marshal(HTTPResponse{
