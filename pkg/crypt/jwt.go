@@ -1,11 +1,12 @@
 package crypt
 
 import (
+	"GOAuTh/pkg/errors"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
+	go_errors "errors"
 	"fmt"
 	"log"
 	"strings"
@@ -39,6 +40,10 @@ func (c JWTDefaultClaims) GetRawClaims() []byte {
 		return []byte("{}")
 	}
 	return claims
+}
+
+func (c JWTDefaultClaims) String() string {
+	return string(c.GetRawClaims())
 }
 
 // JWTSigningMethod defines which JWT signing method to use
@@ -82,11 +87,11 @@ func DecodeJWT[T JWTClaims](token string, method JWTSigningMethod) (T, error) {
 	parts := strings.Split(token, ".")
 	var claims T
 	if len(parts) != 3 {
-		return claims, errors.New("invalid token format")
+		return claims, errors.JWTFormatError(go_errors.New("invalid token format"))
 	}
 	sign := JWTBase64Encode(method.GenerateJWT(fmt.Sprintf("%s.%s", parts[0], parts[1])))
 	if sign != parts[2] {
-		return claims, errors.New("signatures did not match")
+		return claims, errors.JWTFormatError(go_errors.New("signatures did not match"))
 	}
 	claimsb64, err := Decodechunk(parts[1])
 	if err != nil {

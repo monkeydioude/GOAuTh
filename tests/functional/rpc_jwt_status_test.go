@@ -28,3 +28,18 @@ func TestRPCCanGetAValidTokensStatus(t *testing.T) {
 	assert.Equal(t, res.Code, int32(200))
 	assert.Equal(t, res.Message, "Ok")
 }
+
+func TestRPCWontValidateABadTokenStatus(t *testing.T) {
+	layout, _, _ := setup()
+	defer cleanup(layout)
+	conn := setupRPC(t, layout)
+	defer conn.Close()
+	client := v1.NewJWTClient(conn)
+	ctx := context.Background()
+	res, _ := client.Status(ctx, &v1.JWTRequest{
+		Token: "fake-token",
+	})
+	assert.NotNil(t, res)
+	assert.Equal(t, int32(400), res.Code)
+	assert.NotEqual(t, "Ok", res.Message)
+}

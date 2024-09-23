@@ -2,42 +2,31 @@ package auth
 
 import (
 	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/entities"
+	"GOAuTh/internal/domain/services"
+	"GOAuTh/pkg/errors"
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
 	"net/http"
-	"time"
 )
 
-// LogIn would be the route used for logging a user in the a system
-func LogIn(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
+// Login would be the route used for logging a user in the a system
+func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
+	if h == nil || req == nil {
+		response.InternalServerError("no layout or req pointer", w)
+		return
+	}
 	rawPayload := request.Json[entities.User](req)
 	if rawPayload.IsErr() {
 		response.InternalServerError(rawPayload.Error.Error(), w)
 		return
 	}
 
-	payload := rawPayload.Result()
-	if payload.IsRevoked(time.Now()) {
-		response.Unauthorized("user's access was revoked", w)
-		return
-	}
-	if err := payload.AssertAuth(h.DB, h.UserParams); err != nil {
-		response.Unauthorized("unauthorized for this login and password", w)
-		return
-	}
-	sign, err := h.JWTFactory.GenerateToken(payload.IntoClaims())
+	res, err := services.AuthLogin(rawPayload.Result(), h.DB, h.UserParams, h.JWTFactory)
 	if err != nil {
-		response.InternalServerError("error during jwt generation", w)
+		errors.HTTPError(err, w)
 		return
 	}
-	res := &http.Cookie{
-		Name:   consts.AuthorizationCookie,
-		Value:  sign.GetToken(),
-		MaxAge: int(sign.GetExpiresIn().Seconds()),
-		Path:   "/",
-	}
-	http.SetCookie(w, res)
+	http.SetCookie(w, &res)
 	response.Json(res, w)
 }

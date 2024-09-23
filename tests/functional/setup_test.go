@@ -30,7 +30,7 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 	var layout *handlers.Layout
 
 	// init layout
-	if res := boot.LayoutBoot([]any{entities.NewUser()}, constraints.EmailConstraint); res.IsErr() {
+	if res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, constraints.EmailConstraint); res.IsErr() {
 		panic("Could not boot layout")
 	} else {
 		layout = res.Result()
@@ -51,6 +51,7 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 func setupRPC(t *testing.T, layout *handlers.Layout) *grpc.ClientConn {
 	server := grpc.NewServer()
 	v1.RegisterJWTServer(server, v1.NewJWTRPCHandler(layout))
+	v1.RegisterAuthServer(server, v1.NewAuthRPCHandler(layout))
 
 	lis := bufconn.Listen(1024 * 1024)
 	go func() {

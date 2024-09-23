@@ -3,12 +3,17 @@ package jwt
 import (
 	"GOAuTh/internal/api/handlers"
 	"GOAuTh/internal/config/consts"
+	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/http/response"
 	"log"
 	"net/http"
 )
 
 func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
+	if h == nil || req == nil {
+		response.InternalServerError("no layout or req pointer", w)
+		return
+	}
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
 		log.Printf("[ERR ] while retrieving %s cookie: %s", consts.AuthorizationCookie, err.Error())
@@ -16,18 +21,11 @@ func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jwt, err := h.JWTFactory.DecodeToken(cookie.Value)
+	res, err := services.JWTStatus(cookie.Value, *h.JWTFactory)
 	if err != nil {
 		response.Unauthorized(err.Error(), w)
 		return
 	}
-
-	res := &http.Cookie{
-		Name:   consts.AuthorizationCookie,
-		Value:  jwt.GetToken(),
-		MaxAge: int(jwt.GetExpiresIn().Seconds()),
-		Path:   "/",
-	}
-	http.SetCookie(w, res)
+	http.SetCookie(w, &res)
 	response.Json(res, w)
 }

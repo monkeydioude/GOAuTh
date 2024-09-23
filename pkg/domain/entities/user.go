@@ -1,4 +1,4 @@
-package entity
+package entities
 
 import (
 	"GOAuTh/pkg/crypt"

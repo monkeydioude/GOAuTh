@@ -12,6 +12,7 @@ type HTTPResponse struct {
 
 const (
 	OkCode                  int = 200
+	BadRequest              int = 400
 	UnauthorizedCode        int = 401
 	UnprocessableEntityCode int = 422
 	InternalServerErrorCode int = 500

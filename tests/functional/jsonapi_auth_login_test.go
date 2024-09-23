@@ -17,7 +17,7 @@ func TestJsonAPICanLogin(t *testing.T) {
 	layout, gormDB, timeRef := setup()
 	defer cleanup(layout)
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/auth/login", layout.Post(auth.LogIn))
+	mux.HandleFunc("/v1/auth/login", layout.Post(auth.Login))
 	rec := httptest.NewRecorder()
 	// define the user
 	login := "TestICanLogin@test.com"

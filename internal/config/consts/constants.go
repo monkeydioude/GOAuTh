@@ -14,6 +14,7 @@ const JWT_SECRET = "JWT_SECRET"
 const PASSWD_SALT = "PASSWD_SALT"
 
 const AuthorizationCookie = "Authorization"
+const SetCookie = "set-cookie"
 
 const JWTExpiresIn = 5 * time.Second
 const JWTRefreshesIn = 10 * time.Second

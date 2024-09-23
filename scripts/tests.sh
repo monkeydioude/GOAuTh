@@ -33,6 +33,9 @@ waitForContainerReadiness
 
 echo "[INFO] '$containerName' is ready! Lezgong tests!"
 DB_PATH=postgres://test:test@0.0.0.0:5444/test_db go test -v ./...
+exit_code=$?
 
 echo "[INFO] Stopping '$containerName' PGSQL test container!"
 docker stop $containerName
+
+exit $exit_code

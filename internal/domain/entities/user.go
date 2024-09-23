@@ -23,6 +23,9 @@ type User struct {
 
 // BeforeCreate is a GORM hook impl
 func (u *User) BeforeCreate(tx *gorm.DB) error {
+	if tx == nil {
+		return errors.New("nil *gorm.DB")
+	}
 	if u.Login == "" || u.Password == "" {
 		return errors.New("login or password cannot be empty")
 	}
@@ -44,6 +47,9 @@ func (User) TableName() string {
 
 // AssertAuth asserts a user can pass authentification.
 func (u *User) AssertAuth(db *gorm.DB, userParams *models.UsersParams) error {
+	if db == nil || userParams == nil {
+		return errors.New("nil *gorm.DB or *models.UsersParams")
+	}
 	passwd := ""
 	if u.Password != "" {
 		passwd = crypt.HashPassword(
@@ -65,6 +71,13 @@ func (u User) IsRevoked(timeRef time.Time) bool {
 	return u.RevokedAt != nil && u.RevokedAt.Before(timeRef)
 }
 
-func NewUser() *User {
+func NewEmptyUser() *User {
 	return &User{}
+}
+
+func NewUser(login, password string) *User {
+	return &User{
+		Login:    login,
+		Password: password,
+	}
 }

@@ -6,7 +6,7 @@ option go_package = "internal/api/rpc/v1";
 
 service Auth {
     rpc Signup(UserRequest) returns (Response) {}
-    rpc LogIn(UserRequest) returns (Response) {}
+    rpc Login(UserRequest) returns (Response) {}
 }
 
 message UserRequest {

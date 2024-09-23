@@ -2,18 +2,22 @@ package services
 
 import (
 	"GOAuTh/pkg/crypt"
-	entity "GOAuTh/pkg/domain/entities"
+	"GOAuTh/pkg/domain/entities"
+	"errors"
 	"log"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-func IsLoginRevoked[C crypt.JWTClaims, U entity.User[C]](
+func IsLoginRevoked[C crypt.JWTClaims, U entities.User[C]](
 	login string,
 	db *gorm.DB,
 	timeRef time.Time,
 ) (bool, error) {
+	if db == nil {
+		return false, errors.New("nil *gorm.DB")
+	}
 	var user U
 	res := db.Where("login = ?", login).First(&user)
 	if res.Error != nil {

@@ -22,7 +22,7 @@ func routing(layout *handlers.Layout) *http.ServeMux {
 
 	// routes definition
 	mux.HandleFunc("/v1/auth/signup", layout.Post(auth.Signup))
-	mux.HandleFunc("/v1/auth/login", layout.Put(auth.LogIn))
+	mux.HandleFunc("/v1/auth/login", layout.Put(auth.Login))
 	mux.HandleFunc("/v1/jwt/status", layout.Get(jwt.Status))
 	return mux
 }
@@ -46,7 +46,7 @@ func setupGRPC(layout *handlers.Layout) *grpc.Server {
 
 func main() {
 	res := boot.Please(
-		[]any{entities.NewUser()},
+		[]any{entities.NewEmptyUser()},
 		constraints.EmailConstraint,
 	)
 	if res.IsErr() {

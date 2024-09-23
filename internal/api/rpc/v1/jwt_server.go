@@ -2,11 +2,9 @@ package v1
 
 import (
 	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/http/rpc"
 	"context"
-	"net/http"
 
 	"google.golang.org/grpc"
 )
@@ -17,16 +15,24 @@ type JWTRPCHandler struct {
 }
 
 func (h *JWTRPCHandler) Status(ctx context.Context, req *JWTRequest) (*Response, error) {
-	jwt, err := h.JWTFactory.DecodeToken(req.Token)
-	if err != nil {
-		return Unauthorized("could not decode token"), err
+	if req == nil {
+		return InternalServerError("no req pointer"), nil
 	}
+	res, err := services.JWTStatus(req.Token, *h.JWTFactory)
+	if err != nil {
+		return FromErrToResponse(err), nil
+	}
+	grpc.SendHeader(ctx, rpc.SetCookie(res))
+	return Ok(), nil
+}
 
-	res := http.Cookie{
-		Name:   consts.AuthorizationCookie,
-		Value:  jwt.GetToken(),
-		MaxAge: int(jwt.GetExpiresIn().Seconds()),
-		Path:   "/",
+func (h *JWTRPCHandler) Refresh(ctx context.Context, req *JWTRequest) (*Response, error) {
+	if req == nil {
+		return InternalServerError("no req pointer"), nil
+	}
+	res, err := services.JWTRefresh(req.Token, *h.JWTFactory)
+	if err != nil {
+		return FromErrToResponse(err), nil
 	}
 	grpc.SendHeader(ctx, rpc.SetCookie(res))
 	return Ok(), nil

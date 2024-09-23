@@ -6,7 +6,7 @@ import (
 )
 
 func TestIsRevoked(t *testing.T) {
-	trial := NewUser()
+	trial := NewEmptyUser()
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	// nil RevokedAt
 	if trial.IsRevoked(timeRef) == true {
