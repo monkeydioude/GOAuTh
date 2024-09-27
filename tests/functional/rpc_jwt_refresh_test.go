@@ -7,6 +7,7 @@ import (
 	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/http/rpc"
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -49,9 +50,13 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	ctx := context.Background()
 
 	var headerMD metadata.MD
+	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
+		Name:  consts.AuthorizationCookie,
+		Value: jwt.Token,
+	}))
 	res, err := client.Refresh(
 		ctx,
-		&v1.JWTRequest{Token: jwt.Token},
+		&v1.Empty{},
 		grpc.Header(&headerMD),
 	)
 	assert.NoError(t, err)
@@ -91,9 +96,13 @@ func TestRPCCanNotRefreshExpiredToken(t *testing.T) {
 	ctx := context.Background()
 
 	var headerMD metadata.MD
+	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
+		Name:  consts.AuthorizationCookie,
+		Value: jwt.Token,
+	}))
 	res, err := client.Refresh(
 		ctx,
-		&v1.JWTRequest{Token: jwt.Token},
+		&v1.Empty{},
 		grpc.Header(&headerMD),
 	)
 	assert.NoError(t, err)
@@ -127,9 +136,13 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 	ctx := context.Background()
 
 	var headerMD metadata.MD
+	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
+		Name:  consts.AuthorizationCookie,
+		Value: jwt.Token,
+	}))
 	res, err := client.Refresh(
 		ctx,
-		&v1.JWTRequest{Token: jwt.Token},
+		&v1.Empty{},
 		grpc.Header(&headerMD),
 	)
 	assert.NoError(t, err)

@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	INVALID_JWT_ERR           = "the entities.JWT is invalid"
-	TOO_OLD_JWT_ERR           = "the entities.JWT is too old to be refreshed"
+	INVALID_JWT_ERR           = "invalid JWT"
+	TOO_OLD_JWT_ERR           = "the JWT is too old to be refreshed"
 	REVOKED_OR_REVOCATION_ERR = "token is revoked, or an error during revocation check happened: %s"
 )
 

@@ -6,15 +6,15 @@ type Api struct {
 	Port string
 }
 
-const DefaultPort = "8100"
+const ApiDefaultPort = "8100"
 
 // apiBoot returns API start related config
 func apiBoot() *Api {
 	port := os.Getenv("API_PORT")
 	if port == "" {
-		port = DefaultPort
+		port = ApiDefaultPort
 	}
 	return &Api{
-		Port: port,
+		Port: ":" + port,
 	}
 }

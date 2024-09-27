@@ -1,48 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"net/http"
-	"time"
+	"syscall"
 
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/api/handlers/v1/auth"
-	"GOAuTh/internal/api/handlers/v1/jwt"
-	v1 "GOAuTh/internal/api/rpc/v1"
 	"GOAuTh/internal/config/boot"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/entities/constraints"
 
-	"google.golang.org/grpc"
+	"github.com/oklog/run"
 )
-
-func routing(layout *handlers.Layout) *http.ServeMux {
-	mux := http.NewServeMux()
-
-	// routes definition
-	mux.HandleFunc("/v1/auth/signup", layout.Post(auth.Signup))
-	mux.HandleFunc("/v1/auth/login", layout.Put(auth.Login))
-	mux.HandleFunc("/v1/jwt/status", layout.Get(jwt.Status))
-	return mux
-}
-
-func setupServer(api *boot.Api, mux *http.ServeMux) *http.Server {
-	return &http.Server{
-		Addr:              fmt.Sprintf(":%s", api.Port),
-		ReadTimeout:       3 * time.Second,
-		WriteTimeout:      3 * time.Second,
-		IdleTimeout:       30 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-		Handler:           mux,
-	}
-}
-
-func setupGRPC(layout *handlers.Layout) *grpc.Server {
-	server := grpc.NewServer()
-	v1.RegisterJWTServer(server, v1.NewJWTRPCHandler(layout))
-	return server
-}
 
 func main() {
 	res := boot.Please(
@@ -54,14 +22,39 @@ func main() {
 	}
 
 	settings := res.Result()
-	// setup multiplexer
-	mux := routing(settings.Layout)
-	// server definition
-	server := setupServer(settings.Api, mux)
 
-	// Start the server on port
-	log.Println("Server starting on port", settings.Api.Port)
-	if err := server.ListenAndServe(); err != nil {
+	// server definition
+	apiServer := setupAPIServer(settings)
+	grpcServer, lis := setupGRPCServer(settings)
+
+	// synchronisation of async servers
+	runGroup := &run.Group{}
+
+	// RPC goroutine
+	runGroup.Add(func() error {
+		log.Println("RPC starting on", lis.Addr())
+		return grpcServer.Serve(lis)
+	}, func(_ error) {
+		log.Println("stopping RPC server")
+		grpcServer.GracefulStop()
+		grpcServer.Stop()
+	})
+
+	// JSON API goroutine
+	runGroup.Add(func() error {
+		// Start the server on port
+		log.Println("API starting on", apiServer.Addr)
+		return apiServer.ListenAndServe()
+	}, func(_ error) {
+		log.Println("closing API server")
+		if err := apiServer.Close(); err != nil {
+			log.Println("failed to stop web server", "err", err)
+		}
+	})
+
+	// Signals handling, for graceful stop
+	runGroup.Add(run.SignalHandler(context.Background(), syscall.SIGINT, syscall.SIGTERM))
+	if err := runGroup.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

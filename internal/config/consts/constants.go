@@ -19,6 +19,8 @@ const SetCookie = "set-cookie"
 const JWTExpiresIn = 5 * time.Second
 const JWTRefreshesIn = 10 * time.Second
 
+const BaseAPI_V1 = "/identity/v1"
+
 // Argon2 basic conf
 // Should be replaced with actual passed on from the system conf.
 // This config is sort of the default argon2 config, recommended by the draft RFC

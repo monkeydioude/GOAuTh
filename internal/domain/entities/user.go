@@ -4,7 +4,6 @@ import (
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/pkg/crypt"
 	"errors"
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -29,7 +28,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if u.Login == "" || u.Password == "" {
 		return errors.New("login or password cannot be empty")
 	}
-	fmt.Println(u.Password)
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = u.CreatedAt
 	return nil

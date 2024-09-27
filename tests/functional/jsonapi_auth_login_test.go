@@ -17,7 +17,7 @@ func TestJsonAPICanLogin(t *testing.T) {
 	layout, gormDB, timeRef := setup()
 	defer cleanup(layout)
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/auth/login", layout.Post(auth.Login))
+	mux.HandleFunc("/v1/auth/login", layout.Put(auth.Login))
 	rec := httptest.NewRecorder()
 	// define the user
 	login := "TestICanLogin@test.com"
@@ -34,7 +34,7 @@ func TestJsonAPICanLogin(t *testing.T) {
 	// prepare to request the endpoint
 	body, err := json.Marshal(user)
 	assert.NoError(t, err)
-	req, err := http.NewRequest("POST", "/v1/auth/login", bytes.NewReader(body))
+	req, err := http.NewRequest("PUT", "/v1/auth/login", bytes.NewReader(body))
 	assert.NoError(t, err)
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, rec.Code, 200)

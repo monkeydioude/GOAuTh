@@ -167,8 +167,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type JWTClient interface {
-	Status(ctx context.Context, in *JWTRequest, opts ...grpc.CallOption) (*Response, error)
-	Refresh(ctx context.Context, in *JWTRequest, opts ...grpc.CallOption) (*Response, error)
+	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error)
+	Refresh(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error)
 }
 
 type jWTClient struct {
@@ -179,7 +179,7 @@ func NewJWTClient(cc grpc.ClientConnInterface) JWTClient {
 	return &jWTClient{cc}
 }
 
-func (c *jWTClient) Status(ctx context.Context, in *JWTRequest, opts ...grpc.CallOption) (*Response, error) {
+func (c *jWTClient) Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Response)
 	err := c.cc.Invoke(ctx, JWT_Status_FullMethodName, in, out, cOpts...)
@@ -189,7 +189,7 @@ func (c *jWTClient) Status(ctx context.Context, in *JWTRequest, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *jWTClient) Refresh(ctx context.Context, in *JWTRequest, opts ...grpc.CallOption) (*Response, error) {
+func (c *jWTClient) Refresh(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Response)
 	err := c.cc.Invoke(ctx, JWT_Refresh_FullMethodName, in, out, cOpts...)
@@ -203,8 +203,8 @@ func (c *jWTClient) Refresh(ctx context.Context, in *JWTRequest, opts ...grpc.Ca
 // All implementations must embed UnimplementedJWTServer
 // for forward compatibility.
 type JWTServer interface {
-	Status(context.Context, *JWTRequest) (*Response, error)
-	Refresh(context.Context, *JWTRequest) (*Response, error)
+	Status(context.Context, *Empty) (*Response, error)
+	Refresh(context.Context, *Empty) (*Response, error)
 	mustEmbedUnimplementedJWTServer()
 }
 
@@ -215,10 +215,10 @@ type JWTServer interface {
 // pointer dereference when methods are called.
 type UnimplementedJWTServer struct{}
 
-func (UnimplementedJWTServer) Status(context.Context, *JWTRequest) (*Response, error) {
+func (UnimplementedJWTServer) Status(context.Context, *Empty) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
-func (UnimplementedJWTServer) Refresh(context.Context, *JWTRequest) (*Response, error) {
+func (UnimplementedJWTServer) Refresh(context.Context, *Empty) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Refresh not implemented")
 }
 func (UnimplementedJWTServer) mustEmbedUnimplementedJWTServer() {}
@@ -243,7 +243,7 @@ func RegisterJWTServer(s grpc.ServiceRegistrar, srv JWTServer) {
 }
 
 func _JWT_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JWTRequest)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -255,13 +255,13 @@ func _JWT_Status_Handler(srv interface{}, ctx context.Context, dec func(interfac
 		FullMethod: JWT_Status_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JWTServer).Status(ctx, req.(*JWTRequest))
+		return srv.(JWTServer).Status(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _JWT_Refresh_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(JWTRequest)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func _JWT_Refresh_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: JWT_Refresh_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JWTServer).Refresh(ctx, req.(*JWTRequest))
+		return srv.(JWTServer).Refresh(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

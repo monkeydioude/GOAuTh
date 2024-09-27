@@ -5,6 +5,12 @@ import (
 	"GOAuTh/pkg/http/response"
 )
 
+func BadRequest(msg string) *Response {
+	return &Response{
+		Code:    int32(response.BadRequest),
+		Message: msg,
+	}
+}
 func Unauthorized(msg string) *Response {
 	return &Response{
 		Code:    int32(response.UnauthorizedCode),

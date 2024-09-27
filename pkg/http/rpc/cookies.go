@@ -2,7 +2,9 @@ package rpc
 
 import (
 	"GOAuTh/internal/config/consts"
+	"context"
 	"errors"
+
 	"fmt"
 	"net/http"
 
@@ -34,4 +36,16 @@ func FetchCookie(headers metadata.MD, key string) (http.Cookie, error) {
 		}
 	}
 	return http.Cookie{}, fmt.Errorf("couldnt find cookie with key: %s", key)
+}
+
+func FetchCookieFromContext(ctx context.Context, key string) (http.Cookie, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return http.Cookie{}, errors.New("didnt find any metadata")
+	}
+	return FetchCookie(md, consts.AuthorizationCookie)
+}
+
+func WriteOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {
+	return metadata.NewOutgoingContext(ctx, SetCookie(cookie))
 }

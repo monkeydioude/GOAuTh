@@ -11,6 +11,7 @@ import (
 type Settings struct {
 	Layout *handlers.Layout
 	Api    *Api
+	Grpc   *Grpc
 }
 
 // Please will sincerely try to boot every mandatory routines,
@@ -30,5 +31,6 @@ func Please(
 	return result.Ok(&Settings{
 		Layout: layout.Result(),
 		Api:    apiBoot(),
+		Grpc:   grpcBoot(),
 	})
 }

@@ -20,10 +20,8 @@ message Response {
 }
 
 service JWT {
-    rpc Status(JWTRequest) returns (Response) {}
-    rpc Refresh(JWTRequest) returns (Response) {}
+    rpc Status(Empty) returns (Response) {}
+    rpc Refresh(Empty) returns (Response) {}
 }
 
-message JWTRequest {
-    string token = 1;
-}
+message Empty {}
