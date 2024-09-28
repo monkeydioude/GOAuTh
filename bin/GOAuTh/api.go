@@ -12,8 +12,8 @@ import (
 )
 
 func healthcheck(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("Ok"))
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte("{\"health\": \"OK\"}"))
 }
 
 func apiRouting(layout *handlers.Layout) http.Handler {
