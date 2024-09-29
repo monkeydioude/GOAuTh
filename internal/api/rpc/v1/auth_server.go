@@ -11,6 +11,7 @@ import (
 	"errors"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +44,11 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	grpc.SendHeader(ctx, rpc.SetCookie(res))
+	md, ok := metadata.FromOutgoingContext(ctx)
+	if !ok {
+		md = metadata.New(nil)
+	}
+	grpc.SendHeader(ctx, rpc.AppendCookie(md, res))
 	return Ok(), nil
 }
 

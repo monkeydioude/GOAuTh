@@ -2,12 +2,15 @@ package main
 
 import (
 	v1 "GOAuTh/internal/api/rpc/v1"
+	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/services"
+	"GOAuTh/pkg/http/rpc"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -34,6 +37,7 @@ func (c rpcCall) trigger() error {
 	if err != nil {
 		return err
 	}
+	ctx = rpc.WriteOutgoingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, uuid.NewString()})
 	switch c.service {
 	case "auth":
 		switch c.action {

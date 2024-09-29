@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type apiCall struct {
@@ -30,14 +32,15 @@ func (c apiCall) trigger() error {
 			if err != nil {
 				return err
 			}
-			req.Header.Set("Content-Type", "application/json")
-			res, err = http.DefaultClient.Do(req)
 		case "signup":
-			res, err = http.Post(
+			req, err = http.NewRequest(
+				"POST",
 				fmt.Sprintf("%s%s/auth/signup", os.Getenv("API_URL"), consts.BaseAPI_V1),
-				"application/json",
 				strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"))),
 			)
+			if err != nil {
+				return err
+			}
 		}
 	case "jwt":
 		switch c.action {
@@ -54,7 +57,6 @@ func (c apiCall) trigger() error {
 				Name:  "Authorization",
 				Value: os.Getenv("CLIENT_JWT"),
 			})
-			res, err = http.DefaultClient.Do(req)
 		case "refresh":
 			req, err = http.NewRequest(
 				"PUT",
@@ -68,10 +70,12 @@ func (c apiCall) trigger() error {
 				Name:  "Authorization",
 				Value: os.Getenv("CLIENT_JWT"),
 			})
-			res, err = http.DefaultClient.Do(req)
 		}
 
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(consts.X_REQUEST_ID_LABEL, uuid.NewString())
+	res, err = http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
