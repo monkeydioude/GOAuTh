@@ -7,7 +7,7 @@ waitForContainerReadiness()
     i=1
     maxI=5
 
-    if [[ -z $(docker ps | grep $containerName) ]]; then
+    if [ -z "$(docker ps | grep $containerName)" ]; then
         echo "[ERR ] Could not start PGSQL container. Exiting"
         exit 1
     fi
@@ -16,7 +16,7 @@ waitForContainerReadiness()
             break
         fi
         echo "[WARN] PGSQL container not ready ($i/$maxI)..."
-        let $[ i+=1 ]
+        i=$((i+1))
         sleep 1
     done
     if [ $i = $maxI ]; then
