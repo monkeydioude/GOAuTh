@@ -27,6 +27,15 @@ stop-test-db:
 test:
 	@sh scripts/tests.sh
 
+.PHONY: proto-go
+proto-go:
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	protoc --go_out=. --go-grpc_out=. -I proto proto/rpc_v1.proto
+
+.PHONY: proto-rust
+proto-rust:
+	cd proto/rust
+	cargo build
+
 .PHONY: proto
-proto:
-	protoc --proto_path=./proto --go_out=. --go-grpc_out=. rpc_v1.proto
+proto: proto-go proto-rust
