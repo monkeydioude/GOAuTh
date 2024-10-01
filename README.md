@@ -53,6 +53,6 @@ message UserRequest {
 }
 ```
 
-__API/jwt__ no payload, but a `Authorization {JWT}` _cookie_.
+__API/jwt__ no payload, but a `Authorization={JWT}` _cookie_.
 
-__RPC/jwt__, no payload, but a `set-cookie` _metadata_ containing `Authorization {JWT}`.
+__RPC/jwt__, no payload, but a `set-cookie` _metadata_ containing `Authorization={JWT}`.

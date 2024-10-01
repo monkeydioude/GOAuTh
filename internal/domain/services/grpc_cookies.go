@@ -7,8 +7,15 @@ import (
 	"net/http"
 )
 
-func AddAuthorizationTokenMetadata(ctx context.Context, token string) context.Context {
-	return rpc.WriteOutgoingCookie(ctx, http.Cookie{
+func SetAuthorizationTokenMetaOut(ctx context.Context, token string) context.Context {
+	return rpc.SetOutgoingCookie(ctx, http.Cookie{
+		Name:  consts.AuthorizationCookie,
+		Value: token,
+	})
+}
+
+func SetAuthorizationTokenMetaIn(ctx context.Context, token string) context.Context {
+	return rpc.SetIncomingCookie(ctx, http.Cookie{
 		Name:  consts.AuthorizationCookie,
 		Value: token,
 	})

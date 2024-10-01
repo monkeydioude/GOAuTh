@@ -46,6 +46,14 @@ func FetchCookieFromContext(ctx context.Context, key string) (http.Cookie, error
 	return FetchCookie(md, consts.AuthorizationCookie)
 }
 
-func WriteOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {
+func SetOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {
 	return metadata.NewOutgoingContext(ctx, SetCookie(cookie))
+}
+
+func AddOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {
+	return WriteOutgoingMetas(ctx, [2]string{consts.SetCookie, cookie.String()})
+}
+
+func SetIncomingCookie(ctx context.Context, cookie http.Cookie) context.Context {
+	return metadata.NewIncomingContext(ctx, SetCookie(cookie))
 }

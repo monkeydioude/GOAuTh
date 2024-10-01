@@ -3,6 +3,7 @@ package services
 import (
 	"GOAuTh/internal/config/consts"
 	"GOAuTh/pkg/errors"
+	stdErr "errors"
 	"net/http"
 )
 
@@ -12,6 +13,9 @@ func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
 		return http.Cookie{}, err
 	}
 
+	if jwt.Claims.RemainingRefresh(factory.TimeFn()) <= 0 {
+		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
+	}
 	return http.Cookie{
 		Name:   consts.AuthorizationCookie,
 		Value:  jwt.GetToken(),

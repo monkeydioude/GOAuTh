@@ -3,11 +3,11 @@ package main
 import (
 	v1 "GOAuTh/internal/api/rpc/v1"
 	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/http/rpc"
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/google/uuid"
@@ -66,7 +66,11 @@ func (c rpcCall) trigger() error {
 		switch c.action {
 		case "status":
 			client := v1.NewJWTClient(conn)
-			ctx = services.AddAuthorizationTokenMetadata(ctx, os.Getenv("CLIENT_JWT"))
+			// ctx = services.AddAuthorizationTokenMetaIn(ctx, os.Getenv("CLIENT_JWT"))
+			ctx = rpc.AddOutgoingCookie(ctx, http.Cookie{
+				Name:  consts.AuthorizationCookie,
+				Value: os.Getenv("CLIENT_JWT"),
+			})
 			res, err = client.Status(
 				ctx,
 				&v1.Empty{},
@@ -74,7 +78,10 @@ func (c rpcCall) trigger() error {
 			)
 		case "refresh":
 			client := v1.NewJWTClient(conn)
-			ctx = services.AddAuthorizationTokenMetadata(ctx, os.Getenv("CLIENT_JWT"))
+			ctx = rpc.AddOutgoingCookie(ctx, http.Cookie{
+				Name:  consts.AuthorizationCookie,
+				Value: os.Getenv("CLIENT_JWT"),
+			})
 			res, err = client.Refresh(
 				ctx,
 				&v1.Empty{},
