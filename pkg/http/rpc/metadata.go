@@ -13,6 +13,17 @@ func WriteOutgoingMetas(ctx context.Context, kvs ...[2]string) context.Context {
 	return ctx
 }
 
+func WriteIncomingMetas(ctx context.Context, kvs ...[2]string) context.Context {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return NewIncomingMetas(ctx, kvs...)
+	}
+	for _, kv := range kvs {
+		md.Append(kv[0], kv[1])
+	}
+	return metadata.NewIncomingContext(ctx, md)
+}
+
 func NewIncomingMetas(ctx context.Context, kvs ...[2]string) context.Context {
 	md := metadata.New(nil)
 	for _, kv := range kvs {

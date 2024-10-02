@@ -32,7 +32,7 @@ func GRPXRequestID(
 	xReqID, ok := rpc.GetFirstIncomingMeta(ctx, consts.X_REQUEST_ID_LABEL)
 	if !ok {
 		xReqID = consts.NO_X_REQUEST_ID
-		ctx = rpc.NewIncomingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, consts.NO_X_REQUEST_ID})
+		ctx = rpc.WriteIncomingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, consts.NO_X_REQUEST_ID})
 	}
 
 	ctx = rpc.WriteOutgoingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, xReqID})

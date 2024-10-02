@@ -9,7 +9,7 @@ import (
 func TestFactoryCanGenerateAndDecodeAToken(t *testing.T) {
 	jf := NewJWTFactory(crypt.HS256("test"), 1*time.Second, 2*time.Second, func() time.Time {
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	}, func(string) (bool, error) {
+	}, func(string, func() time.Time) (bool, error) {
 		return false, nil
 	})
 
@@ -29,7 +29,7 @@ func TestFactoryCanRefreshAToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(string) (bool, error) {
+	revocCheckerFn := func(string, func() time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27
@@ -65,7 +65,7 @@ func TestFactoryDoesNotRefreshAValidToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(string) (bool, error) {
+	revocCheckerFn := func(string, func() time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27
@@ -99,7 +99,7 @@ func TestFactoryDoesNotTryToRefreshWayTooOldToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(string) (bool, error) {
+	revocCheckerFn := func(string, func() time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27

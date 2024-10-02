@@ -32,13 +32,13 @@ func TestJsonAPICanGetAValidTokensStatus(t *testing.T) {
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
-	assert.Equal(t, rec.Code, 200)
+	assert.Equal(t, 200, rec.Code)
 	trial, err := http.ParseCookie(rec.Header().Get("Set-Cookie"))
 	assert.NoError(t, err)
-	assert.Equal(t, trial[0].Value, jwt.Token)
+	assert.Equal(t, jwt.Token, trial[0].Value)
 }
 
 func TestJsonAPIGetA401OnInvalidToken(t *testing.T) {
@@ -60,11 +60,11 @@ func TestJsonAPIGetA401OnInvalidToken(t *testing.T) {
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
 	// should fail
-	assert.Equal(t, rec.Code, 401)
+	assert.Equal(t, 401, rec.Code)
 	trial, err := http.ParseCookie(rec.Header().Get("Set-Cookie"))
 	assert.Empty(t, trial)
 	assert.Error(t, err)
@@ -94,7 +94,7 @@ func TestJsonAPIGetA401OnExpiredToken(t *testing.T) {
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
 	// should fail
@@ -105,6 +105,6 @@ func TestJsonAPIGetA401OnExpiredToken(t *testing.T) {
 	trialRes := response.HTTPResponse{}
 	body, err := io.ReadAll(rec.Body)
 	assert.NoError(t, err)
-	assert.Equal(t, json.Unmarshal(body, &trialRes), nil)
+	assert.Equal(t, nil, json.Unmarshal(body, &trialRes))
 	assert.Equal(t, consts.ERR_TOKEN_EXPIRED, trialRes.Message)
 }

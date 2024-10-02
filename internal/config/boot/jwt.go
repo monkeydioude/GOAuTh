@@ -19,8 +19,8 @@ func jwtFactoryBoot(db *gorm.DB) *services.JWTFactory {
 		TimeFn: func() time.Time {
 			return time.Now()
 		},
-		RevocationCheckerFn: func(login string) (bool, error) {
-			return services.IsLoginRevoked[crypt.JWTDefaultClaims, entities.User](login, db, time.Now())
+		RevocationCheckerFn: func(login string, timeFn func() time.Time) (bool, error) {
+			return services.IsLoginRevoked[crypt.JWTDefaultClaims, entities.User](login, db, timeFn())
 		},
 	}
 }

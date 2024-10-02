@@ -52,7 +52,7 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	var headerMD metadata.MD
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	}))
 	res, err := client.Refresh(
 		ctx,
@@ -98,7 +98,7 @@ func TestRPCCanNotRefreshExpiredToken(t *testing.T) {
 	var headerMD metadata.MD
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	}))
 	res, err := client.Refresh(
 		ctx,
@@ -138,7 +138,7 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 	var headerMD metadata.MD
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	}))
 	res, err := client.Refresh(
 		ctx,

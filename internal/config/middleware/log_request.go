@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func APILogRequest(w http.ResponseWriter, r *http.Request) {
@@ -24,6 +25,7 @@ func GRPCLogRequest(
 	if !ok {
 		xReqId = consts.NO_X_REQUEST_ID
 	}
-	log.Printf("[%s] incoming RPC call on %s\n", xReqId, info.FullMethod)
+	md, _ := metadata.FromIncomingContext(ctx)
+	log.Printf("[%s] incoming RPC call on %s, with metadata: %+v\n", xReqId, info.FullMethod, md)
 	return handler(ctx, req)
 }

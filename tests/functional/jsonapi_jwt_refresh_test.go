@@ -51,7 +51,7 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, rec.Code, 200)
@@ -90,7 +90,7 @@ func TestJsonAPIGetA401OnRefreshingAnInvalidToken(t *testing.T) {
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
 	// should fail

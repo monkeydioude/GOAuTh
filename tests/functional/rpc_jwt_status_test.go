@@ -27,7 +27,7 @@ func TestRPCCanGetAValidTokensStatus(t *testing.T) {
 	client := v1.NewJWTClient(conn)
 	ctx := metadata.NewOutgoingContext(context.Background(), rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	}))
 	res, _ := client.Status(
 		ctx,
@@ -46,7 +46,7 @@ func TestRPCWontValidateABadTokenStatus(t *testing.T) {
 	client := v1.NewJWTClient(conn)
 	ctx := metadata.NewOutgoingContext(context.Background(), rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: "fake-token",
+		Value: "Bearer fake-token",
 	}))
 	res, _ := client.Status(
 		ctx,
@@ -77,7 +77,7 @@ func TestRPCWontValidateAnExpiredToken(t *testing.T) {
 	}
 	ctx := metadata.NewOutgoingContext(context.Background(), rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: jwt.Token,
+		Value: "Bearer " + jwt.Token,
 	}))
 	res, _ := client.Status(
 		ctx,

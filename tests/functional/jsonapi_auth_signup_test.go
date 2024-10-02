@@ -32,5 +32,5 @@ func TestJsonAPICanSignup(t *testing.T) {
 	assert.Equal(t, rec.Code, 200)
 	trial := entities.User{}
 	assert.Nil(t, gormDB.Where("login = ?", login).First(&trial).Error)
-	assert.Equal(t, trial.Login, login)
+	assert.Equal(t, login, trial.Login)
 }

@@ -69,7 +69,7 @@ func (c rpcCall) trigger() error {
 			// ctx = services.AddAuthorizationTokenMetaIn(ctx, os.Getenv("CLIENT_JWT"))
 			ctx = rpc.AddOutgoingCookie(ctx, http.Cookie{
 				Name:  consts.AuthorizationCookie,
-				Value: os.Getenv("CLIENT_JWT"),
+				Value: "Bearer " + os.Getenv("CLIENT_JWT"),
 			})
 			res, err = client.Status(
 				ctx,
@@ -80,7 +80,7 @@ func (c rpcCall) trigger() error {
 			client := v1.NewJWTClient(conn)
 			ctx = rpc.AddOutgoingCookie(ctx, http.Cookie{
 				Name:  consts.AuthorizationCookie,
-				Value: os.Getenv("CLIENT_JWT"),
+				Value: "Bearer " + os.Getenv("CLIENT_JWT"),
 			})
 			res, err = client.Refresh(
 				ctx,

@@ -5,9 +5,23 @@ import (
 	"GOAuTh/pkg/errors"
 	stdErr "errors"
 	"net/http"
+	"strings"
 )
 
-func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
+func GetJWTFromToken(tokenWithBearer string) (string, error) {
+	parts := strings.Split(tokenWithBearer, " ")
+	partsLen := len(parts)
+	if partsLen == 0 || partsLen != 2 || parts[0] != "Bearer" {
+		return "", errors.Unauthorized(stdErr.New(consts.ERR_WRONG_TOKEN_SCHEMA))
+	}
+	return parts[1], nil
+}
+
+func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) {
+	token, err := GetJWTFromToken(tokenWithBearer)
+	if err != nil {
+		return http.Cookie{}, err
+	}
 	jwt, err := factory.DecodeToken(token)
 	if err != nil {
 		return http.Cookie{}, err
@@ -24,7 +38,12 @@ func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
 	}, nil
 }
 
-func JWTRefresh(token string, factory JWTFactory) (http.Cookie, error) {
+func JWTRefresh(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) {
+	token, err := GetJWTFromToken(tokenWithBearer)
+	if err != nil {
+		return http.Cookie{}, err
+	}
+
 	jwt, err := factory.DecodeToken(token)
 	if err != nil {
 		return http.Cookie{}, errors.Unauthorized(err)

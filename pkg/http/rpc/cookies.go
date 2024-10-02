@@ -21,10 +21,11 @@ func AppendCookie(md metadata.MD, cookie http.Cookie) metadata.MD {
 }
 
 func FetchCookie(headers metadata.MD, key string) (http.Cookie, error) {
-	if _, ok := headers[consts.SetCookie]; !ok {
+	cookies := headers.Get(consts.SetCookie)
+	if len(cookies) == 0 {
 		return http.Cookie{}, errors.New("no cookies")
 	}
-	for _, cookieLine := range headers[consts.SetCookie] {
+	for _, cookieLine := range cookies {
 		cookieSlice, err := http.ParseCookie(cookieLine)
 		if err != nil {
 			continue

@@ -55,7 +55,7 @@ func (c apiCall) trigger() error {
 			}
 			req.AddCookie(&http.Cookie{
 				Name:  "Authorization",
-				Value: os.Getenv("CLIENT_JWT"),
+				Value: "Bearer " + os.Getenv("CLIENT_JWT"),
 			})
 		case "refresh":
 			req, err = http.NewRequest(
@@ -68,7 +68,7 @@ func (c apiCall) trigger() error {
 			}
 			req.AddCookie(&http.Cookie{
 				Name:  "Authorization",
-				Value: os.Getenv("CLIENT_JWT"),
+				Value: "Bearer " + os.Getenv("CLIENT_JWT"),
 			})
 		}
 
