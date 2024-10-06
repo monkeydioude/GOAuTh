@@ -56,7 +56,7 @@ func TestRPCCanLogin(t *testing.T) {
 	assert.NoError(t, err)
 	cookie, err := rpc.FetchCookie(headerMD, consts.AuthorizationCookie)
 	assert.NoError(t, err)
-	assert.Equal(t, trialJWT.Token, cookie.Value)
+	assert.Equal(t, "Bearer "+trialJWT.Token, cookie.Value)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(200), res.Code)
 	assert.Equal(t, "Ok", res.Message)

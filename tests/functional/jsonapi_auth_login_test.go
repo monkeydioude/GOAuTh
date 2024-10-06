@@ -41,8 +41,7 @@ func TestJsonAPICanLogin(t *testing.T) {
 	// retrieve the token from the response
 	cookies, err := http.ParseCookie(rec.Result().Header["Set-Cookie"][0])
 	assert.NoError(t, err)
-	responseToken := cookies[0].Value
-	trialJWT, err := layout.JWTFactory.DecodeToken(responseToken)
+	trialJWT, err := layout.JWTFactory.DecodeCookieToken(*cookies[0])
 	assert.NoError(t, err)
 	assert.Equal(t, trialJWT.Claims.Name, login)
 	assert.Equal(t, trialJWT.Claims.Expire, int64(timeRef.Add(3*time.Second).Unix()))

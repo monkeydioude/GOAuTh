@@ -32,7 +32,7 @@ func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) 
 	}
 	return http.Cookie{
 		Name:   consts.AuthorizationCookie,
-		Value:  jwt.GetToken(),
+		Value:  "Bearer " + jwt.GetToken(),
 		MaxAge: int(jwt.GetExpiresIn().Seconds()),
 		Path:   "/",
 	}, nil
@@ -56,7 +56,7 @@ func JWTRefresh(tokenWithBearer string, factory JWTFactory) (http.Cookie, error)
 
 	return http.Cookie{
 		Name:   consts.AuthorizationCookie,
-		Value:  jwt.GetToken(),
+		Value:  "Bearer " + jwt.GetToken(),
 		MaxAge: int(jwt.GetExpiresIn().Seconds()),
 		Path:   "/",
 	}, nil

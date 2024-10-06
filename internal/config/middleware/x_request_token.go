@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -16,6 +17,7 @@ func APIXRequestID(handler http.Handler) http.Handler {
 		if tmpXReqID != "" {
 			xRequestID = tmpXReqID
 		} else {
+			xRequestID = uuid.NewString()
 			r.Header.Add(consts.X_REQUEST_ID_LABEL, xRequestID)
 		}
 		handler.ServeHTTP(w, r)
@@ -32,7 +34,7 @@ func GRPXRequestID(
 	xReqID, ok := rpc.GetFirstIncomingMeta(ctx, consts.X_REQUEST_ID_LABEL)
 	if !ok {
 		xReqID = consts.NO_X_REQUEST_ID
-		ctx = rpc.WriteIncomingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, consts.NO_X_REQUEST_ID})
+		ctx = rpc.WriteIncomingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, uuid.NewString()})
 	}
 
 	ctx = rpc.WriteOutgoingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, xReqID})

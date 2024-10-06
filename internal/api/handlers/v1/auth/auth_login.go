@@ -2,11 +2,13 @@ package auth
 
 import (
 	"GOAuTh/internal/api/handlers"
+	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/errors"
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
+	"log"
 	"net/http"
 )
 
@@ -18,12 +20,14 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	rawPayload := request.Json[entities.User](req)
 	if rawPayload.IsErr() {
+		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), rawPayload.Error.Error())
 		response.InternalServerError(rawPayload.Error.Error(), w)
 		return
 	}
 
 	res, err := services.AuthLogin(rawPayload.Result(), h.DB, h.UserParams, h.JWTFactory)
 	if err != nil {
+		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
 		errors.HTTPError(err, w)
 		return
 	}

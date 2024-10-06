@@ -41,7 +41,7 @@ func AuthLogin(
 		return http.Cookie{}, errors.Unauthorized(go_errors.New("user's access was revoked"))
 	}
 	if err := user.AssertAuth(db, usersParams); err != nil {
-		return http.Cookie{}, errors.Unauthorized(go_errors.New("login and password don't match"))
+		return http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
 	}
 	sign, err := JWTFactory.GenerateToken(user.IntoClaims())
 	if err != nil {
@@ -49,7 +49,7 @@ func AuthLogin(
 	}
 	return http.Cookie{
 		Name:   consts.AuthorizationCookie,
-		Value:  sign.GetToken(),
+		Value:  "Bearer " + sign.GetToken(),
 		MaxAge: int(sign.GetExpiresIn().Seconds()),
 		Path:   "/",
 	}, nil

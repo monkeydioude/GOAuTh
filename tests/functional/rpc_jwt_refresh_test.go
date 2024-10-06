@@ -62,12 +62,12 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	assert.NoError(t, err)
 	cookie, err := rpc.FetchCookie(headerMD, consts.AuthorizationCookie)
 	assert.NoError(t, err)
-	assert.NotEqual(t, jwt.Token, cookie.Value)
+	assert.NotEqual(t, "Bearer "+jwt.Token, cookie.Value)
 	jwt2, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		Name: login,
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, jwt2.Token, cookie.Value)
+	assert.Equal(t, "Bearer "+jwt2.Token, cookie.Value)
 	assert.NoError(t, err)
 	assert.Equal(t, res.Code, int32(200))
 	assert.Equal(t, res.Message, "Ok")
@@ -148,7 +148,7 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 	assert.NoError(t, err)
 	cookie, err := rpc.FetchCookie(headerMD, consts.AuthorizationCookie)
 	assert.NoError(t, err)
-	assert.Equal(t, jwt.Token, cookie.Value)
+	assert.Equal(t, "Bearer "+jwt.Token, cookie.Value)
 	assert.Equal(t, int32(200), res.Code)
 	assert.Equal(t, res.Message, "Ok")
 }

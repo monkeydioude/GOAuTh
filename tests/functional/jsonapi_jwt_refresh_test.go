@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -59,7 +60,8 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 	assert.NoError(t, err)
 	trial := http.Cookie{}
 	assert.NoError(t, json.Unmarshal(body, &trial))
-	jwt2, err := layout.JWTFactory.DecodeToken(trial.Value)
+	strings.Split(trial.Value, " ")
+	jwt2, err := layout.JWTFactory.DecodeCookieToken(trial)
 	assert.NoError(t, err)
 	// 5 + 3 seconds, because we went 5s forward in time, and JWTFactory ExpiresIn config is 3s
 	assert.NotEqual(t, jwt2.Token, jwt.Token)

@@ -1,11 +1,14 @@
 package services
 
 import (
+	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/pkg/crypt"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -74,6 +77,15 @@ func (jf JWTFactory) DecodeToken(token string) (entities.JWT[crypt.JWTDefaultCla
 		SigningMethod: jf.SigningMethod,
 		ExpiresIn:     jf.ExpiresIn,
 	}, nil
+}
+
+func (jf JWTFactory) DecodeCookieToken(tokCook http.Cookie) (entities.JWT[crypt.JWTDefaultClaims], error) {
+	parts := strings.Split(tokCook.Value, " ")
+	partsLen := len(parts)
+	if partsLen != 2 || (partsLen > 0 && parts[0] != "Bearer") {
+		return entities.JWT[crypt.JWTDefaultClaims]{}, errors.New(consts.ERR_WRONG_TOKEN_SCHEMA)
+	}
+	return jf.DecodeToken(parts[1])
 }
 
 // TryRefresh tries to refresh the token if possible, else returns an error

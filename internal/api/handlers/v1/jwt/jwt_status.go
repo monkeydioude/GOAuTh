@@ -16,7 +16,7 @@ func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
-		log.Printf("[ERR ] while retrieving %s cookie: %s", consts.AuthorizationCookie, err.Error())
+		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())
 		response.Unauthorized("No JWT provided in the request", w)
 		return
 	}

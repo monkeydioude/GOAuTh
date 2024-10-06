@@ -38,7 +38,7 @@ func TestJsonAPICanGetAValidTokensStatus(t *testing.T) {
 	assert.Equal(t, 200, rec.Code)
 	trial, err := http.ParseCookie(rec.Header().Get("Set-Cookie"))
 	assert.NoError(t, err)
-	assert.Equal(t, jwt.Token, trial[0].Value)
+	assert.Equal(t, "Bearer "+jwt.Token, trial[0].Value)
 }
 
 func TestJsonAPIGetA401OnInvalidToken(t *testing.T) {

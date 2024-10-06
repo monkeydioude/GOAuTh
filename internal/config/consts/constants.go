@@ -16,8 +16,8 @@ const PASSWD_SALT = "PASSWD_SALT"
 const AuthorizationCookie = "Authorization"
 const SetCookie = "set-cookie"
 
-const JWTExpiresIn = 30 * time.Minute
-const JWTRefreshesIn = 60 * time.Minute
+const JWTExpiresIn = 1 * time.Hour
+const JWTRefreshesIn = 7 * 24 * time.Hour
 
 const BaseAPI_V1 = "/identity/v1"
 
@@ -36,3 +36,4 @@ const NO_X_REQUEST_ID = "no_x_request_id"
 
 const ERR_TOKEN_EXPIRED = "TokenExpiredError"
 const ERR_WRONG_TOKEN_SCHEMA = "TokenSchemaError"
+const ERR_INVALID_CREDENTIALS = "InvalidCredentials"
