@@ -79,7 +79,7 @@ func (jf JWTFactory) DecodeToken(token string) (entities.JWT[crypt.JWTDefaultCla
 	}, nil
 }
 
-func (jf JWTFactory) DecodeCookieToken(tokCook http.Cookie) (entities.JWT[crypt.JWTDefaultClaims], error) {
+func (jf JWTFactory) DecodeCookieToken(tokCook *http.Cookie) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	parts := strings.Split(tokCook.Value, " ")
 	partsLen := len(parts)
 	if partsLen != 2 || (partsLen > 0 && parts[0] != "Bearer") {

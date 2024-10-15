@@ -33,6 +33,20 @@ const (
 // 	w.writer.Header().Set("Content-Type", "application/json")
 // }
 
+func BadRequestError(msg string, w http.ResponseWriter) {
+	w.WriteHeader(BadRequest)
+	res, err := json.Marshal(HTTPResponse{
+		Code:    BadRequest,
+		Message: msg,
+	})
+	if err != nil {
+		w.Write([]byte("Could not marshal matters"))
+		return
+	}
+	w.Write(res)
+	w.Header().Set("Content-Type", "application/json")
+}
+
 func Unauthorized(msg string, w http.ResponseWriter) {
 	w.WriteHeader(UnauthorizedCode)
 	res, err := json.Marshal(HTTPResponse{

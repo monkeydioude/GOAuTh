@@ -22,6 +22,7 @@ func apiRouting(layout *handlers.Layout) http.Handler {
 	// routes definition
 	mux.HandleFunc("/identity/v1/auth/signup", layout.Post(auth.Signup))
 	mux.HandleFunc("/identity/v1/auth/login", layout.Put(auth.Login))
+	mux.HandleFunc("/identity/v1/auth/deactivate", layout.Delete(auth.Deactivate))
 	mux.HandleFunc("/identity/v1/jwt/status", layout.Get(jwt.Status))
 	mux.HandleFunc("/identity/v1/jwt/refresh", layout.Put(jwt.Refresh))
 	mux.HandleFunc("/identity/healthcheck", healthcheck)

@@ -20,7 +20,7 @@ Args & flags:
     * method="api"|"rpc"
   - args:
     ./client "jwt" "status"|"refresh"
-    ./client "auth" "login"|"signup"
+    ./client "auth" "login"|"signup"|"deactivate"
 	
 For auth login/signup, login and password should be passed as env vars CLIENT_LOGIN & CLIENT_PASSWORD.
 For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
@@ -29,7 +29,7 @@ For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
 var (
 	methodsMap  = map[string]func(string, string) call{"api": newApiCall, "rpc": newRpcCall}
 	servicesMap = map[string][]string{
-		"auth": {"login", "signup"},
+		"auth": {"login", "signup", "deactivate"},
 		"jwt":  {"status", "refresh"},
 	}
 )

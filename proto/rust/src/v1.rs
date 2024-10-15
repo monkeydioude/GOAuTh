@@ -142,6 +142,24 @@ pub mod auth_client {
             req.extensions_mut().insert(GrpcMethod::new("v1.Auth", "Login"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn deactivate(
+            &mut self,
+            request: impl tonic::IntoRequest<super::Empty>,
+        ) -> std::result::Result<tonic::Response<super::Response>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.Auth/Deactivate");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.Auth", "Deactivate"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated client implementations.

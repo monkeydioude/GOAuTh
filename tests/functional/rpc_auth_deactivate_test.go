@@ -7,71 +7,66 @@ import (
 	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/http/rpc"
 	"context"
+	"net/http"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
-func TestRPCCanLogin(t *testing.T) {
+func TestRPCCantDeactivateAnUserIfMissingID(t *testing.T) {
 	layout, gormDB, _ := setup()
 	defer cleanup(layout)
-	login := "TestRPCCanLogin@test.com"
+	login := "TestRPCCanDeactivateAnUserByID@test.com"
 	passwd := "test"
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		ID:        1,
 	}
-	assert.Nil(t, gormDB.Save(&user).Error)
 	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
 
-	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	layout.JWTFactory.TimeFn = func() time.Time { return timeRef }
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
-	trialJWT, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	// create the user
+	assert.Nil(t, gormDB.Save(&user).Error)
+	conn := setupRPC(t, layout)
+	defer conn.Close()
+
+	client := v1.NewAuthClient(conn)
+	ctx := context.Background()
+
+	var headerMD metadata.MD
+	// enforcing JWTFactory time creation date forward in time
+	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		Name: login,
-		UID:  user.ID,
 	})
 	assert.NoError(t, err)
-
-	// create the user
-	conn := setupRPC(t, layout)
-	defer conn.Close()
-
-	client := v1.NewAuthClient(conn)
-	ctx := context.Background()
-
-	var headerMD metadata.MD
-	res, err := client.Login(
+	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
+		Name:  consts.AuthorizationCookie,
+		Value: "Bearer " + jwt.Token,
+	}))
+	res, err := client.Deactivate(
 		ctx,
-		&v1.UserRequest{
-			Login:    login,
-			Password: passwd,
-		},
+		nil,
 		grpc.Header(&headerMD),
 	)
 	assert.NoError(t, err)
-	cookie, err := rpc.FetchCookie(headerMD, consts.AuthorizationCookie)
-	assert.NoError(t, err)
-	assert.Equal(t, "Bearer "+trialJWT.Token, cookie.Value)
-	assert.NoError(t, err)
-	assert.Equal(t, int32(200), res.Code)
-	assert.Equal(t, "Ok", res.Message)
+	assert.NoError(t, gormDB.First(&user, 1).Error)
+	assert.Equal(t, int32(400), res.Code)
+	assert.NotEqual(t, "Ok", res.Message)
 }
 
-func TestRPCCantLoginUnmatchingLogin(t *testing.T) {
+func TestRPCCanDeactivateAnUserByID(t *testing.T) {
 	layout, gormDB, _ := setup()
 	defer cleanup(layout)
-	login := "TestRPCCantLoginUnmatchingLogin@test.com"
+	login := "TestRPCCanDeactivateAnUserByID@test.com"
 	passwd := "test"
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		ID:        1,
 	}
 	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
 
@@ -84,18 +79,26 @@ func TestRPCCantLoginUnmatchingLogin(t *testing.T) {
 	ctx := context.Background()
 
 	var headerMD metadata.MD
-	res, err := client.Login(
+	// enforcing JWTFactory time creation date forward in time
+	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+		Name: login,
+		UID:  1,
+	})
+	assert.NoError(t, err)
+	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
+		Name:  consts.AuthorizationCookie,
+		Value: "Bearer " + jwt.Token,
+	}))
+	res, err := client.Deactivate(
 		ctx,
-		&v1.UserRequest{
-			Login:    login,
-			Password: "fake-password",
-		},
+		nil,
 		grpc.Header(&headerMD),
 	)
 	assert.NoError(t, err)
+	assert.Error(t, gormDB.First(&user, 1).Error)
 	cookie, err := rpc.FetchCookie(headerMD, consts.AuthorizationCookie)
 	assert.Error(t, err)
 	assert.Equal(t, "", cookie.Value)
-	assert.Equal(t, int32(401), res.Code)
-	assert.NotEqual(t, "Ok", res.Message)
+	assert.Equal(t, int32(200), res.Code)
+	assert.Equal(t, "Ok", res.Message)
 }

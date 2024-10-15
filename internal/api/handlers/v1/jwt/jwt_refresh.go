@@ -5,7 +5,6 @@ import (
 	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/http/response"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -15,7 +14,6 @@ func Refresh(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.InternalServerError("no layout or req pointer", w)
 		return
 	}
-	fmt.Printf("%+v\n", req.Cookies())
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
 		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())

@@ -21,6 +21,12 @@ func AuthSignup(
 	if err := constraint(user.Login); err != nil {
 		return errors.UnprocessableEntity(err)
 	}
+	u := &entities.User{}
+	res := db.First(u, "login = ?", user.Login)
+
+	if res.Error == nil && u.ID != 0 {
+		return errors.BadRequest(go_errors.New(consts.ERR_USER_ALREADY_EXIST))
+	}
 
 	if res := db.Save(user); res.Error != nil {
 		return errors.DBError(res.Error)
@@ -53,4 +59,15 @@ func AuthLogin(
 		MaxAge: int(sign.GetExpiresIn().Seconds()),
 		Path:   "/",
 	}, nil
+}
+
+func AuthDeactivate(
+	uid uint,
+	db *gorm.DB,
+) error {
+	if db == nil {
+		return go_errors.New("nil pointer(s) in AuthDeactivate param")
+	}
+
+	return db.Delete(&entities.User{}, uid).Error
 }

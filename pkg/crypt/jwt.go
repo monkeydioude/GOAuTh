@@ -24,6 +24,7 @@ type JWTDefaultClaims struct {
 	Expire  int64  `json:"expire"`
 	Refresh int64  `json:"refresh,omitempty"`
 	Name    string `json:"name"`
+	UID     uint   `json:"uid"`
 }
 
 // RemainingRefresh returns the remaining available refresh time.Duration.

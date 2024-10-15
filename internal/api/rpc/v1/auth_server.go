@@ -2,6 +2,7 @@ package v1
 
 import (
 	"GOAuTh/internal/api/handlers"
+	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/entities/constraints"
 	"GOAuTh/internal/domain/models"
@@ -49,6 +50,31 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 		md = metadata.New(nil)
 	}
 	grpc.SendHeader(ctx, rpc.AppendCookie(md, res))
+	return Ok(), nil
+}
+
+func (h *AuthRPCHandler) Deactivate(ctx context.Context, _ *Empty) (*Response, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return BadRequest("didnt find any metadata"), nil
+	}
+	cookie, err := rpc.FetchCookie(md, consts.AuthorizationCookie)
+	if err != nil {
+		return BadRequest("could not find token metadata"), nil
+	}
+
+	jwt, err := h.JWTFactory.DecodeCookieToken(&cookie)
+	if err != nil {
+		return InternalServerError("could not decode cookie"), nil
+	}
+	if jwt.Claims.UID == 0 {
+		return BadRequest("no uid in the JWT"), nil
+
+	}
+	err = services.AuthDeactivate(jwt.Claims.UID, h.DB)
+	if err != nil {
+		return InternalServerError("could not deactivate user"), nil
+	}
 	return Ok(), nil
 }
 

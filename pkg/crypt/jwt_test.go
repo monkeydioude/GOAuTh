@@ -5,27 +5,31 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestICanSignAJWT(t *testing.T) {
 	trials := []JWTDefaultClaims{{
 		Expire: time.Date(2024, 10, 04, 22, 22, 22, 22, time.UTC).Unix(),
 		Name:   "test@test.com",
+		UID:    0,
 	}, {
 		Expire:  time.Date(2024, 10, 04, 22, 22, 22, 22, time.UTC).Unix(),
 		Refresh: time.Date(2024, 10, 04, 23, 22, 22, 22, time.UTC).Unix(),
 		Name:    "test@test.com",
+		UID:     0,
 	}}
 	goals := []string{
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsIm5hbWUiOiJ0ZXN0QHRlc3QuY29tIn0.0RbVgcJ7ZuMjfXwvbZjkrKG-5HQ2-NgSGKHUWn3_oeM",
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsInJlZnJlc2giOjE3MjgwODQxNDIsIm5hbWUiOiJ0ZXN0QHRlc3QuY29tIn0.3BbtoytKfHJUgBacvCMznJEksTJlluzPegzbaLzi8Vk",
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsIm5hbWUiOiJ0ZXN0QHRlc3QuY29tIiwidWlkIjowfQ.UCFmTdvZdZyIgEOH_TCNJ7A2jz004wAUESdlB4px5Ew",
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsInJlZnJlc2giOjE3MjgwODQxNDIsIm5hbWUiOiJ0ZXN0QHRlc3QuY29tIiwidWlkIjowfQ.K1-dNBq2EEzAc-Rsxz6gT3D2QcXseMJwb3AS8rKkHMI",
 	}
 
 	for i, goal := range goals {
 		signature, err := NewJWT(HS256("test"), trials[i])
 		if err != nil || signature != goal {
-			fmt.Println(err, signature != goal)
-			t.Fail()
+			fmt.Println(err, signature)
+			assert.Equal(t, goal, signature)
 		}
 
 	}

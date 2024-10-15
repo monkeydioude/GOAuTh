@@ -32,5 +32,5 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	http.SetCookie(w, &res)
-	response.Json(res, w)
+	response.JsonOk(w)
 }

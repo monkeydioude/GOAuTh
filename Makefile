@@ -34,8 +34,12 @@ proto-go:
 
 .PHONY: proto-rust
 proto-rust:
-	cd proto/rust
-	cargo build
+	cd proto/rust && cargo build
 
 .PHONY: proto
 proto: proto-go proto-rust
+
+.PHONY: dev
+dev:
+	@docker compose up -d
+	cd bin/GOAuTh && go run .
