@@ -25,6 +25,7 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		ID:        11,
 	}
 	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
 
@@ -37,7 +38,7 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		UID: 11,
 	})
 	assert.NoError(t, err)
 
@@ -64,7 +65,7 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, "Bearer "+jwt.Token, cookie.Value)
 	jwt2, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		UID: 11,
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, "Bearer "+jwt2.Token, cookie.Value)
@@ -78,7 +79,7 @@ func TestRPCCanNotRefreshExpiredToken(t *testing.T) {
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)
 	defer conn.Close()
-	login := "TestRPCCanNotRefreshExpiredToken@test.com"
+	// login := "TestRPCCanNotRefreshExpiredToken@test.com"
 
 	// enforcing date for the jwt generation
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
@@ -87,7 +88,7 @@ func TestRPCCanNotRefreshExpiredToken(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	// enforcing JWTFactory time creation date forward in time
 	layout.JWTFactory.TimeFn = func() time.Time { return timeRef.Add(12 * time.Second) }
@@ -118,7 +119,7 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)
 	defer conn.Close()
-	login := "TestRPCReturnsSameTokenIfValid@test.com"
+	// login := "TestRPCReturnsSameTokenIfValid@test.com"
 
 	// enforcing date for the jwt generation
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
@@ -127,7 +128,7 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	// enforcing JWTFactory time creation date forward in time
 	layout.JWTFactory.TimeFn = func() time.Time { return timeRef.Add(2 * time.Second) }

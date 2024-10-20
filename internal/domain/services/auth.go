@@ -3,7 +3,6 @@ package services
 import (
 	"GOAuTh/internal/config/consts"
 	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/entities/constraints"
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/pkg/errors"
 	go_errors "errors"
@@ -15,10 +14,10 @@ import (
 
 func AuthSignup(
 	user *entities.User,
-	constraint constraints.EntityField,
+	userParams *models.UsersParams,
 	db *gorm.DB,
 ) error {
-	if err := constraint(user.Login); err != nil {
+	if err := userParams.AssertAllConstraints(user.Login, nil, user.Password, nil); err != nil {
 		return errors.UnprocessableEntity(err)
 	}
 	u := &entities.User{}
@@ -28,7 +27,7 @@ func AuthSignup(
 		return errors.BadRequest(go_errors.New(consts.ERR_USER_ALREADY_EXIST))
 	}
 
-	if res := db.Save(user); res.Error != nil {
+	if res := db.Create(user); res.Error != nil {
 		return errors.DBError(res.Error)
 	}
 	return nil

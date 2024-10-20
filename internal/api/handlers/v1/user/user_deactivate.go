@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"GOAuTh/internal/api/handlers"
@@ -30,7 +30,7 @@ func Deactivate(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if jwt.Claims.UID == 0 {
-		response.BadRequestError("no uid in the JWT", w)
+		response.BadRequest("no uid in the JWT", w)
 		return
 	}
 	err = services.AuthDeactivate(jwt.Claims.UID, h.DB)

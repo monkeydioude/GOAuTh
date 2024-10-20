@@ -15,7 +15,8 @@ import (
 func main() {
 	res := boot.Please(
 		[]any{entities.NewEmptyUser()},
-		constraints.EmailConstraint,
+		[]constraints.LoginConstraint{constraints.EmailConstraint},
+		[]constraints.PasswordConstraint{constraints.PasswordSafetyConstraint},
 	)
 	if res.IsErr() {
 		log.Fatal(res.Error)

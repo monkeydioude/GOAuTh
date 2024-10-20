@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"GOAuTh/internal/domain/entities/constraints"
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/crypt"
@@ -15,11 +14,10 @@ import (
 // It mostly holds dependencies and settings that need to get passed on
 // up the execution tree.
 type Layout struct {
-	DB              *gorm.DB
-	LoginConstraint constraints.EntityField
-	SigningMethod   crypt.JWTSigningMethod
-	UserParams      *models.UsersParams
-	JWTFactory      *services.JWTFactory
+	DB            *gorm.DB
+	SigningMethod crypt.JWTSigningMethod
+	UserParams    *models.UsersParams
+	JWTFactory    *services.JWTFactory
 }
 
 // Handler our basic generic route handler
@@ -45,22 +43,22 @@ func (l *Layout) WithMethod(method string, handler Handler) func(http.ResponseWr
 	}
 }
 
-// Delete is a wrapper around a generic handler, forcing the GET HTTP verb
+// Get is a wrapper around a generic handler, forcing the GET HTTP verb
 func (l *Layout) Get(handler Handler) func(http.ResponseWriter, *http.Request) {
 	return l.WithMethod("GET", handler)
 }
 
-// Delete is a wrapper around a generic handler, forcing the POST HTTP verb
+// Post is a wrapper around a generic handler, forcing the POST HTTP verb
 func (l *Layout) Post(handler Handler) func(http.ResponseWriter, *http.Request) {
 	return l.WithMethod("POST", handler)
 }
 
-// Delete is a wrapper around a generic handler, forcing the PUT HTTP verb
+// Put is a wrapper around a generic handler, forcing the PUT HTTP verb
 func (l *Layout) Put(handler Handler) func(http.ResponseWriter, *http.Request) {
 	return l.WithMethod("PUT", handler)
 }
 
-// Delete is a wrapper around a generic handler, forcing the PATCH HTTP verb
+// Patch is a wrapper around a generic handler, forcing the PATCH HTTP verb
 func (l *Layout) Patch(handler Handler) func(http.ResponseWriter, *http.Request) {
 	return l.WithMethod("PATCH", handler)
 }

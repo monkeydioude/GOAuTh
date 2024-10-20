@@ -22,7 +22,7 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := services.AuthSignup(rawPayload.Result(), h.LoginConstraint, h.DB)
+	err := services.AuthSignup(rawPayload.Result(), h.UserParams, h.DB)
 	if err != nil {
 		errors.HTTPError(err, w)
 		return

@@ -33,8 +33,8 @@ func TestRPCCanLogin(t *testing.T) {
 	layout.JWTFactory.ExpiresIn = 3 * time.Second
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 	trialJWT, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
-		UID:  user.ID,
+		// Name: login,
+		UID: user.ID,
 	})
 	assert.NoError(t, err)
 

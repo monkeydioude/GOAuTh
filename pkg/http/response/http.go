@@ -12,7 +12,7 @@ type HTTPResponse struct {
 
 const (
 	OkCode                  int = 200
-	BadRequest              int = 400
+	BadRequestCode          int = 400
 	UnauthorizedCode        int = 401
 	UnprocessableEntityCode int = 422
 	InternalServerErrorCode int = 500
@@ -33,10 +33,10 @@ const (
 // 	w.writer.Header().Set("Content-Type", "application/json")
 // }
 
-func BadRequestError(msg string, w http.ResponseWriter) {
-	w.WriteHeader(BadRequest)
+func BadRequest(msg string, w http.ResponseWriter) {
+	w.WriteHeader(BadRequestCode)
 	res, err := json.Marshal(HTTPResponse{
-		Code:    BadRequest,
+		Code:    BadRequestCode,
 		Message: msg,
 	})
 	if err != nil {

@@ -4,6 +4,10 @@ help:
 	@echo "\t\`make all_up\`: start containers"
 	@echo "\t\`make db_layout\`: re-launch the db container, then import roles, rules and starting data"
 
+.PHONY: install
+install:
+	cp scripts/git/pre-commit .git/hooks
+
 .PHONY: db_layout
 db_layout:
 	docker compose up db -d

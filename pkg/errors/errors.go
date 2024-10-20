@@ -17,9 +17,9 @@ func (e Err) Error() string {
 
 func BadRequest(err error) Err {
 	return Err{
-		code:         response.BadRequest,
+		code:         response.BadRequestCode,
 		err:          err,
-		httpCallback: response.Unauthorized,
+		httpCallback: response.BadRequest,
 	}
 }
 

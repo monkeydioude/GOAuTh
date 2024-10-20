@@ -7,7 +7,7 @@ import (
 
 func BadRequest(msg string) *Response {
 	return &Response{
-		Code:    int32(response.BadRequest),
+		Code:    int32(response.BadRequestCode),
 		Message: msg,
 	}
 }

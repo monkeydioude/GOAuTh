@@ -9,7 +9,7 @@ type JWT[C crypt.JWTClaims] struct {
 	ExpiresIn     time.Duration
 	SigningMethod crypt.JWTSigningMethod
 	Token         string
-	Claims        crypt.JWTDefaultClaims
+	Claims        C
 }
 
 // GetExpiresIn implements entity.JWT.
@@ -18,7 +18,7 @@ func (j JWT[C]) GetExpiresIn() time.Duration {
 }
 
 // GetSigningMethod implements entity.JWT.
-func (j JWT[C]) GetClaims() crypt.JWTDefaultClaims {
+func (j JWT[C]) GetClaims() C {
 	return j.Claims
 }
 

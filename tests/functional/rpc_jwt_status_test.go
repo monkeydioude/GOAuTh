@@ -19,9 +19,9 @@ func TestRPCCanGetAValidTokensStatus(t *testing.T) {
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)
 	defer conn.Close()
-	login := "TestRPCCanGetAValidTokensStatus@test.com"
+	// login := "TestRPCCanGetAValidTokensStatus@test.com"
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
 	client := v1.NewJWTClient(conn)
@@ -34,8 +34,8 @@ func TestRPCCanGetAValidTokensStatus(t *testing.T) {
 		&v1.Empty{},
 	)
 	assert.NoError(t, err)
-	assert.Equal(t, res.Code, int32(200))
-	assert.Equal(t, res.Message, "Ok")
+	assert.Equal(t, int32(200), res.Code)
+	assert.Equal(t, "Ok", res.Message)
 }
 
 func TestRPCWontValidateABadTokenStatus(t *testing.T) {
@@ -67,7 +67,7 @@ func TestRPCWontValidateAnExpiredToken(t *testing.T) {
 	layout.JWTFactory.ExpiresIn = 3 * time.Second
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: "TestRPCWontValidateAnExpiredToken@test.com",
+		// Name: "TestRPCWontValidateAnExpiredToken@test.com",
 	})
 	assert.NoError(t, err)
 	timeRef := layout.JWTFactory.TimeFn()

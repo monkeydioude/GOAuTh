@@ -10,19 +10,19 @@ import (
 // Those configs will we brought inside http handlers.
 func LayoutBoot(
 	dbentity []any,
-	loginConstraint constraints.EntityField,
+	loginConstraints []constraints.LoginConstraint,
+	passwordConstraints []constraints.PasswordConstraint,
 ) result.R[handlers.Layout] {
 	dbRes := postgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
 	}
-	userParams := usersParamsBoot()
+	userParams := usersParamsBoot(loginConstraints, passwordConstraints)
 	gorm := dbRes.Result()
 	gormSetupHydrate(gorm, userParams)
 	return result.Ok(&handlers.Layout{
-		DB:              gorm,
-		LoginConstraint: loginConstraint,
-		JWTFactory:      jwtFactoryBoot(gorm),
-		UserParams:      userParams,
+		DB:         gorm,
+		JWTFactory: jwtFactoryBoot(gorm),
+		UserParams: userParams,
 	})
 }

@@ -21,11 +21,11 @@ func TestJsonAPICanGetAValidTokensStatus(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/jwt/status", layout.Post(jwt.Status))
 
-	login := "TestICanGetAValidTokensStatus@test.com"
+	// login := "TestICanGetAValidTokensStatus@test.com"
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
 	req, err := http.NewRequest("POST", "/v1/jwt/status", nil)
@@ -47,11 +47,11 @@ func TestJsonAPIGetA401OnInvalidToken(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/jwt/status", layout.Post(jwt.Status))
 
-	login := "TestIGetA401OnInvalidToken@test.com"
+	// login := "TestIGetA401OnInvalidToken@test.com"
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
 	// assign an invalid value
@@ -76,13 +76,13 @@ func TestJsonAPIGetA401OnExpiredToken(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/jwt/status", layout.Post(jwt.Status))
 
-	login := "TestIGetA401OnInvalidToken@test.com"
+	// login := "TestIGetA401OnInvalidToken@test.com"
 	rec := httptest.NewRecorder()
 	// ensuring factory's timeline
 	layout.JWTFactory.ExpiresIn = 3 * time.Second
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
 	timeRef := layout.JWTFactory.TimeFn()

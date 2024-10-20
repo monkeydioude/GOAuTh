@@ -36,5 +36,12 @@ const NO_X_REQUEST_ID = "no_x_request_id"
 
 const ERR_TOKEN_EXPIRED = "TokenExpiredError"
 const ERR_WRONG_TOKEN_SCHEMA = "TokenSchemaError"
+const ERR_MISSING_TOKEN = "MissingToken"
 const ERR_INVALID_CREDENTIALS = "InvalidCredentials"
 const ERR_USER_ALREADY_EXIST = "UserAlreadyExists"
+const ERR_INTERNAL_ERROR = "InternalError"
+const ERR_INVALID_INPUT_PASSWORD = "InvalidInputPassword"
+const ERR_SAME_INPUT_PASSWORD = "SameInputPassword"
+const ERR_INVALID_INPUT_LOGIN = "InvalidInputLogin"
+const ERR_PASSWORD_VALIDATION = "PasswordValidationError"
+const CONSTRAINT_PASSWORD_MIN_SIZE = 4

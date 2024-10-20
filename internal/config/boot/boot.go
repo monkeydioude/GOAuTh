@@ -18,13 +18,14 @@ type Settings struct {
 // just because you asked politely :)
 func Please(
 	dbentity []any,
-	loginConstraint constraints.EntityField,
+	loginConstraints []constraints.LoginConstraint,
+	passwordConstraints []constraints.PasswordConstraint,
 ) result.R[Settings] {
 	err := godotenv.Load()
 	if err != nil {
 		return result.Error[Settings](err)
 	}
-	layout := LayoutBoot(dbentity, loginConstraint)
+	layout := LayoutBoot(dbentity, loginConstraints, passwordConstraints)
 	if layout.IsErr() {
 		return result.Error[Settings](layout.Error)
 	}

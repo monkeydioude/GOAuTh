@@ -2,13 +2,16 @@ package services
 
 import (
 	"GOAuTh/internal/config/consts"
+	"GOAuTh/internal/domain/entities"
+	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/errors"
+	"GOAuTh/pkg/tools/result"
 	stdErr "errors"
 	"net/http"
 	"strings"
 )
 
-func GetJWTFromToken(tokenWithBearer string) (string, error) {
+func GetTokenFromBearer(tokenWithBearer string) (string, error) {
 	parts := strings.Split(tokenWithBearer, " ")
 	partsLen := len(parts)
 	if partsLen == 0 || partsLen != 2 || parts[0] != "Bearer" {
@@ -17,8 +20,20 @@ func GetJWTFromToken(tokenWithBearer string) (string, error) {
 	return parts[1], nil
 }
 
+func GetJWTFromBearer(tokenWithBearer string, factory *JWTFactory) result.R[entities.JWT[crypt.JWTDefaultClaims]] {
+	token, err := GetTokenFromBearer(tokenWithBearer)
+	if err != nil {
+		return result.Error[entities.JWT[crypt.JWTDefaultClaims]](err)
+	}
+	jwt, err := factory.DecodeToken(token)
+	if err != nil {
+		return result.Error[entities.JWT[crypt.JWTDefaultClaims]](errors.Unauthorized(err))
+	}
+	return result.Ok(&jwt)
+}
+
 func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) {
-	token, err := GetJWTFromToken(tokenWithBearer)
+	token, err := GetTokenFromBearer(tokenWithBearer)
 	if err != nil {
 		return http.Cookie{}, err
 	}
@@ -39,7 +54,7 @@ func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) 
 }
 
 func JWTRefresh(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) {
-	token, err := GetJWTFromToken(tokenWithBearer)
+	token, err := GetTokenFromBearer(tokenWithBearer)
 	if err != nil {
 		return http.Cookie{}, err
 	}

@@ -31,6 +31,7 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		ID:        1,
 	}
 	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
 
@@ -39,7 +40,7 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		UID: 1,
 	})
 	assert.NoError(t, err)
 	timeRef := layout.JWTFactory.TimeFn()
@@ -55,7 +56,7 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
-	assert.Equal(t, rec.Code, 200)
+	assert.Equal(t, 200, rec.Code)
 	body, err := io.ReadAll(rec.Body)
 	assert.NoError(t, err)
 	trial := http.Cookie{}
@@ -76,10 +77,10 @@ func TestJsonAPIGetA401OnRefreshingAnInvalidToken(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 	mux := http.NewServeMux()
 	mux.HandleFunc("/jwt/refresh", layout.Post(jwt.Refresh))
-	login := "TestIGetA401OnRefreshingAnInvalidToken@test.com"
+	// login := "TestIGetA401OnRefreshingAnInvalidToken@test.com"
 	rec := httptest.NewRecorder()
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
 	timeRef := layout.JWTFactory.TimeFn()

@@ -33,13 +33,13 @@ func TestRPCCantDeactivateAnUserIfMissingID(t *testing.T) {
 	conn := setupRPC(t, layout)
 	defer conn.Close()
 
-	client := v1.NewAuthClient(conn)
+	client := v1.NewUserClient(conn)
 	ctx := context.Background()
 
 	var headerMD metadata.MD
 	// enforcing JWTFactory time creation date forward in time
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
@@ -75,14 +75,14 @@ func TestRPCCanDeactivateAnUserByID(t *testing.T) {
 	conn := setupRPC(t, layout)
 	defer conn.Close()
 
-	client := v1.NewAuthClient(conn)
+	client := v1.NewUserClient(conn)
 	ctx := context.Background()
 
 	var headerMD metadata.MD
 	// enforcing JWTFactory time creation date forward in time
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
-		UID:  1,
+		// Name: login,
+		UID: 1,
 	})
 	assert.NoError(t, err)
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{

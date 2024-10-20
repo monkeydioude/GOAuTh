@@ -9,11 +9,11 @@ import (
 func TestFactoryCanGenerateAndDecodeAToken(t *testing.T) {
 	jf := NewJWTFactory(crypt.HS256("test"), 1*time.Second, 2*time.Second, func() time.Time {
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	}, func(string, func() time.Time) (bool, error) {
+	}, func(uint, func() time.Time) (bool, error) {
 		return false, nil
 	})
 
-	jwt, err := jf.GenerateToken(crypt.JWTDefaultClaims{Name: "test"})
+	jwt, err := jf.GenerateToken(crypt.JWTDefaultClaims{})
 	if err != nil {
 		t.Fail()
 	}
@@ -29,14 +29,14 @@ func TestFactoryCanRefreshAToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(string, func() time.Time) (bool, error) {
+	revocCheckerFn := func(uint, func() time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27
 	// expire in 5s
 	jf := NewJWTFactory(crypt.HS256("test"), 5*time.Second, 120*time.Second, timeRefFn, revocCheckerFn)
 
-	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{Name: "test"})
+	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{})
 	if err != nil {
 		t.Fail()
 	}
@@ -65,13 +65,13 @@ func TestFactoryDoesNotRefreshAValidToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(string, func() time.Time) (bool, error) {
+	revocCheckerFn := func(uint, func() time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27
 	// expire in 5s
 	jf := NewJWTFactory(crypt.HS256("test"), 5*time.Second, 20*time.Second, timeRefFn, revocCheckerFn)
-	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{Name: "test"})
+	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{})
 	if err != nil {
 		t.Fail()
 	}
@@ -99,13 +99,13 @@ func TestFactoryDoesNotTryToRefreshWayTooOldToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(string, func() time.Time) (bool, error) {
+	revocCheckerFn := func(uint, func() time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27
 	// expire in 5s
 	jf := NewJWTFactory(crypt.HS256("test"), 5*time.Second, 20*time.Second, timeRefFn, revocCheckerFn)
-	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{Name: "test"})
+	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{})
 	if err != nil {
 		t.Fail()
 	}

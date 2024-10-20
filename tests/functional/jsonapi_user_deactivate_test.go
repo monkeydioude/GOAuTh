@@ -1,7 +1,7 @@
 package functional
 
 import (
-	"GOAuTh/internal/api/handlers/v1/auth"
+	"GOAuTh/internal/api/handlers/v1/user"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/pkg/crypt"
 	"encoding/json"
@@ -23,7 +23,7 @@ func TestJsonAPICanNotDeactivateAJWTMissingUID(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/auth/deactivate", layout.Delete(auth.Deactivate))
+	mux.HandleFunc("/user/deactivate", layout.Delete(user.Deactivate))
 
 	login := "TestJsonAPICanNotDeactivateAJWTMissingUID@test.com"
 	passwd := "test"
@@ -39,10 +39,10 @@ func TestJsonAPICanNotDeactivateAJWTMissingUID(t *testing.T) {
 	assert.Nil(t, gormDB.Save(&user).Error)
 	rec := httptest.NewRecorder()
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
+		// Name: login,
 	})
 	assert.NoError(t, err)
-	req, err := http.NewRequest("DELETE", "/auth/deactivate", nil)
+	req, err := http.NewRequest("DELETE", "/user/deactivate", nil)
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
@@ -66,7 +66,7 @@ func TestJsonAPICanDeactivateAnUserByID(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/auth/deactivate", layout.Delete(auth.Deactivate))
+	mux.HandleFunc("/user/deactivate", layout.Delete(user.Deactivate))
 
 	login := "TestJsonAPICanDeactivateAnUserByID@test.com"
 	passwd := "test"
@@ -83,11 +83,11 @@ func TestJsonAPICanDeactivateAnUserByID(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		Name: login,
-		UID:  1,
+		// Name: login,
+		UID: 1,
 	})
 	assert.NoError(t, err)
-	req, err := http.NewRequest("DELETE", "/auth/deactivate", nil)
+	req, err := http.NewRequest("DELETE", "/user/deactivate", nil)
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",

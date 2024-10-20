@@ -61,8 +61,7 @@ func (u *User) AssertAuth(db *gorm.DB, userParams *models.UsersParams) error {
 
 func (u User) IntoClaims() crypt.JWTDefaultClaims {
 	return crypt.JWTDefaultClaims{
-		Name: u.Login,
-		UID:  u.ID,
+		UID: u.ID,
 	}
 }
 

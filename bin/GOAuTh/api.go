@@ -4,6 +4,7 @@ import (
 	"GOAuTh/internal/api/handlers"
 	"GOAuTh/internal/api/handlers/v1/auth"
 	"GOAuTh/internal/api/handlers/v1/jwt"
+	"GOAuTh/internal/api/handlers/v1/user"
 	"GOAuTh/internal/config/boot"
 	"GOAuTh/internal/config/middleware"
 	"GOAuTh/pkg/http/middlewares"
@@ -20,11 +21,17 @@ func healthcheck(w http.ResponseWriter, req *http.Request) {
 func apiRouting(layout *handlers.Layout) http.Handler {
 	mux := http.NewServeMux()
 	// routes definition
+	// Auth
 	mux.HandleFunc("/identity/v1/auth/signup", layout.Post(auth.Signup))
 	mux.HandleFunc("/identity/v1/auth/login", layout.Put(auth.Login))
-	mux.HandleFunc("/identity/v1/auth/deactivate", layout.Delete(auth.Deactivate))
+	// User
+	mux.HandleFunc("/identity/v1/user/password", layout.Put(user.EditPassword))
+	mux.HandleFunc("/identity/v1/user/login", layout.Put(user.EditLogin))
+	mux.HandleFunc("/identity/v1/user/deactivate", layout.Delete(user.Deactivate))
+	// JWT
 	mux.HandleFunc("/identity/v1/jwt/status", layout.Get(jwt.Status))
 	mux.HandleFunc("/identity/v1/jwt/refresh", layout.Put(jwt.Refresh))
+	// Healthcheck
 	mux.HandleFunc("/identity/healthcheck", healthcheck)
 
 	app := middlewares.Mux(mux)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"GOAuTh/internal/config/consts"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -47,7 +48,7 @@ func deactivate() (*http.Request, error) {
 	}
 	req, err = http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("%s%s/auth/deactivate", os.Getenv("API_URL"), consts.BaseAPI_V1),
+		fmt.Sprintf("%s%s/user/deactivate", os.Getenv("API_URL"), consts.BaseAPI_V1),
 		nil,
 	)
 	if err != nil {
@@ -60,9 +61,91 @@ func deactivate() (*http.Request, error) {
 		})
 		return req, nil
 	}
+	cookies, err := http.ParseCookie(res.Header["Set-Cookie"][0])
+	if err != nil {
+		return nil, err
+	}
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: "Bearer " + strings.Split(res.Header["Set-Cookie"][0], " ")[1],
+		Value: cookies[0].Value,
+	})
+	return req, nil
+}
+
+func userPassword() (*http.Request, error) {
+	os.Setenv("CLIENT_PASSWORD", os.Getenv("OLD_PASSWORD"))
+	req, err := login()
+	if err != nil {
+		return nil, err
+	}
+	_, res, err := exec(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode != 200 {
+		return nil, errors.New("login did not give 200")
+	}
+	req, err = http.NewRequest(
+		"PUT",
+		fmt.Sprintf("%s%s/user/password", os.Getenv("API_URL"), consts.BaseAPI_V1),
+		strings.NewReader(fmt.Sprintf(`{"password":"%s", "new_password": "%s"}`, os.Getenv("OLD_PASSWORD"), os.Getenv("NEW_PASSWORD"))),
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(res.Header["Set-Cookie"]) == 0 {
+		req.AddCookie(&http.Cookie{
+			Name:  "Authorization",
+			Value: "Bearer " + os.Getenv("CLIENT_JWT"),
+		})
+		return req, nil
+	}
+	cookies, err := http.ParseCookie(res.Header["Set-Cookie"][0])
+	if err != nil {
+		return nil, err
+	}
+	req.AddCookie(&http.Cookie{
+		Name:  "Authorization",
+		Value: cookies[0].Value,
+	})
+	return req, nil
+}
+
+func userLogin() (*http.Request, error) {
+	os.Setenv("CLIENT_LOGIN", os.Getenv("OLD_LOGIN"))
+	req, err := login()
+	if err != nil {
+		return nil, err
+	}
+	_, res, err := exec(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode != 200 {
+		return nil, errors.New("login did not give 200")
+	}
+	req, err = http.NewRequest(
+		"PUT",
+		fmt.Sprintf("%s%s/user/login", os.Getenv("API_URL"), consts.BaseAPI_V1),
+		strings.NewReader(fmt.Sprintf(`{"password":"%s", "login": "%s", "new_login": "%s"}`, os.Getenv("CLIENT_PASSWORD"), os.Getenv("OLD_LOGIN"), os.Getenv("NEW_LOGIN"))),
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(res.Header["Set-Cookie"]) == 0 {
+		req.AddCookie(&http.Cookie{
+			Name:  "Authorization",
+			Value: "Bearer " + os.Getenv("CLIENT_JWT"),
+		})
+		return req, nil
+	}
+	cookies, err := http.ParseCookie(res.Header["Set-Cookie"][0])
+	if err != nil {
+		return nil, err
+	}
+	req.AddCookie(&http.Cookie{
+		Name:  "Authorization",
+		Value: cookies[0].Value,
 	})
 	return req, nil
 }
@@ -87,12 +170,26 @@ func (c apiCall) trigger() error {
 			if err != nil {
 				return err
 			}
+		}
+	case "user":
+		switch c.action {
+		case "password":
+			req, err = userPassword()
+			if err != nil {
+				return err
+			}
+		case "login":
+			req, err = userLogin()
+			if err != nil {
+				return err
+			}
 		case "deactivate":
 			req, err = deactivate()
 			if err != nil {
 				return err
 			}
 		}
+
 	case "jwt":
 		switch c.action {
 		case "status":

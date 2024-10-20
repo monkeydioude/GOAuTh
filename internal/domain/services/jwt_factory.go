@@ -44,7 +44,7 @@ type JWTFactory struct {
 	RefreshesIn time.Duration
 
 	TimeFn              func() time.Time
-	RevocationCheckerFn func(string, func() time.Time) (bool, error)
+	RevocationCheckerFn func(uint, func() time.Time) (bool, error)
 }
 
 // GenerateToken implements "GOAuTh/pkg/domain/entities".JWTFactory
@@ -103,7 +103,7 @@ func (jf JWTFactory) TryRefresh(j entities.JWT[crypt.JWTDefaultClaims]) (entitie
 	}
 	// expired but not too old to be refreshed
 	if timeRef.After(time.Unix(claims.Expire, 0)) {
-		revoked, err := jf.RevocationCheckerFn(j.Claims.Name, jf.TimeFn)
+		revoked, err := jf.RevocationCheckerFn(j.Claims.UID, jf.TimeFn)
 		if err != nil || revoked {
 			return entities.JWT[crypt.JWTDefaultClaims]{}, fmt.Errorf(REVOKED_OR_REVOCATION_ERR, err)
 		}
@@ -117,7 +117,7 @@ func NewEmptyJWTFactory() *JWTFactory {
 		TimeFn: func() time.Time {
 			return time.Now()
 		},
-		RevocationCheckerFn: func(s string, _ func() time.Time) (bool, error) {
+		RevocationCheckerFn: func(_ uint, _ func() time.Time) (bool, error) {
 			return true, nil
 		},
 	}
@@ -128,7 +128,7 @@ func NewJWTFactory(
 	expiresIn time.Duration,
 	refreshesIn time.Duration,
 	timeRefFn func() time.Time,
-	revocationCheckerFn func(string, func() time.Time) (bool, error),
+	revocationCheckerFn func(uint, func() time.Time) (bool, error),
 ) *JWTFactory {
 	return &JWTFactory{
 		SigningMethod:       signingMethod,
