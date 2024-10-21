@@ -15,5 +15,7 @@ if git diff --cached | grep -E '^\+.*fmt\.(Println|Printf)\(' > /dev/null; then
   exit 1
 fi
 
+make test
+
 # Allow the commit if no issues are found
 exit 0

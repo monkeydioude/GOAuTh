@@ -82,7 +82,7 @@ func TestJsonAPICanChangeAnUserPassword(t *testing.T) {
 	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
 
 	// create the user
-	assert.Nil(t, gormDB.Save(&user).Error)
+	assert.Nil(t, gormDB.Create(&user).Error)
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
