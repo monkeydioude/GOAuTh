@@ -56,8 +56,8 @@ func UserEditPassword(
 		ID:       jwt.Claims.UID,
 		Password: signedPasswd,
 	}
-	if err := db.First(user).Error; err != nil {
-		return errors.Unauthorized(err)
+	if err := db.First(user, "id = ? AND password = ?", jwt.Claims.UID, signedPasswd).Error; err != nil {
+		return errors.Unauthorized(go_errors.New(consts.ERR_INVALID_CREDENTIALS))
 	}
 	if user.ID == 0 {
 		return errors.BadRequest(go_errors.New(consts.ERR_INVALID_CREDENTIALS))
