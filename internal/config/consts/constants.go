@@ -13,8 +13,6 @@ const DB_SCHEMA = "DB_SCHEMA"
 const JWT_SECRET = "JWT_SECRET"
 const PASSWD_SALT = "PASSWD_SALT"
 
-const HEYO_SERVER_ADDR = "[::]:8022"
-
 const AuthorizationCookie = "Authorization"
 const SetCookie = "set-cookie"
 

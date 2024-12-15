@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"GOAuTh/internal/config/consts"
 	"GOAuTh/pkg/plugins"
 	"context"
 	"crypto/tls"
@@ -17,12 +16,14 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+const HEYO_SERVER_ADDR = "[::]:9393"
+
 func getRPCClient() (rpc.BrokerClient, error) {
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true, // Skip verification for testing; remove this in production
 	})
 
-	addr := consts.HEYO_SERVER_ADDR
+	addr := HEYO_SERVER_ADDR
 	if os.Getenv("HEYO_SERVER_ADDR") != "" {
 		addr = os.Getenv("HEYO_SERVER_ADDR")
 	}
