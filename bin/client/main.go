@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
+	"os"
 	"slices"
 
 	"github.com/joho/godotenv"
@@ -14,17 +14,18 @@ func init() {
 }
 
 func show_help() {
-	fmt.Println(`=== HELP ===
+	log.Println(`=== HELP ===
 Args & flags:
   - flags:
     * method="api"|"rpc"
   - args:
-	./client "auth" "login"|"signup"
+./client "auth" "login"|"signup"
     ./client "user" "password"|"deactivate"
     ./client "jwt" "status"|"refresh"
 	
 For auth login/signup, login and password should be passed as env vars CLIENT_LOGIN & CLIENT_PASSWORD.
 For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
+	os.Exit(1)
 }
 
 var (
@@ -69,7 +70,7 @@ func main() {
 			show_help()
 			return
 		}
-		log.Fatal("client requires 2 parameters: ")
+		log.Println("client requires 2 parameters: ")
 		show_help()
 	}
 	call := setupCall(args, *methodPtr)

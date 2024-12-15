@@ -3,6 +3,7 @@ package boot
 import (
 	"GOAuTh/internal/api/handlers"
 	"GOAuTh/internal/domain/entities/constraints"
+	"GOAuTh/pkg/plugins"
 	"GOAuTh/pkg/tools/result"
 )
 
@@ -24,5 +25,6 @@ func LayoutBoot(
 		DB:         gorm,
 		JWTFactory: jwtFactoryBoot(gorm),
 		UserParams: userParams,
+		Plugins:    &plugins.Plugins,
 	})
 }

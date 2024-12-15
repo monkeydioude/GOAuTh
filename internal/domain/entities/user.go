@@ -10,13 +10,13 @@ import (
 )
 
 type User struct {
-	ID           uint           `gorm:"primaryKey;autoIncrement" json:"-"`
+	ID           uint           `gorm:"primaryKey;autoIncrement" json:"id"`
 	Login        string         `gorm:"unique;not null" json:"login"`
 	Password     string         `gorm:"not null" json:"password,omitempty"`
-	CreatedAt    time.Time      `json:"-"`
-	UpdatedAt    time.Time      `json:"-"`
-	LastLoggedAt *time.Time     `json:"-"`
-	RevokedAt    *time.Time     `json:"-"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	LastLoggedAt *time.Time     `json:"last_logged_at"`
+	RevokedAt    *time.Time     `json:"revoked_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 }
 

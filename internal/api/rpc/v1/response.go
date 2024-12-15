@@ -31,6 +31,13 @@ func Ok() *Response {
 	}
 }
 
+func Success(msg string) *Response {
+	return &Response{
+		Code:    int32(response.OkCode),
+		Message: msg,
+	}
+}
+
 func FromErrToResponse(err error) *Response {
 	errType, ok := err.(errors.Err)
 	if !ok {

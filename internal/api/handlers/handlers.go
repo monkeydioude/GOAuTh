@@ -4,6 +4,7 @@ import (
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/internal/domain/services"
 	"GOAuTh/pkg/crypt"
+	"GOAuTh/pkg/plugins"
 	"fmt"
 	"net/http"
 
@@ -18,6 +19,7 @@ type Layout struct {
 	SigningMethod crypt.JWTSigningMethod
 	UserParams    *models.UsersParams
 	JWTFactory    *services.JWTFactory
+	Plugins       *plugins.PluginsRecord
 }
 
 // Handler our basic generic route handler

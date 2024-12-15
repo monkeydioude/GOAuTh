@@ -2,7 +2,9 @@ package functional
 
 import (
 	v1 "GOAuTh/internal/api/rpc/v1"
+	"GOAuTh/internal/domain/entities"
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,5 +31,9 @@ func TestRPCCanSignup(t *testing.T) {
 	)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(200), res.Code)
-	assert.Equal(t, "Ok", res.Message)
+	user := entities.User{}
+	assert.NoError(t, json.Unmarshal([]byte(res.Message), &user))
+	assert.Equal(t, uint(6), user.ID)
+	assert.Nil(t, user.RevokedAt)
+	assert.Equal(t, "TestRPCCanSignup@test.com", user.Login)
 }

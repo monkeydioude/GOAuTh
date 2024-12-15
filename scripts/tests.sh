@@ -32,7 +32,7 @@ echo "[INFO] Waiting for '$containerName' PGSQL test container readiness!"
 waitForContainerReadiness
 
 echo "[INFO] '$containerName' is ready! Lezgong tests!"
-DB_PATH=postgres://test:test@0.0.0.0:5444/test_db go test -v ./...
+DB_PATH=postgres://test:test@0.0.0.0:5444/test_db go test -count=1 -v ./...
 exit_code=$?
 
 echo "[INFO] Stopping '$containerName' PGSQL test container!"

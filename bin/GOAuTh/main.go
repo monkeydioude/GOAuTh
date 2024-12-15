@@ -8,6 +8,7 @@ import (
 	"GOAuTh/internal/config/boot"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/entities/constraints"
+	_ "GOAuTh/plugins"
 
 	"github.com/oklog/run"
 )

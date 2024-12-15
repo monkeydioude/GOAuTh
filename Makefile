@@ -27,6 +27,10 @@ stop-test-db:
 	@echo "[INFO] Stopping 'goauth-tests-db-manual' PGSQL test container!"
 	docker stop "goauth-tests-db-manual"
 
+.PHONY: unit-test
+unit-test:
+	go test -count=1 -v ./internal/... ./pkg/... ./plugins/...
+
 .PHONY: test
 test:
 	@sh scripts/tests.sh
