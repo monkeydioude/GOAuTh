@@ -3,7 +3,6 @@ package plugins
 import (
 	"GOAuTh/pkg/plugins"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"log"
@@ -13,23 +12,19 @@ import (
 	"github.com/google/uuid"
 	"github.com/monkeydioude/heyo/pkg/rpc"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-const HEYO_SERVER_ADDR = "[::]:9393"
+const HEYO_SERVER_ADDR = "[::]:8022"
 
 func getRPCClient() (rpc.BrokerClient, error) {
-	creds := credentials.NewTLS(&tls.Config{
-		InsecureSkipVerify: true, // Skip verification for testing; remove this in production
-	})
-
 	addr := HEYO_SERVER_ADDR
 	if os.Getenv("HEYO_SERVER_ADDR") != "" {
 		addr = os.Getenv("HEYO_SERVER_ADDR")
 	}
 	cl, err := grpc.NewClient(
 		addr,
-		grpc.WithTransportCredentials(creds),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		return nil, err
@@ -50,6 +45,7 @@ func init() {
 	ctx := context.TODO()
 	clientUuid := uuid.NewString()
 	AddPlugin("heyo-new-user", plugins.OnUserCreation, nil, func(event plugins.Event, payload any) {
+		log.Printf("received '%s': %+v\n", event, payload)
 		ctx, cancelFn := context.WithTimeout(ctx, 1*time.Second)
 		defer cancelFn()
 		data, err := json.Marshal(payload)
@@ -57,11 +53,16 @@ func init() {
 			log.Printf("error while marshalling in heyo plugin: %s", err)
 			return
 		}
-		grpcClient.Enqueue(ctx, &rpc.Message{
+		ack, err := grpcClient.Enqueue(ctx, &rpc.Message{
 			Event:       string(plugins.OnUserCreation),
 			Data:        string(data),
 			ClientUuid:  clientUuid,
 			MessageUuid: uuid.NewString(),
 		})
+		if err != nil {
+			log.Printf("error while sending message to the queue: %s", err)
+			return
+		}
+		log.Println(ack)
 	})
 }
