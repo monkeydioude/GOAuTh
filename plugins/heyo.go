@@ -54,10 +54,11 @@ func init() {
 			return
 		}
 		ack, err := grpcClient.Enqueue(ctx, &rpc.Message{
-			Event:       string(plugins.OnUserCreation),
-			Data:        string(data),
-			ClientUuid:  clientUuid,
-			MessageUuid: uuid.NewString(),
+			Event:      string(plugins.OnUserCreation),
+			Data:       string(data),
+			ClientId:   clientUuid,
+			MessageId:  uuid.NewString(),
+			ClientName: "identity",
 		})
 		if err != nil {
 			log.Printf("error while sending message to the queue: %s", err)

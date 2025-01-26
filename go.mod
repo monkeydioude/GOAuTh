@@ -6,7 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/monkeydioude/heyo v0.0.0-20241209142541-a2f24bbfbe4c
+	github.com/monkeydioude/heyo v0.0.0-20250126200040-f6155d390de8
 	github.com/oklog/run v1.1.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.27.0
