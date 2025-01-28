@@ -13,6 +13,8 @@ type User struct {
 	ID           uint           `gorm:"primaryKey;autoIncrement" json:"id"`
 	Login        string         `gorm:"unique;not null" json:"login"`
 	Password     string         `gorm:"not null" json:"password,omitempty"`
+	RealmID      uint           `gorm:"index"`
+	Realm        *Realm         `gorm:"foreignKey:RealmID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"` // Explicit foreign key
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	LastLoggedAt *time.Time     `json:"last_logged_at"`
