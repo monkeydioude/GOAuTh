@@ -39,6 +39,11 @@ func (c rpcCall) trigger() error {
 	}
 	ctx = rpc.WriteOutgoingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, uuid.NewString()})
 	switch c.service {
+	case "realm":
+		switch c.action {
+		case "create":
+			return realmCreate()
+		}
 	case "auth":
 		switch c.action {
 		case "login":
@@ -88,6 +93,8 @@ func (c rpcCall) trigger() error {
 				grpc.Header(&headerMD),
 			)
 		}
+	default:
+		return errors.New("unavailable through rpc yet")
 	}
 	if err != nil {
 		return err

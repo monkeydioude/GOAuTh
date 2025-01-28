@@ -19,10 +19,11 @@ Args & flags:
   - flags:
     * method="api"|"rpc"
   - args:
-./client "auth" "login"|"signup"
+	./client "auth" "login"|"signup"
     ./client "user" "password"|"deactivate"
     ./client "jwt" "status"|"refresh"
-	
+    ./client "realm" "add"|"view" <if add:"name of the realm">
+
 For auth login/signup, login and password should be passed as env vars CLIENT_LOGIN & CLIENT_PASSWORD.
 For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
 	os.Exit(1)
@@ -31,9 +32,10 @@ For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
 var (
 	methodsMap  = map[string]func(string, string) call{"api": newApiCall, "rpc": newRpcCall}
 	servicesMap = map[string][]string{
-		"auth": {"login", "signup"},
-		"user": {"password", "login", "deactivate"},
-		"jwt":  {"status", "refresh"},
+		"auth":  {"login", "signup"},
+		"user":  {"password", "login", "deactivate"},
+		"jwt":   {"status", "refresh"},
+		"realm": {"create", "view"},
 	}
 )
 
@@ -44,15 +46,15 @@ type call interface {
 func setupCall(args []string, method string) call {
 	var fn func(string, string) call
 	var ok bool
-	if fn, ok = methodsMap[method]; !ok {
-		log.Fatalf("allowed methodsMap: %+v", methodsMap)
-	}
+
 	argService := args[0]
 	var actions []string
 	if actions, ok = servicesMap[argService]; !ok {
 		log.Fatalf("allowed servicesMap: %+v", servicesMap)
 	}
-
+	if fn, ok = methodsMap[method]; !ok {
+		log.Fatalf("allowed methodsMap: %+v", methodsMap)
+	}
 	argAction := args[1]
 	if !slices.Contains(actions, argAction) {
 		log.Fatalf("allowed actions: %+v", actions)
@@ -65,13 +67,9 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 	len := len(args)
-	if len != 2 {
-		if len == 1 && args[0] == "help" {
-			show_help()
-			return
-		}
-		log.Println("client requires 2 parameters: ")
+	if len == 1 && args[0] == "help" {
 		show_help()
+		return
 	}
 	call := setupCall(args, *methodPtr)
 	if err := call.trigger(); err != nil {

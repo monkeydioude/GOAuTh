@@ -154,6 +154,11 @@ func (c apiCall) trigger() error {
 	var req *http.Request
 	var err error
 	switch c.service {
+	case "realm":
+		switch c.action {
+		case "create":
+			return realmCreate()
+		}
 	case "auth":
 		switch c.action {
 		case "login":
@@ -219,7 +224,8 @@ func (c apiCall) trigger() error {
 				Value: "Bearer " + os.Getenv("CLIENT_JWT"),
 			})
 		}
-
+	default:
+		return errors.New("unavailable through api yet")
 	}
 	result, res, err := exec(req)
 	if err != nil {

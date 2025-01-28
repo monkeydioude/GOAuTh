@@ -14,7 +14,7 @@ func LayoutBoot(
 	loginConstraints []constraints.LoginConstraint,
 	passwordConstraints []constraints.PasswordConstraint,
 ) result.R[handlers.Layout] {
-	dbRes := postgreSQLBoot(dbentity...)
+	dbRes := PostgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
 	}

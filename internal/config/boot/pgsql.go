@@ -11,7 +11,7 @@ import (
 )
 
 // postgreSQLBoot returnsand execute DB related config and processes
-func postgreSQLBoot(dbentity ...any) result.R[gorm.DB] {
+func PostgreSQLBoot(dbentity ...any) result.R[gorm.DB] {
 	schema := os.Getenv(consts.DB_SCHEMA)
 	if schema == "" {
 		schema = "public"
