@@ -55,6 +55,7 @@ entity, thus have the same payload.
 type User struct {
 	Login        string         `json:"login"`
 	Password     string         `json:"password,omitempty"`
+	RealmName    string         `json:"realm_name"`
 }
 ```
 
@@ -64,6 +65,7 @@ type User struct {
 message UserRequest {
     string login = 1;
     string password = 2;
+    string realm = 3;
 }
 ```
 
