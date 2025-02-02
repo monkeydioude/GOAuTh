@@ -33,6 +33,9 @@ func (h *UserRPCHandler) Deactivate(ctx context.Context, _ *Empty) (*Response, e
 	if err != nil {
 		return InternalServerError("could not decode cookie"), nil
 	}
+	if !services.JWTClaimsValidation(jwt.Claims) {
+		return Unauthorized(consts.ERR_INVALID_CREDENTIALS), nil
+	}
 	if jwt.Claims.UID == 0 {
 		return BadRequest("no uid in the JWT"), nil
 

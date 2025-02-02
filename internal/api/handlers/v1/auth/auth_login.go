@@ -24,8 +24,12 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.InternalServerError(rawPayload.Error.Error(), w)
 		return
 	}
-
-	res, err := services.AuthLogin(rawPayload.Result(), h.DB, h.UserParams, h.JWTFactory)
+	user := rawPayload.Result()
+	if user.RealmName == "" {
+		response.BadRequest("realm_name missing", w)
+		return
+	}
+	res, err := services.AuthLogin(user, h.DB, h.UserParams, h.JWTFactory)
 	if err != nil {
 		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
 		errors.HTTPError(err, w)

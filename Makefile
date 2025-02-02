@@ -49,5 +49,7 @@ proto: proto-go proto-rust
 
 .PHONY: dev
 dev:
-	@docker compose up -d
-	cd bin/GOAuTh && go run .
+	@mkdir -p ./pgdata
+	docker compose up -d
+	go install github.com/mitranim/gow@latest
+	gow run ./bin/GOAuTh

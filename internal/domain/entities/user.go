@@ -4,8 +4,10 @@ import (
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/pkg/crypt"
 	"errors"
+	"log/slog"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -13,21 +15,29 @@ type User struct {
 	ID           uint           `gorm:"primaryKey;autoIncrement" json:"id"`
 	Login        string         `gorm:"unique;not null" json:"login"`
 	Password     string         `gorm:"not null" json:"password,omitempty"`
+	RealmID      uuid.UUID      `gorm:"index"`
+	Realm        *Realm         `gorm:"foreignKey:RealmID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	LastLoggedAt *time.Time     `json:"last_logged_at"`
 	RevokedAt    *time.Time     `json:"revoked_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+
+	// payload only
+	RealmName string `gorm:"-" json:"realm_name"`
 }
 
 // BeforeCreate is a GORM hook impl
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if tx == nil {
+		slog.Error("nil *gorm.DB")
 		return errors.New("nil *gorm.DB")
 	}
-	if u.Login == "" || u.Password == "" {
-		return errors.New("login or password cannot be empty")
+	if u.Login == "" || u.Password == "" || u.RealmName == "" {
+		slog.Error("login, password or realm_name cannot be empty")
+		return errors.New("login, password or realm_name cannot be empty")
 	}
+
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = u.CreatedAt
 	return nil
@@ -56,12 +66,16 @@ func (u *User) AssertAuth(db *gorm.DB, userParams *models.UsersParams) error {
 			userParams.GetPasswordSalt(),
 		)
 	}
-	return db.First(u, "login = ? AND password = ?", u.Login, passwd).Error
+	return db.
+		Joins("JOIN realms ON realms.id = users.realm_id").
+		Preload("Realm").
+		First(u, "login = ? AND password = ? AND realms.name = ?", u.Login, passwd, u.RealmName).Error
 }
 
 func (u User) IntoClaims() crypt.JWTDefaultClaims {
 	return crypt.JWTDefaultClaims{
-		UID: u.ID,
+		UID:   u.ID,
+		Realm: u.RealmName,
 	}
 }
 
@@ -73,9 +87,10 @@ func NewEmptyUser() *User {
 	return &User{}
 }
 
-func NewUser(login, password string) *User {
+func NewUser(login, password, realm string) *User {
 	return &User{
-		Login:    login,
-		Password: password,
+		Login:     login,
+		Password:  password,
+		RealmName: realm,
 	}
 }

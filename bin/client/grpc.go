@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -28,7 +29,7 @@ func setupRPCRequest() (*grpc.ClientConn, error) {
 }
 
 func (c rpcCall) trigger() error {
-	fmt.Printf("Sending request: %+v\n", c)
+	slog.Info(fmt.Sprintf("Sending rpc request: %+v\n", c))
 	var res *v1.Response
 	var err error
 	var headerMD metadata.MD
@@ -39,6 +40,11 @@ func (c rpcCall) trigger() error {
 	}
 	ctx = rpc.WriteOutgoingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, uuid.NewString()})
 	switch c.service {
+	case "realm":
+		switch c.action {
+		case "create":
+			return realmCreate()
+		}
 	case "auth":
 		switch c.action {
 		case "login":
@@ -48,6 +54,7 @@ func (c rpcCall) trigger() error {
 				&v1.UserRequest{
 					Login:    os.Getenv("CLIENT_LOGIN"),
 					Password: os.Getenv("CLIENT_PASSWORD"),
+					Realm:    os.Getenv("CLIENT_REALM"),
 				},
 				grpc.Header(&headerMD),
 			)
@@ -58,6 +65,7 @@ func (c rpcCall) trigger() error {
 				&v1.UserRequest{
 					Login:    os.Getenv("CLIENT_LOGIN"),
 					Password: os.Getenv("CLIENT_PASSWORD"),
+					Realm:    os.Getenv("CLIENT_REALM"),
 				},
 				grpc.Header(&headerMD),
 			)
@@ -88,6 +96,8 @@ func (c rpcCall) trigger() error {
 				grpc.Header(&headerMD),
 			)
 		}
+	default:
+		return errors.New("unavailable through rpc yet")
 	}
 	if err != nil {
 		return err
@@ -99,7 +109,7 @@ func (c rpcCall) trigger() error {
 	if res == nil {
 		return errors.New("nil response")
 	}
-	fmt.Printf("Response: %d\n%s\nHeaders: %+v\n", res.Code, res, headerMD)
+	slog.Info(fmt.Sprintf("Response: %d\n%s\nHeaders: %+v\n", res.Code, res, headerMD))
 	return err
 }
 

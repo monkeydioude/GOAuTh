@@ -5,7 +5,7 @@ import (
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/errors"
-	go_errors "errors"
+	stdErr "errors"
 
 	"gorm.io/gorm"
 )
@@ -33,7 +33,7 @@ func UserEditPassword(
 	editEntity *entities.EditUserPayload,
 ) error {
 	if !iCanDoUserEditPassword(factory, db, editEntity) {
-		return errors.InternalServerError(go_errors.New(consts.ERR_INTERNAL_ERROR))
+		return errors.InternalServerError(stdErr.New(consts.ERR_INTERNAL_ERROR))
 	}
 	err := editEntity.UserParams.AssertPassword(*editEntity.NewPassword, &editEntity.Password)
 	if err != nil {
@@ -44,8 +44,8 @@ func UserEditPassword(
 		return jwtRes.Error
 	}
 	jwt := jwtRes.Result()
-	if jwt.Claims.UID == 0 {
-		return errors.Unauthorized(go_errors.New(consts.ERR_MISSING_TOKEN))
+	if !JWTClaimsValidation(jwt.Claims) {
+		return errors.Unauthorized(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
 	signedPasswd := crypt.HashPassword(
 		editEntity.Password,
@@ -57,10 +57,10 @@ func UserEditPassword(
 		Password: signedPasswd,
 	}
 	if err := db.First(user, "id = ? AND password = ?", jwt.Claims.UID, signedPasswd).Error; err != nil {
-		return errors.Unauthorized(go_errors.New(consts.ERR_INVALID_CREDENTIALS))
+		return errors.Unauthorized(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
 	if user.ID == 0 {
-		return errors.BadRequest(go_errors.New(consts.ERR_INVALID_CREDENTIALS))
+		return errors.BadRequest(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
 
 	user.Password = *editEntity.NewPassword
@@ -75,7 +75,7 @@ func UserEditLogin(
 	editEntity *entities.EditUserPayload,
 ) error {
 	if !iCanDoUserEditLogin(factory, db, editEntity) {
-		return errors.InternalServerError(go_errors.New(consts.ERR_INTERNAL_ERROR))
+		return errors.InternalServerError(stdErr.New(consts.ERR_INTERNAL_ERROR))
 	}
 
 	jwtRes := GetJWTFromBearer(tokenWithBearer, factory)
@@ -83,8 +83,8 @@ func UserEditLogin(
 		return jwtRes.Error
 	}
 	jwt := jwtRes.Result()
-	if jwt.Claims.UID == 0 {
-		return errors.Unauthorized(go_errors.New(consts.ERR_MISSING_TOKEN))
+	if !JWTClaimsValidation(jwt.Claims) {
+		return errors.Unauthorized(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
 	signedPasswd := crypt.HashPassword(
 		editEntity.Password,
@@ -96,7 +96,7 @@ func UserEditLogin(
 		return errors.InternalServerError(err)
 	}
 	if user.ID == 0 {
-		return errors.BadRequest(go_errors.New(consts.ERR_INVALID_CREDENTIALS))
+		return errors.BadRequest(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
 	err := editEntity.UserParams.AssertLogin(*editEntity.NewLogin, &user.Login)
 	if err != nil {

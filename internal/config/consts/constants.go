@@ -34,6 +34,7 @@ var Argon2 = crypt.Argon2Bag{
 const X_REQUEST_ID_LABEL = "X-Request-ID"
 const NO_X_REQUEST_ID = "no_x_request_id"
 
+const ERR_TOKEN_MISSING_PARAMS = "TokenMissingParameters"
 const ERR_TOKEN_EXPIRED = "TokenExpiredError"
 const ERR_WRONG_TOKEN_SCHEMA = "TokenSchemaError"
 const ERR_MISSING_TOKEN = "MissingToken"

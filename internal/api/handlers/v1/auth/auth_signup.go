@@ -23,6 +23,11 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user := rawPayload.Result()
+	if user.RealmName == "" {
+		response.BadRequest("realm_name missing", w)
+		return
+	}
+
 	h.Plugins.TriggerBefore(plugins.OnUserCreation, nil)
 	err := services.AuthSignup(user, h.UserParams, h.DB)
 	if err != nil {
