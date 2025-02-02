@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,6 +32,8 @@ func TestJsonAPICanNotChangeLoginOnMissingUID(t *testing.T) {
 	// create the user
 	rec := httptest.NewRecorder()
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+		UID:   1,
+		Realm: "fake-realm",
 		// Name: login,
 	})
 	assert.NoError(t, err)
@@ -47,7 +50,7 @@ func TestJsonAPICanNotChangeLoginOnMissingUID(t *testing.T) {
 		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
-	assert.Equal(t, 401, rec.Code)
+	assert.Equal(t, 400, rec.Code)
 	body, err = io.ReadAll(rec.Body)
 	assert.NoError(t, err)
 	assert.NotEqual(t, []byte(`{"Code":401,"Message":"Unauthorized"}`), body)
@@ -68,7 +71,8 @@ func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
 	rec := httptest.NewRecorder()
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
-		UID: 1,
+		UID:   1,
+		Realm: "fake-realm",
 	})
 	assert.NoError(t, err)
 	newLogin := "testtest@test.com"
@@ -92,7 +96,6 @@ func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
 
 func TestJsonAPICanChangeAnUserLogin(t *testing.T) {
 	layout, gormDB, _ := setup()
-	defer cleanup(layout)
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
 	layout.JWTFactory.ExpiresIn = 3 * time.Second
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
@@ -103,14 +106,26 @@ func TestJsonAPICanChangeAnUserLogin(t *testing.T) {
 	login := "TestJsonAPICanChangeAnUserLogin@test.com"
 	passwd := "testtt"
 	newLogin := "new_login@test.com"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		RealmID:   realm.ID,
+		RealmName: realm.Name,
 	}
 	gormDB.Unscoped().Delete(&user, "login = ?", login)
 	gormDB.Unscoped().Delete(&user, "login = ?", newLogin)
-	defer gormDB.Unscoped().Delete(&user, "id = ?", user.ID)
+	t.Cleanup(func() {
+		cleanup(layout)
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+	})
 
 	// create the user
 	assert.Nil(t, gormDB.Create(&user).Error)
@@ -118,7 +133,8 @@ func TestJsonAPICanChangeAnUserLogin(t *testing.T) {
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
-		UID: user.ID,
+		UID:   user.ID,
+		Realm: realm.Name,
 	})
 	assert.NoError(t, err)
 	body, err := json.Marshal(entities.EditUserPayload{

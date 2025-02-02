@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -20,13 +21,25 @@ func TestRPCCanLogin(t *testing.T) {
 	defer cleanup(layout)
 	login := "TestRPCCanLogin@test.com"
 	passwd := "test"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		RealmID:   realm.ID,
+		RealmName: realm.Name,
 	}
 	assert.Nil(t, gormDB.Save(&user).Error)
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
+
+	t.Cleanup(func() {
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+	})
 
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	layout.JWTFactory.TimeFn = func() time.Time { return timeRef }
@@ -34,7 +47,8 @@ func TestRPCCanLogin(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 	trialJWT, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
-		UID: user.ID,
+		UID:   user.ID,
+		Realm: realm.Name,
 	})
 	assert.NoError(t, err)
 
@@ -51,6 +65,7 @@ func TestRPCCanLogin(t *testing.T) {
 		&v1.UserRequest{
 			Login:    login,
 			Password: passwd,
+			Realm:    realm.Name,
 		},
 		grpc.Header(&headerMD),
 	)
@@ -65,20 +80,31 @@ func TestRPCCanLogin(t *testing.T) {
 
 func TestRPCCantLoginUnmatchingLogin(t *testing.T) {
 	layout, gormDB, _ := setup()
-	defer cleanup(layout)
 	login := "TestRPCCantLoginUnmatchingLogin@test.com"
 	passwd := "test"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
+		RealmID:   realm.ID,
+		RealmName: realm.Name,
 	}
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
+	conn := setupRPC(t, layout)
+	t.Cleanup(func() {
+		cleanup(layout)
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+		conn.Close()
+	})
 
 	// create the user
 	assert.Nil(t, gormDB.Save(&user).Error)
-	conn := setupRPC(t, layout)
-	defer conn.Close()
 
 	client := v1.NewAuthClient(conn)
 	ctx := context.Background()
@@ -89,6 +115,7 @@ func TestRPCCantLoginUnmatchingLogin(t *testing.T) {
 		&v1.UserRequest{
 			Login:    login,
 			Password: "fake-password",
+			Realm:    realm.Name,
 		},
 		grpc.Header(&headerMD),
 	)

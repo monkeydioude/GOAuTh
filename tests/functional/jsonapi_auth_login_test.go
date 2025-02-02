@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,14 +20,26 @@ func TestJsonAPICanLogin(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/auth/login", layout.Put(auth.Login))
 	rec := httptest.NewRecorder()
-	// define the user
 	login := "TestICanLogin@test.com"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
+
+	// define the user
 	passwd := "test"
 	user := entities.User{
-		Login:    login,
-		Password: passwd,
+		Login:     login,
+		Password:  passwd,
+		RealmName: login,
+		RealmID:   realm.ID,
 	}
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
+	t.Cleanup(func() {
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+	})
 	// create the user
 	assert.Nil(t, gormDB.Create(&user).Error)
 	// restore password to its previous state, before it got modified by gorm

@@ -21,11 +21,12 @@ func TestJsonAPICanGetAValidTokensStatus(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/jwt/status", layout.Post(jwt.Status))
 
-	// login := "TestICanGetAValidTokensStatus@test.com"
+	login := "TestICanGetAValidTokensStatus@test.com"
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
+		UID:   1,
+		Realm: login,
 	})
 	assert.NoError(t, err)
 	req, err := http.NewRequest("POST", "/v1/jwt/status", nil)
@@ -82,6 +83,8 @@ func TestJsonAPIGetA401OnExpiredToken(t *testing.T) {
 	layout.JWTFactory.ExpiresIn = 3 * time.Second
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+		UID:   1,
+		Realm: "cabane123",
 		// Name: login,
 	})
 	assert.NoError(t, err)

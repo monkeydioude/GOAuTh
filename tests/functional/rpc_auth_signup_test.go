@@ -7,17 +7,26 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRPCCanSignup(t *testing.T) {
-	layout, _, _ := setup()
-	defer cleanup(layout)
+	layout, gormDB, _ := setup()
 	login := "TestRPCCanSignup@test.com"
 	passwd := "test"
-
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         "test1",
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	conn := setupRPC(t, layout)
-	defer conn.Close()
+	t.Cleanup(func() {
+		conn.Close()
+		cleanup(layout)
+		gormDB.Unscoped().Delete(&realm)
+	})
 
 	client := v1.NewAuthClient(conn)
 	ctx := context.Background()
@@ -27,13 +36,14 @@ func TestRPCCanSignup(t *testing.T) {
 		&v1.UserRequest{
 			Login:    login,
 			Password: passwd,
+			Realm:    realm.Name,
 		},
 	)
 	assert.NoError(t, err)
 	assert.Equal(t, int32(200), res.Code)
 	user := entities.User{}
 	assert.NoError(t, json.Unmarshal([]byte(res.Message), &user))
-	assert.Equal(t, uint(6), user.ID)
+	assert.Equal(t, realm.ID, user.RealmID)
 	assert.Nil(t, user.RevokedAt)
 	assert.Equal(t, "TestRPCCanSignup@test.com", user.Login)
 }

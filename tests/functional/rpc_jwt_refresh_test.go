@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -21,13 +22,24 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	defer cleanup(layout)
 	login := "TestICanRefreshAValidToken@test.com"
 	passwd := "test"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
 		ID:        11,
+		RealmID:   realm.ID,
+		RealmName: login,
 	}
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
+	t.Cleanup(func() {
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+	})
 
 	// create the user
 	assert.Nil(t, gormDB.Save(&user).Error)
@@ -38,7 +50,8 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		UID: 11,
+		UID:   11,
+		Realm: login,
 	})
 	assert.NoError(t, err)
 
@@ -65,7 +78,8 @@ func TestRPCCanRefreshAValidTokens(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, "Bearer "+jwt.Token, cookie.Value)
 	jwt2, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		UID: 11,
+		UID:   11,
+		Realm: login,
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, "Bearer "+jwt2.Token, cookie.Value)
@@ -79,7 +93,7 @@ func TestRPCCanNotRefreshExpiredToken(t *testing.T) {
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)
 	defer conn.Close()
-	// login := "TestRPCCanNotRefreshExpiredToken@test.com"
+	login := "TestRPCCanNotRefreshExpiredToken@test.com"
 
 	// enforcing date for the jwt generation
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
@@ -89,6 +103,8 @@ func TestRPCCanNotRefreshExpiredToken(t *testing.T) {
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
+		UID:   12,
+		Realm: login,
 	})
 	// enforcing JWTFactory time creation date forward in time
 	layout.JWTFactory.TimeFn = func() time.Time { return timeRef.Add(12 * time.Second) }
@@ -119,7 +135,7 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)
 	defer conn.Close()
-	// login := "TestRPCReturnsSameTokenIfValid@test.com"
+	login := "TestRPCReturnsSameTokenIfValid@test.com"
 
 	// enforcing date for the jwt generation
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
@@ -129,6 +145,8 @@ func TestRPCReturnsSameTokenIfValid(t *testing.T) {
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
+		UID:   113,
+		Realm: login,
 	})
 	// enforcing JWTFactory time creation date forward in time
 	layout.JWTFactory.TimeFn = func() time.Time { return timeRef.Add(2 * time.Second) }

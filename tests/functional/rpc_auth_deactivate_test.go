@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -17,21 +18,31 @@ import (
 
 func TestRPCCantDeactivateAnUserIfMissingID(t *testing.T) {
 	layout, gormDB, _ := setup()
-	defer cleanup(layout)
 	login := "TestRPCCanDeactivateAnUserByID@test.com"
 	passwd := "test"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
 		ID:        1,
+		RealmID:   realm.ID,
+		RealmName: realm.Name,
 	}
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
-
+	conn := setupRPC(t, layout)
+	t.Cleanup(func() {
+		cleanup(layout)
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+		conn.Close()
+	})
 	// create the user
 	assert.Nil(t, gormDB.Save(&user).Error)
-	conn := setupRPC(t, layout)
-	defer conn.Close()
 
 	client := v1.NewUserClient(conn)
 	ctx := context.Background()
@@ -40,6 +51,7 @@ func TestRPCCantDeactivateAnUserIfMissingID(t *testing.T) {
 	// enforcing JWTFactory time creation date forward in time
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
+		Realm: realm.Name,
 	})
 	assert.NoError(t, err)
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
@@ -53,27 +65,37 @@ func TestRPCCantDeactivateAnUserIfMissingID(t *testing.T) {
 	)
 	assert.NoError(t, err)
 	assert.NoError(t, gormDB.First(&user, 1).Error)
-	assert.Equal(t, int32(400), res.Code)
+	assert.Equal(t, int32(401), res.Code)
 	assert.NotEqual(t, "Ok", res.Message)
 }
 
 func TestRPCCanDeactivateAnUserByID(t *testing.T) {
 	layout, gormDB, _ := setup()
-	defer cleanup(layout)
 	login := "TestRPCCanDeactivateAnUserByID@test.com"
 	passwd := "test"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
 		ID:        1,
+		RealmID:   realm.ID,
+		RealmName: realm.Name,
 	}
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
-
+	conn := setupRPC(t, layout)
+	t.Cleanup(func() {
+		cleanup(layout)
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+		conn.Close()
+	})
 	// create the user
 	assert.Nil(t, gormDB.Save(&user).Error)
-	conn := setupRPC(t, layout)
-	defer conn.Close()
 
 	client := v1.NewUserClient(conn)
 	ctx := context.Background()
@@ -82,7 +104,8 @@ func TestRPCCanDeactivateAnUserByID(t *testing.T) {
 	// enforcing JWTFactory time creation date forward in time
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
-		UID: 1,
+		UID:   1,
+		Realm: realm.Name,
 	})
 	assert.NoError(t, err)
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{

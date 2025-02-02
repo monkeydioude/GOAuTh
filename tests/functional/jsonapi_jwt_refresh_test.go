@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,20 +28,32 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 
 	login := "TestICanRefreshAValidToken@test.com"
 	passwd := "test"
+	realm := entities.Realm{
+		ID:           uuid.New(),
+		Name:         login,
+		AllowNewUser: true,
+	}
+	assert.NoError(t, gormDB.Create(&realm).Error)
 	user := entities.User{
 		Login:     login,
 		Password:  passwd,
 		RevokedAt: nil,
 		ID:        1,
+		RealmID:   realm.ID,
+		RealmName: login,
 	}
-	defer gormDB.Unscoped().Delete(&user, "login = ?", login)
+	t.Cleanup(func() {
+		gormDB.Unscoped().Delete(&user, "login = ?", login)
+		gormDB.Unscoped().Delete(&realm)
+	})
 
 	// create the user
 	assert.Nil(t, gormDB.Save(&user).Error)
 	rec := httptest.NewRecorder()
 
 	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
-		UID: 1,
+		UID:   1,
+		Realm: login,
 	})
 	assert.NoError(t, err)
 	timeRef := layout.JWTFactory.TimeFn()
