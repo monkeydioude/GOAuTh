@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func jwtFactoryBoot(db *gorm.DB) *services.JWTFactory {
+func JwtFactoryBoot(db *gorm.DB) *services.JWTFactory {
 	return &services.JWTFactory{
 		SigningMethod: crypt.HS256(os.Getenv(consts.JWT_SECRET)),
 		ExpiresIn:     consts.JWTExpiresIn,

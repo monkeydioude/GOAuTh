@@ -16,6 +16,7 @@ func PostgreSQLBoot(dbentity ...any) result.R[gorm.DB] {
 	if schema == "" {
 		schema = "public"
 	}
+
 	// Initialize the PostgreSQL connection using Gorm
 	db, err := gorm.Open(postgres.Open(fmt.Sprintf("%s?search_path=%s", os.Getenv(consts.DB_PATH), schema)), &gorm.Config{})
 	if err != nil {

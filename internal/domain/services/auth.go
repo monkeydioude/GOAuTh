@@ -6,6 +6,7 @@ import (
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/pkg/errors"
 	go_errors "errors"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -20,14 +21,22 @@ func AuthSignup(
 	if err := userParams.AssertAllConstraints(user.Login, nil, user.Password, nil); err != nil {
 		return errors.UnprocessableEntity(err)
 	}
-	u := &entities.User{}
-	res := db.First(u, "login = ?", user.Login)
+	tmp_u := &entities.User{}
+	res := db.First(tmp_u, "login = ?", user.Login)
 
-	if res.Error == nil && u.ID != 0 {
+	if res.Error == nil && tmp_u.ID != 0 {
+		slog.Error(consts.ERR_USER_ALREADY_EXIST)
 		return errors.BadRequest(go_errors.New(consts.ERR_USER_ALREADY_EXIST))
 	}
 
-	if res := db.Create(user); res.Error != nil {
+	var realm entities.Realm
+	if err := db.Where("name = ?", user.RealmName).First(&realm).Error; err != nil {
+		slog.Error(err.Error(), "realm_name", user.RealmName)
+		return errors.BadRequest(err)
+	}
+	user.RealmID = realm.ID
+
+	if res := db.Omit("realm").Create(user); res.Error != nil {
 		return errors.DBError(res.Error)
 	}
 	return nil

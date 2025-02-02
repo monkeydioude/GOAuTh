@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -33,7 +34,7 @@ func login() (*http.Request, error) {
 	return http.NewRequest(
 		"PUT",
 		fmt.Sprintf("%s%s/auth/login", os.Getenv("API_URL"), consts.BaseAPI_V1),
-		strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"))),
+		strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s", "realm_name":"%s"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"), os.Getenv("CLIENT_REALM"))),
 	)
 }
 
@@ -153,11 +154,14 @@ func userLogin() (*http.Request, error) {
 func (c apiCall) trigger() error {
 	var req *http.Request
 	var err error
+
 	switch c.service {
 	case "realm":
 		switch c.action {
 		case "create":
 			return realmCreate()
+		case "view":
+			return realmsShow()
 		}
 	case "auth":
 		switch c.action {
@@ -170,7 +174,7 @@ func (c apiCall) trigger() error {
 			req, err = http.NewRequest(
 				"POST",
 				fmt.Sprintf("%s%s/auth/signup", os.Getenv("API_URL"), consts.BaseAPI_V1),
-				strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"))),
+				strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s", "realm_name": "cookie-users"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"))),
 			)
 			if err != nil {
 				return err
@@ -231,7 +235,7 @@ func (c apiCall) trigger() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Response: %d\n%s\n Headers: %+v\n", res.StatusCode, string(result), res.Header)
+	slog.Info(fmt.Sprintf("Response: %d\n%s\n Headers: %+v\n", res.StatusCode, string(result), res.Header))
 	return nil
 }
 

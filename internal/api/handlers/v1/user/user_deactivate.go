@@ -29,8 +29,8 @@ func Deactivate(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.Unauthorized(err.Error(), w)
 		return
 	}
-	if jwt.Claims.UID == 0 {
-		response.BadRequest("no uid in the JWT", w)
+	if !services.JWTClaimsValidation(jwt.Claims) {
+		response.Unauthorized(consts.ERR_INVALID_CREDENTIALS, w)
 		return
 	}
 	err = services.AuthDeactivate(jwt.Claims.UID, h.DB)

@@ -5,6 +5,8 @@ pub struct UserRequest {
     pub login: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub password: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub realm: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Response {

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"GOAuTh/internal/config/boot"
 	"flag"
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"slices"
 
@@ -58,6 +61,14 @@ func setupCall(args []string, method string) call {
 	argAction := args[1]
 	if !slices.Contains(actions, argAction) {
 		log.Fatalf("allowed actions: %+v", actions)
+	}
+
+	if token := os.Getenv("CLIENT_JWT"); token != "" {
+		jwt, err := boot.JwtFactoryBoot(nil).DecodeToken(token)
+		if err != nil {
+			slog.Warn(err.Error(), "location", "CLIENT_JWT DeecodeToken")
+		}
+		slog.Info(fmt.Sprintf("%+v", jwt))
 	}
 	return fn(argService, argAction)
 }

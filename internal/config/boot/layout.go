@@ -23,7 +23,7 @@ func LayoutBoot(
 	gormSetupHydrate(gorm, userParams)
 	return result.Ok(&handlers.Layout{
 		DB:         gorm,
-		JWTFactory: jwtFactoryBoot(gorm),
+		JWTFactory: JwtFactoryBoot(gorm),
 		UserParams: userParams,
 		Plugins:    &plugins.Plugins,
 	})

@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -28,7 +29,7 @@ func setupRPCRequest() (*grpc.ClientConn, error) {
 }
 
 func (c rpcCall) trigger() error {
-	fmt.Printf("Sending request: %+v\n", c)
+	slog.Info(fmt.Sprintf("Sending rpc request: %+v\n", c))
 	var res *v1.Response
 	var err error
 	var headerMD metadata.MD
@@ -53,6 +54,7 @@ func (c rpcCall) trigger() error {
 				&v1.UserRequest{
 					Login:    os.Getenv("CLIENT_LOGIN"),
 					Password: os.Getenv("CLIENT_PASSWORD"),
+					Realm:    os.Getenv("CLIENT_REALM"),
 				},
 				grpc.Header(&headerMD),
 			)
@@ -63,6 +65,7 @@ func (c rpcCall) trigger() error {
 				&v1.UserRequest{
 					Login:    os.Getenv("CLIENT_LOGIN"),
 					Password: os.Getenv("CLIENT_PASSWORD"),
+					Realm:    os.Getenv("CLIENT_REALM"),
 				},
 				grpc.Header(&headerMD),
 			)
@@ -106,7 +109,7 @@ func (c rpcCall) trigger() error {
 	if res == nil {
 		return errors.New("nil response")
 	}
-	fmt.Printf("Response: %d\n%s\nHeaders: %+v\n", res.Code, res, headerMD)
+	slog.Info(fmt.Sprintf("Response: %d\n%s\nHeaders: %+v\n", res.Code, res, headerMD))
 	return err
 }
 

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log/slog"
 )
 
 func realmCreate() error {
@@ -22,7 +23,21 @@ func realmCreate() error {
 	realm := entities.Realm{}
 	realm.AllowNewUser = args[2] == "1"
 	slice.MapVars(args[3:], &realm.Name, &realm.Description)
-	fmt.Println(args)
 
 	return db.Create(&realm).Error
+}
+
+func realmsShow() error {
+	res := boot.PostgreSQLBoot(entities.Realm{})
+	if res.IsErr() {
+		return res.Error
+	}
+	db := res.Result()
+	realms := []entities.Realm{}
+
+	err := db.Select("*").Find(&realms).Error
+	for it, realm := range realms {
+		slog.Info(fmt.Sprintf(`%d - ID="%s" Name="%s" Desc="%s"`+"\n", it+1, realm.ID, realm.Name, realm.Description))
+	}
+	return err
 }

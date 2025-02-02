@@ -42,6 +42,10 @@ func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) 
 		return http.Cookie{}, err
 	}
 
+	if !JWTClaimsValidation(jwt.Claims) {
+		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
+	}
+
 	if jwt.Claims.RemainingRefresh(factory.TimeFn()) <= 0 {
 		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
 	}
@@ -62,6 +66,10 @@ func JWTRefresh(tokenWithBearer string, factory JWTFactory) (http.Cookie, error)
 	jwt, err := factory.DecodeToken(token)
 	if err != nil {
 		return http.Cookie{}, errors.Unauthorized(err)
+	}
+
+	if !JWTClaimsValidation(jwt.Claims) {
+		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
 	}
 
 	jwt, err = factory.TryRefresh(jwt)
