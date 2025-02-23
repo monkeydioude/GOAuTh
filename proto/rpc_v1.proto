@@ -16,6 +16,7 @@ service JWT {
 
 service User {
     rpc Deactivate(Empty) returns (Response) {}
+    rpc EditUser(EditUserRequest) returns (Response) {}
 }
 
 message UserRequest {
@@ -27,6 +28,12 @@ message UserRequest {
 message Response {
     int32 code = 1;
     string message = 2;
+}
+
+message EditUserRequest {
+    string new_login = 1;
+    string new_password = 2;
+    string password = 3;
 }
 
 message Empty {}

@@ -6,6 +6,7 @@ import (
 	"GOAuTh/pkg/crypt"
 	"GOAuTh/pkg/errors"
 	stdErr "errors"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
@@ -49,8 +50,8 @@ func UserEditPassword(
 	}
 	signedPasswd := crypt.HashPassword(
 		editEntity.Password,
-		editEntity.UserParams.Argon2params,
-		editEntity.UserParams.PasswdSalt,
+		editEntity.UserParams.GetArgon2Params(),
+		editEntity.UserParams.GetPasswordSalt(),
 	)
 	user := &entities.User{
 		ID:       jwt.Claims.UID,
@@ -86,14 +87,19 @@ func UserEditLogin(
 	if !JWTClaimsValidation(jwt.Claims) {
 		return errors.Unauthorized(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
+
 	signedPasswd := crypt.HashPassword(
 		editEntity.Password,
-		editEntity.UserParams.Argon2params,
-		editEntity.UserParams.PasswdSalt,
+		editEntity.UserParams.GetArgon2Params(),
+		editEntity.UserParams.GetPasswordSalt(),
 	)
 	user := &entities.User{}
 	if err := db.Find(user, "id = ? AND password = ?", jwt.Claims.UID, signedPasswd).Error; err != nil {
 		return errors.InternalServerError(err)
+	}
+	slog.Info("trying to change login", "login_before", user.Login, "login_after", *editEntity.NewLogin)
+	if user.Login == *editEntity.NewLogin {
+		return nil
 	}
 	if user.ID == 0 {
 		return errors.BadRequest(stdErr.New(consts.ERR_INVALID_CREDENTIALS))

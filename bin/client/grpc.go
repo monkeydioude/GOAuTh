@@ -96,6 +96,19 @@ func (c rpcCall) trigger() error {
 				grpc.Header(&headerMD),
 			)
 		}
+	case "user":
+		switch c.action {
+		case "change_user":
+			client := v1.NewUserClient(conn)
+			ctx = rpc.AddOutgoingCookie(ctx, http.Cookie{
+				Name:  consts.AuthorizationCookie,
+				Value: "Bearer " + os.Getenv("CLIENT_JWT"),
+			})
+			client.EditUser(ctx, &v1.EditUserRequest{
+				NewLogin: os.Getenv("CLIENT_NEW_LOGIN"),
+				Password: os.Getenv("CLIENT_PASSWORD"),
+			})
+		}
 	default:
 		return errors.New("unavailable through rpc yet")
 	}

@@ -3,8 +3,10 @@ package v1
 import (
 	"GOAuTh/internal/api/handlers"
 	"GOAuTh/internal/config/consts"
+	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/internal/domain/services"
+	"GOAuTh/pkg/data_types/ptr"
 	"GOAuTh/pkg/http/rpc"
 	"context"
 
@@ -41,6 +43,35 @@ func (h *UserRPCHandler) Deactivate(ctx context.Context, _ *Empty) (*Response, e
 
 	}
 	err = services.AuthDeactivate(jwt.Claims.UID, h.DB)
+	if err != nil {
+		return InternalServerError("could not deactivate user"), nil
+	}
+	return Ok(), nil
+}
+
+func (h *UserRPCHandler) EditUser(ctx context.Context, payload *EditUserRequest) (*Response, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return BadRequest("didnt find any metadata"), nil
+	}
+	cookie, err := rpc.FetchCookie(md, consts.AuthorizationCookie)
+	if err != nil {
+		return BadRequest("could not find token metadata"), nil
+	}
+
+	editUserPayload := entities.EditUserPayload{
+		Password:    payload.Password,
+		NewLogin:    ptr.PtrNilOnEmpty(payload.NewLogin),
+		NewPassword: ptr.PtrNilOnEmpty(payload.NewPassword),
+		UserParams:  h.UserParams,
+	}
+	if payload.NewLogin != "" {
+		err = services.UserEditLogin(cookie.Value, h.JWTFactory, h.DB, &editUserPayload)
+	} else if payload.NewPassword != "" {
+		err = services.UserEditPassword(cookie.Value, h.JWTFactory, h.DB, &editUserPayload)
+	} else {
+		return InternalServerError("could not call any user function"), nil
+	}
 	if err != nil {
 		return InternalServerError("could not deactivate user"), nil
 	}

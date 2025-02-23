@@ -197,6 +197,11 @@ func (c apiCall) trigger() error {
 			if err != nil {
 				return err
 			}
+		case "change_user":
+			req, err = deactivate()
+			if err != nil {
+				return err
+			}
 		}
 
 	case "jwt":

@@ -300,6 +300,7 @@ var JWT_ServiceDesc = grpc.ServiceDesc{
 
 const (
 	User_Deactivate_FullMethodName = "/v1.User/Deactivate"
+	User_EditUser_FullMethodName   = "/v1.User/EditUser"
 )
 
 // UserClient is the client API for User service.
@@ -307,6 +308,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
 	Deactivate(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error)
+	EditUser(ctx context.Context, in *EditUserRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type userClient struct {
@@ -327,11 +329,22 @@ func (c *userClient) Deactivate(ctx context.Context, in *Empty, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *userClient) EditUser(ctx context.Context, in *EditUserRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, User_EditUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility.
 type UserServer interface {
 	Deactivate(context.Context, *Empty) (*Response, error)
+	EditUser(context.Context, *EditUserRequest) (*Response, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -344,6 +357,9 @@ type UnimplementedUserServer struct{}
 
 func (UnimplementedUserServer) Deactivate(context.Context, *Empty) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deactivate not implemented")
+}
+func (UnimplementedUserServer) EditUser(context.Context, *EditUserRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditUser not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -384,6 +400,24 @@ func _User_Deactivate_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_EditUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EditUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).EditUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_EditUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).EditUser(ctx, req.(*EditUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -394,6 +428,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Deactivate",
 			Handler:    _User_Deactivate_Handler,
+		},
+		{
+			MethodName: "EditUser",
+			Handler:    _User_EditUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
