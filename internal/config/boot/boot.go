@@ -3,6 +3,7 @@ package boot
 import (
 	"GOAuTh/internal/api/handlers"
 	"GOAuTh/internal/domain/entities/constraints"
+	"GOAuTh/pkg/plugins"
 	"GOAuTh/pkg/tools/result"
 
 	"github.com/joho/godotenv"
@@ -20,12 +21,13 @@ func Please(
 	dbentity []any,
 	loginConstraints []constraints.LoginConstraint,
 	passwordConstraints []constraints.PasswordConstraint,
+	plgins *plugins.PluginsRecord,
 ) result.R[Settings] {
 	err := godotenv.Load()
 	if err != nil {
 		return result.Error[Settings](err)
 	}
-	layout := LayoutBoot(dbentity, loginConstraints, passwordConstraints)
+	layout := LayoutBoot(dbentity, loginConstraints, passwordConstraints, plgins)
 	if layout.IsErr() {
 		return result.Error[Settings](layout.Error)
 	}

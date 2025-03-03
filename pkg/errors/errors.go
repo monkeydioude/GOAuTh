@@ -2,8 +2,13 @@ package errors
 
 import (
 	"GOAuTh/pkg/http/response"
+	go_errors "errors"
 	"net/http"
 )
+
+var ErrNilPointer = go_errors.New("nil pointer")
+var ErrDataMalformed = go_errors.New("data malformed")
+var ErrPluginError = go_errors.New("plugin error")
 
 type Err struct {
 	code         int

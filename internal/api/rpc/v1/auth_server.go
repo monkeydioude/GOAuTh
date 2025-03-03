@@ -28,9 +28,8 @@ func (h *AuthRPCHandler) Signup(ctx context.Context, req *UserRequest) (*Respons
 	if req == nil {
 		return InternalServerError("no req pointer"), errors.New("no req pointer")
 	}
-	h.Plugins.TriggerBefore(plugins.OnUserCreation, nil)
 	user := entities.NewUser(req.Login, req.Password, req.Realm)
-	err := services.AuthSignup(user, h.UserParams, h.DB)
+	err := services.AuthSignup(user, h.UserParams, h.DB, h.Plugins)
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
@@ -39,7 +38,6 @@ func (h *AuthRPCHandler) Signup(ctx context.Context, req *UserRequest) (*Respons
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	h.Plugins.TriggerAfter(plugins.OnUserCreation, user)
 	return Success(string(resp)), nil
 }
 

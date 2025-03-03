@@ -8,23 +8,29 @@ import (
 	"GOAuTh/internal/config/boot"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/entities/constraints"
+	"GOAuTh/pkg/plugins"
 	_ "GOAuTh/plugins"
 
 	"github.com/oklog/run"
 )
 
-func main() {
+func getSettings() *boot.Settings {
+	plgins := &plugins.Plugins
 	res := boot.Please(
 		[]any{entities.NewEmptyUser()},
 		[]constraints.LoginConstraint{constraints.EmailConstraint},
 		[]constraints.PasswordConstraint{constraints.PasswordSafetyConstraint},
+		plgins,
 	)
 	if res.IsErr() {
 		log.Fatal(res.Error)
 	}
 
-	settings := res.Result()
+	return res.Result()
+}
 
+func main() {
+	settings := getSettings()
 	// server definition
 	apiServer := setupAPIServer(settings)
 	grpcServer, lis := setupGRPCServer(settings)

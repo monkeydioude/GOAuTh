@@ -9,6 +9,7 @@ import (
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
 	"log"
+	"log/slog"
 	"net/http"
 )
 
@@ -31,7 +32,7 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	res, err := services.AuthLogin(user, h.DB, h.UserParams, h.JWTFactory)
 	if err != nil {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
+		slog.Error(err.Error(), "x-query-id", req.Header.Get(consts.X_REQUEST_ID_LABEL))
 		errors.HTTPError(err, w)
 		return
 	}

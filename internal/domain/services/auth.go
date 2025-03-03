@@ -5,7 +5,9 @@ import (
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/models"
 	"GOAuTh/pkg/errors"
+	"GOAuTh/pkg/plugins"
 	go_errors "errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -17,7 +19,15 @@ func AuthSignup(
 	user *entities.User,
 	userParams *models.UsersParams,
 	db *gorm.DB,
+	plgins *plugins.PluginsRecord,
 ) error {
+	if user == nil || userParams == nil || db == nil || plgins == nil {
+		return errors.InternalServerError(errors.ErrDataMalformed)
+	}
+
+	if err := plgins.TriggerBefore(plugins.OnUserCreation, user); err != nil {
+		return errors.InternalServerError(fmt.Errorf("AuthSignup.TriggerBefore: %w: %w", errors.ErrPluginError, err))
+	}
 	if err := userParams.AssertAllConstraints(user.Login, nil, user.Password, nil); err != nil {
 		return errors.UnprocessableEntity(err)
 	}
@@ -38,6 +48,9 @@ func AuthSignup(
 
 	if res := db.Omit("realm").Create(user); res.Error != nil {
 		return errors.DBError(res.Error)
+	}
+	if err := plgins.TriggerAfter(plugins.OnUserCreation, user); err != nil {
+		return errors.InternalServerError(fmt.Errorf("AuthSignup.TriggerAfter: %w: %w", errors.ErrPluginError, err))
 	}
 	return nil
 }

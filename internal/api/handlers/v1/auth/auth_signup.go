@@ -7,7 +7,6 @@ import (
 	"GOAuTh/pkg/errors"
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
-	"GOAuTh/pkg/plugins"
 	"net/http"
 )
 
@@ -28,13 +27,12 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.Plugins.TriggerBefore(plugins.OnUserCreation, nil)
-	err := services.AuthSignup(user, h.UserParams, h.DB)
+	err := services.AuthSignup(user, h.UserParams, h.DB, h.Plugins)
 	if err != nil {
 		errors.HTTPError(err, w)
 		return
 	}
 	user.Password = ""
-	h.Plugins.TriggerAfter(plugins.OnUserCreation, user)
+
 	response.Json(user, w)
 }

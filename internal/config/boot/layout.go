@@ -13,6 +13,7 @@ func LayoutBoot(
 	dbentity []any,
 	loginConstraints []constraints.LoginConstraint,
 	passwordConstraints []constraints.PasswordConstraint,
+	plgins *plugins.PluginsRecord,
 ) result.R[handlers.Layout] {
 	dbRes := PostgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
@@ -25,6 +26,6 @@ func LayoutBoot(
 		DB:         gorm,
 		JWTFactory: JwtFactoryBoot(gorm),
 		UserParams: userParams,
-		Plugins:    &plugins.Plugins,
+		Plugins:    plgins,
 	})
 }

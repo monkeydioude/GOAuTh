@@ -31,7 +31,7 @@ type PluginsRecord struct {
 func NewPluginRecords() PluginsRecord {
 	return PluginsRecord{
 		record:          make([]plugin, 0),
-		context:         context.TODO(),
+		context:         context.Background(),
 		timeoutDuration: 5 * time.Second,
 	}
 }
