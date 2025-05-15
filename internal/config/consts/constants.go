@@ -16,8 +16,8 @@ const PASSWD_SALT = "PASSWD_SALT"
 const AuthorizationCookie = "Authorization"
 const SetCookie = "set-cookie"
 
-const JWTExpiresIn = 1 * time.Hour
-const JWTRefreshesIn = 7 * 24 * time.Hour
+const JWTExpiresIn = 1 * 24 * time.Hour
+const JWTRefreshesIn = 4 * 7 * 24 * time.Hour
 
 const BaseAPI_V1 = "/identity/v1"
 
