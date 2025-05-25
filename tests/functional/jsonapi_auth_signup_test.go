@@ -42,6 +42,9 @@ func TestJsonAPICanSignup(t *testing.T) {
 	assert.NoError(t, err)
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, rec.Code, 200)
+	if rec.Code != 200 {
+		t.Error(rec.Body.String())
+	}
 	trial := entities.User{}
 	assert.Nil(t, gormDB.Where("login = ?", login).First(&trial).Error)
 	assert.Equal(t, login, trial.Login)

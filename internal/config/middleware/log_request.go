@@ -32,10 +32,10 @@ func (r *responseRecorder) WriteHeader(code int) {
 
 func APILogRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[%s] >>> API call on %s", r.Header.Get(consts.X_REQUEST_ID_LABEL), r.URL)
+		log.Printf("[%s] IN <<< API call on %s", r.Header.Get(consts.X_REQUEST_ID_LABEL), r.URL)
 		rec := &responseRecorder{rw: w, status: 200}
 		handler.ServeHTTP(rec, r)
-		log.Printf("[%s] <<< %d on API %s", r.Header.Get(consts.X_REQUEST_ID_LABEL), rec.status, r.URL)
+		log.Printf("[%s] OUT >>> %d on API %s", r.Header.Get(consts.X_REQUEST_ID_LABEL), rec.status, r.URL)
 	})
 }
 
@@ -50,6 +50,8 @@ func GRPCLogRequest(
 		xReqId = uuid.NewString()
 	}
 	md, _ := metadata.FromIncomingContext(ctx)
-	log.Printf("[%s] >>> RPC call on %s, with metadata: %+v\n", xReqId, info.FullMethod, md)
-	return handler(ctx, req)
+	log.Printf("[%s] IN <<< RPC call on %s, with metadata: %+v\n", xReqId, info.FullMethod, md)
+	res, err := handler(ctx, req)
+	log.Printf("[%s] OUT >>> RPC call on %s, with result: %+v\n", xReqId, info.FullMethod, res)
+	return res, err
 }

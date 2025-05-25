@@ -6,6 +6,7 @@ import (
 	"GOAuTh/internal/config/boot"
 	"GOAuTh/internal/domain/entities"
 	"GOAuTh/internal/domain/entities/constraints"
+	"GOAuTh/pkg/plugins"
 	"context"
 	"fmt"
 	"log"
@@ -30,7 +31,7 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 	var layout *handlers.Layout
 
 	// init layout
-	if res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{}); res.IsErr() {
+	if res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{}, nil); res.IsErr() {
 		panic("Could not boot layout")
 	} else {
 		layout = res.Result()
@@ -45,6 +46,7 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 	}
 	layout.JWTFactory.ExpiresIn = 3 * time.Second
 	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.Plugins = &plugins.PluginsRecord{}
 
 	return layout, layout.DB, timeRef
 }

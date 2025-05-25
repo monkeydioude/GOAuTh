@@ -22,7 +22,7 @@ func AuthSignup(
 	plgins *plugins.PluginsRecord,
 ) error {
 	if user == nil || userParams == nil || db == nil || plgins == nil {
-		return errors.InternalServerError(errors.ErrDataMalformed)
+		return errors.InternalServerError(errors.ErrNilPointer)
 	}
 
 	if err := plgins.TriggerBefore(plugins.OnUserCreation, user); err != nil {

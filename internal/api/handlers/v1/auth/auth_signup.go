@@ -7,6 +7,7 @@ import (
 	"GOAuTh/pkg/errors"
 	"GOAuTh/pkg/http/request"
 	"GOAuTh/pkg/http/response"
+	"log/slog"
 	"net/http"
 )
 
@@ -19,6 +20,7 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	rawPayload := request.Json[entities.User](req)
 	if rawPayload.IsErr() {
 		response.InternalServerError(rawPayload.Error.Error(), w)
+		slog.Error(rawPayload.Error.Error(), "location", "auth.Signup()")
 		return
 	}
 	user := rawPayload.Result()
