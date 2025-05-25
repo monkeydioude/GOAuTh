@@ -53,3 +53,8 @@ dev:
 	docker compose up -d
 	go install github.com/mitranim/gow@latest
 	gow run ./bin/GOAuTh
+
+.PHONY: docker-build
+docker-build:
+	docker build -t drannoc/goauth .
+	docker push drannoc/goauth
