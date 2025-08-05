@@ -1,13 +1,12 @@
-module github.com/monkeydioude/goauth/http
+module github.com/monkeydioude/goauth/pkg/http
 
 go 1.24.0
 
 require (
-	github.com/monkeydioude/goauth v0.0.0-20250805064012-376fdb8e3a7c
+	github.com/monkeydioude/goauth/pkg/tools v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.74.2
 )
 
-require (
-	golang.org/x/crypto v0.38.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-)
+require golang.org/x/sys v0.33.0 // indirect
+
+replace github.com/monkeydioude/goauth/pkg/tools => ../tools

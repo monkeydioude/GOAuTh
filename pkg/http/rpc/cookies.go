@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-
 	"fmt"
 	"net/http"
 
@@ -13,16 +11,16 @@ import (
 )
 
 func SetCookie(cookie http.Cookie) metadata.MD {
-	return metadata.Pairs(consts.SetCookie, cookie.String())
+	return metadata.Pairs(SetCookieLabel, cookie.String())
 }
 
 func AppendCookie(md metadata.MD, cookie http.Cookie) metadata.MD {
-	md.Append(consts.SetCookie, cookie.String())
+	md.Append(SetCookieLabel, cookie.String())
 	return md
 }
 
 func FetchCookie(headers metadata.MD, key string) (http.Cookie, error) {
-	cookies := headers.Get(consts.SetCookie)
+	cookies := headers.Get(SetCookieLabel)
 	if len(cookies) == 0 {
 		return http.Cookie{}, errors.New("no cookies")
 	}
@@ -45,7 +43,7 @@ func FetchCookieFromContext(ctx context.Context, key string) (http.Cookie, error
 	if !ok {
 		return http.Cookie{}, errors.New("didnt find any metadata")
 	}
-	return FetchCookie(md, consts.AuthorizationCookie)
+	return FetchCookie(md, AuthorizationCookie)
 }
 
 func SetOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {
@@ -53,7 +51,7 @@ func SetOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context 
 }
 
 func AddOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {
-	return WriteOutgoingMetas(ctx, [2]string{consts.SetCookie, cookie.String()})
+	return WriteOutgoingMetas(ctx, [2]string{SetCookieLabel, cookie.String()})
 }
 
 func SetIncomingCookie(ctx context.Context, cookie http.Cookie) context.Context {
