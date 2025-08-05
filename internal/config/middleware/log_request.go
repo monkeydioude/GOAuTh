@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/pkg/http/rpc"
 	"context"
 	"log"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/pkg/http/rpc"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"

@@ -5,10 +5,10 @@ import (
 	"log"
 	"syscall"
 
-	"GOAuTh/internal/config/boot"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/entities/constraints"
-	_ "GOAuTh/plugins"
+	"github.com/monkeydioude/goauth/internal/config/boot"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
+	_ "github.com/monkeydioude/goauth/plugins"
 
 	"github.com/oklog/run"
 )

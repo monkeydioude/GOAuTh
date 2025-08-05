@@ -1,9 +1,10 @@
 package services
 
 import (
-	"GOAuTh/pkg/crypt"
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 func TestFactoryCanGenerateAndDecodeAToken(t *testing.T) {

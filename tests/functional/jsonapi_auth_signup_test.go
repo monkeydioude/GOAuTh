@@ -1,13 +1,14 @@
 package functional
 
 import (
-	"GOAuTh/internal/api/handlers/v1/auth"
-	"GOAuTh/internal/domain/entities"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers/v1/auth"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

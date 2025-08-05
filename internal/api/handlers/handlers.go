@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"GOAuTh/internal/domain/models"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/crypt"
-	"GOAuTh/pkg/plugins"
 	"fmt"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/internal/domain/models"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/pkg/plugins"
 
 	"gorm.io/gorm"
 )

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"GOAuTh/internal/config/consts"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
 
 	"github.com/google/uuid"
 )

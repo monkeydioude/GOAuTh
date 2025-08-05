@@ -1,9 +1,9 @@
 package boot
 
 import (
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/models"
-	"GOAuTh/pkg/crypt"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/models"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 
 	"gorm.io/gorm"
 )

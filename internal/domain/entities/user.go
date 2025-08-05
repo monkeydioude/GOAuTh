@@ -1,11 +1,12 @@
 package entities
 
 import (
-	"GOAuTh/internal/domain/models"
-	"GOAuTh/pkg/crypt"
 	"errors"
 	"log/slog"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/domain/models"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

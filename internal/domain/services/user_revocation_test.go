@@ -1,10 +1,11 @@
 package services
 
 import (
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/pkg/crypt"
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 
 	"gorm.io/gorm"
 

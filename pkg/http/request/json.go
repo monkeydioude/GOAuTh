@@ -1,11 +1,12 @@
 package request
 
 import (
-	"GOAuTh/pkg/tools/result"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/pkg/tools/result"
 )
 
 func Json[T any](req *http.Request) result.R[T] {

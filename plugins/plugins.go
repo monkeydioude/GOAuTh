@@ -4,9 +4,10 @@
 package plugins
 
 import (
-	"GOAuTh/pkg/data_types/tuple"
-	"GOAuTh/pkg/plugins"
 	"log"
+
+	"github.com/monkeydioude/goauth/pkg/data_types/tuple"
+	"github.com/monkeydioude/goauth/pkg/plugins"
 )
 
 func AddPlugin(

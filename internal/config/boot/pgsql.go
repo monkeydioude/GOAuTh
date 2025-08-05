@@ -1,10 +1,11 @@
 package boot
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/pkg/tools/result"
 	"fmt"
 	"os"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/pkg/tools/result"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

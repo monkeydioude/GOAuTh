@@ -1,8 +1,8 @@
 package models
 
 import (
-	"GOAuTh/internal/domain/entities/constraints"
-	"GOAuTh/pkg/crypt"
+	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 // UsersParams defines a struct of config that should be

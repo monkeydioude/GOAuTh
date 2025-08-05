@@ -1,8 +1,9 @@
 package entities
 
 import (
-	"GOAuTh/pkg/crypt"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 // @todo: implement realm/access system

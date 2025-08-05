@@ -1,8 +1,9 @@
 package errors
 
 import (
-	"GOAuTh/pkg/http/response"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/pkg/http/response"
 )
 
 type Err struct {

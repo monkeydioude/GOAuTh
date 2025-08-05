@@ -1,13 +1,14 @@
 package main
 
 import (
-	"GOAuTh/internal/config/boot"
 	"flag"
 	"fmt"
 	"log"
 	"log/slog"
 	"os"
 	"slices"
+
+	"github.com/monkeydioude/goauth/internal/config/boot"
 
 	"github.com/joho/godotenv"
 )

@@ -1,8 +1,9 @@
 package entities
 
 import (
-	"GOAuTh/pkg/crypt"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 type JWT[C crypt.JWTClaims] struct {

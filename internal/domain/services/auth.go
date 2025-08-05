@@ -1,14 +1,15 @@
 package services
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/models"
-	"GOAuTh/pkg/errors"
 	go_errors "errors"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/models"
+	"github.com/monkeydioude/goauth/pkg/errors"
 
 	"gorm.io/gorm"
 )

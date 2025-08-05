@@ -1,15 +1,16 @@
 package v1
 
 import (
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/models"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/http/rpc"
-	"GOAuTh/pkg/plugins"
 	"context"
 	"encoding/json"
 	"errors"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/models"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	"github.com/monkeydioude/goauth/pkg/plugins"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

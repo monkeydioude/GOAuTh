@@ -1,9 +1,10 @@
 package rpc
 
 import (
-	"GOAuTh/internal/config/consts"
 	"context"
 	"errors"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
 
 	"fmt"
 	"net/http"

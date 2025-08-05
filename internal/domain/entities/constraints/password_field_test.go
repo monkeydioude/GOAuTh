@@ -1,9 +1,10 @@
 package constraints
 
 import (
-	"GOAuTh/internal/config/consts"
 	"strings"
 	"testing"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
 
 	"github.com/stretchr/testify/assert"
 )

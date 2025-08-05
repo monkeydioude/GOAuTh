@@ -1,11 +1,12 @@
 package functional
 
 import (
-	v1 "GOAuTh/internal/api/rpc/v1"
-	"GOAuTh/internal/domain/entities"
 	"context"
 	"encoding/json"
 	"testing"
+
+	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

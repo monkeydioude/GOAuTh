@@ -1,14 +1,15 @@
 package auth
 
 import (
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/errors"
-	"GOAuTh/pkg/http/request"
-	"GOAuTh/pkg/http/response"
-	"GOAuTh/pkg/plugins"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/pkg/http/request"
+	"github.com/monkeydioude/goauth/pkg/http/response"
+	"github.com/monkeydioude/goauth/pkg/plugins"
 )
 
 // Signup would be the route user when creating a new user

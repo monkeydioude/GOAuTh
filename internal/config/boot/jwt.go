@@ -1,12 +1,13 @@
 package boot
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/crypt"
 	"os"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 
 	"gorm.io/gorm"
 )

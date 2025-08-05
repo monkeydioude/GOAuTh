@@ -1,10 +1,11 @@
 package constraints
 
 import (
-	"GOAuTh/internal/config/consts"
 	"errors"
 	"log"
 	"regexp"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
 )
 
 // EmailConstraint is a simple and basic email format tester

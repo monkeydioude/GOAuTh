@@ -1,11 +1,12 @@
 package plugins
 
 import (
-	"GOAuTh/pkg/data_types/tuple"
 	"context"
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/data_types/tuple"
 
 	"github.com/stretchr/testify/assert"
 )

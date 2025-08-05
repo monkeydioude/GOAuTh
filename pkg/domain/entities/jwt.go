@@ -1,8 +1,9 @@
 package entities
 
 import (
-	"GOAuTh/pkg/crypt"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 // JWT defines a standard JSON Web Token.

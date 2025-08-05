@@ -1,14 +1,15 @@
 package functional
 
 import (
-	v1 "GOAuTh/internal/api/rpc/v1"
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/pkg/crypt"
-	"GOAuTh/pkg/http/rpc"
 	"context"
 	"net/http"
 	"testing"
+
+	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/pkg/http/rpc"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

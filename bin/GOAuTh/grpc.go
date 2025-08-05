@@ -1,12 +1,13 @@
 package main
 
 import (
-	"GOAuTh/internal/api/handlers"
-	v1 "GOAuTh/internal/api/rpc/v1"
-	"GOAuTh/internal/config/boot"
-	"GOAuTh/internal/config/middleware"
 	"log"
 	"net"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
+	"github.com/monkeydioude/goauth/internal/config/boot"
+	"github.com/monkeydioude/goauth/internal/config/middleware"
 
 	"google.golang.org/grpc"
 )

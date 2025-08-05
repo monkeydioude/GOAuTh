@@ -1,6 +1,6 @@
 package entities
 
-import "GOAuTh/internal/domain/models"
+import "github.com/monkeydioude/goauth/internal/domain/models"
 
 type EditUserPayload struct {
 	Password    string              `json:"password"`

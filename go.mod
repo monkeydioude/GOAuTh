@@ -1,4 +1,4 @@
-module GOAuTh
+module github.com/monkeydioude/goauth
 
 go 1.24.0
 

@@ -1,8 +1,9 @@
 package consts
 
 import (
-	"GOAuTh/pkg/crypt"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 // Env labels

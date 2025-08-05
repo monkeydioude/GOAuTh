@@ -4,13 +4,14 @@
 package plugins
 
 import (
-	"GOAuTh/pkg/data_types/tuple"
 	"context"
 	"errors"
 	"fmt"
 	"slices"
 	"sync"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/data_types/tuple"
 )
 
 type BeforeEventHandler = func(event Event, payload any)

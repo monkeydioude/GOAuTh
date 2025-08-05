@@ -1,9 +1,6 @@
 package functional
 
 import (
-	"GOAuTh/internal/api/handlers/v1/user"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/pkg/crypt"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -11,6 +8,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers/v1/user"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

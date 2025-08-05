@@ -1,10 +1,11 @@
 package services
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/pkg/http/rpc"
 	"context"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/pkg/http/rpc"
 )
 
 func SetAuthorizationTokenMetaOut(ctx context.Context, token string) context.Context {

@@ -1,11 +1,12 @@
 package v1
 
 import (
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/http/rpc"
 	"context"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/http/rpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

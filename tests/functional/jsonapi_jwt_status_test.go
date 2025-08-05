@@ -1,16 +1,17 @@
 package functional
 
 import (
-	"GOAuTh/internal/api/handlers/v1/jwt"
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/pkg/crypt"
-	"GOAuTh/pkg/http/response"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers/v1/jwt"
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/pkg/http/response"
 
 	"github.com/stretchr/testify/assert"
 )

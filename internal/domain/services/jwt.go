@@ -1,14 +1,15 @@
 package services
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/pkg/crypt"
-	"GOAuTh/pkg/errors"
-	"GOAuTh/pkg/tools/result"
 	stdErr "errors"
 	"net/http"
 	"strings"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/pkg/tools/result"
 )
 
 func GetTokenFromBearer(tokenWithBearer string) (string, error) {

@@ -1,12 +1,13 @@
 package jwt
 
 import (
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/http/response"
 	"log"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/http/response"
 )
 
 func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {

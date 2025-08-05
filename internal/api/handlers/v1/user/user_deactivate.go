@@ -1,13 +1,14 @@
 package user
 
 import (
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/services"
-	"GOAuTh/pkg/errors"
-	"GOAuTh/pkg/http/response"
 	"log"
 	"net/http"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/pkg/http/response"
 )
 
 // Login would be the route used for logging a user in the a system

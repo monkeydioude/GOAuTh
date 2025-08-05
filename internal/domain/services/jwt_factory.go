@@ -1,15 +1,16 @@
 package services
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/pkg/crypt"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/pkg/crypt"
 )
 
 const (
@@ -47,7 +48,7 @@ type JWTFactory struct {
 	RevocationCheckerFn func(uint, func() time.Time) (bool, error)
 }
 
-// GenerateToken implements "GOAuTh/pkg/domain/entities".JWTFactory
+// GenerateToken implements "github.com/monkeydioude/goauth/pkg/domain/entities".JWTFactory
 func (jf JWTFactory) GenerateToken(claims crypt.JWTDefaultClaims) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	timeRef := jf.TimeFn()
 	claims.Expire = timeRef.Add(jf.ExpiresIn).Unix()
@@ -65,7 +66,7 @@ func (jf JWTFactory) GenerateToken(claims crypt.JWTDefaultClaims) (entities.JWT[
 	}, nil
 }
 
-// DecodeToken implements "GOAuTh/pkg/domain/entities".JWTFactory.
+// DecodeToken implements "github.com/monkeydioude/goauth/pkg/domain/entities".JWTFactory.
 func (jf JWTFactory) DecodeToken(token string) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	claims, err := crypt.DecodeJWT[crypt.JWTDefaultClaims](token, jf.SigningMethod)
 	if err != nil {

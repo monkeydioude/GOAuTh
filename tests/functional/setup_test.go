@@ -1,11 +1,6 @@
 package functional
 
 import (
-	"GOAuTh/internal/api/handlers"
-	v1 "GOAuTh/internal/api/rpc/v1"
-	"GOAuTh/internal/config/boot"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/internal/domain/entities/constraints"
 	"context"
 	"fmt"
 	"log"
@@ -13,6 +8,12 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
+	"github.com/monkeydioude/goauth/internal/config/boot"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"

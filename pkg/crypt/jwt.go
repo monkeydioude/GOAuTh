@@ -1,7 +1,6 @@
 package crypt
 
 import (
-	"GOAuTh/pkg/errors"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -11,6 +10,8 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/monkeydioude/goauth/pkg/errors"
 )
 
 // JWTClaims is a mandatory part of the JWT generation.

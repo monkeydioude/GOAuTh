@@ -1,15 +1,16 @@
 package main
 
 import (
-	"GOAuTh/internal/api/handlers"
-	"GOAuTh/internal/api/handlers/v1/auth"
-	"GOAuTh/internal/api/handlers/v1/jwt"
-	"GOAuTh/internal/api/handlers/v1/user"
-	"GOAuTh/internal/config/boot"
-	"GOAuTh/internal/config/middleware"
-	"GOAuTh/pkg/http/middlewares"
 	"net/http"
 	"time"
+
+	"github.com/monkeydioude/goauth/internal/api/handlers"
+	"github.com/monkeydioude/goauth/internal/api/handlers/v1/auth"
+	"github.com/monkeydioude/goauth/internal/api/handlers/v1/jwt"
+	"github.com/monkeydioude/goauth/internal/api/handlers/v1/user"
+	"github.com/monkeydioude/goauth/internal/config/boot"
+	"github.com/monkeydioude/goauth/internal/config/middleware"
+	"github.com/monkeydioude/goauth/pkg/http/middlewares"
 )
 
 func healthcheck(w http.ResponseWriter, req *http.Request) {

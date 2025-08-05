@@ -1,15 +1,16 @@
 package main
 
 import (
-	v1 "GOAuTh/internal/api/rpc/v1"
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/pkg/http/rpc"
 	"context"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+
+	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/pkg/http/rpc"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"

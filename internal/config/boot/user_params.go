@@ -1,10 +1,11 @@
 package boot
 
 import (
-	"GOAuTh/internal/config/consts"
-	"GOAuTh/internal/domain/entities/constraints"
-	"GOAuTh/internal/domain/models"
 	"os"
+
+	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
+	"github.com/monkeydioude/goauth/internal/domain/models"
 )
 
 func usersParamsBoot(

@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"GOAuTh/pkg/errors"
-	"GOAuTh/pkg/http/response"
+	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/pkg/http/response"
 )
 
 func BadRequest(msg string) *Response {

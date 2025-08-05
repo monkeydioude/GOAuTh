@@ -1,13 +1,14 @@
 package main
 
 import (
-	"GOAuTh/internal/config/boot"
-	"GOAuTh/internal/domain/entities"
-	"GOAuTh/pkg/data_types/slice"
 	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
+
+	"github.com/monkeydioude/goauth/internal/config/boot"
+	"github.com/monkeydioude/goauth/internal/domain/entities"
+	"github.com/monkeydioude/goauth/pkg/data_types/slice"
 )
 
 func realmCreate() error {
