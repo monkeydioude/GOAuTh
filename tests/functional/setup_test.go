@@ -32,7 +32,7 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 
 	// init layout
 	if res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{}); res.IsErr() {
-		panic("Could not boot layout")
+		log.Fatalf("Could not boot layout: %s", res.Error.Error())
 	} else {
 		layout = res.Result()
 	}
