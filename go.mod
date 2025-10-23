@@ -1,9 +1,11 @@
 module github.com/monkeydioude/goauth
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/calqs/gopkg/env v1.0.2
+	github.com/calqs/gopkg/gormslog v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/monkeydioude/goauth/pkg/tools v0.0.0-00010101000000-000000000000
@@ -14,8 +16,10 @@ require (
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.6
 	gorm.io/driver/postgres v1.5.9
-	gorm.io/gorm v1.25.11
+	gorm.io/gorm v1.30.3
 )
+
+require github.com/calqs/gopkg/dt v1.0.2 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -38,4 +42,5 @@ require (
 )
 
 replace github.com/monkeydioude/goauth/pkg/http => ./pkg/http
+
 replace github.com/monkeydioude/goauth/pkg/tools => ./pkg/tools

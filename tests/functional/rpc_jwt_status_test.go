@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
 	"github.com/monkeydioude/goauth/internal/config/consts"
 	"github.com/monkeydioude/goauth/pkg/crypt"
 	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	v1 "github.com/monkeydioude/goauth/pkg/rpg/v1"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"

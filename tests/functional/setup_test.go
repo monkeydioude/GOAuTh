@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/monkeydioude/goauth/internal/api/handlers"
-	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
 	"github.com/monkeydioude/goauth/internal/config/boot"
 	"github.com/monkeydioude/goauth/internal/domain/entities"
 	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
+	v1 "github.com/monkeydioude/goauth/pkg/rpg/v1"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"

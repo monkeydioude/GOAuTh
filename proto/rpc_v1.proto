@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package v1;
 
-option go_package = "internal/api/rpc/v1";
+option go_package = "pkg/rpg/v1";
 
 service Auth {
     rpc Signup(UserRequest) returns (Response) {}

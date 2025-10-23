@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"os"
 
-	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
 	"github.com/monkeydioude/goauth/internal/config/consts"
 	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	v1 "github.com/monkeydioude/goauth/pkg/rpg/v1"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"

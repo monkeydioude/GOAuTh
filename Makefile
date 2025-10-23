@@ -58,3 +58,7 @@ dev:
 docker-build:
 	docker build -t drannoc/goauth .
 	docker push drannoc/goauth
+
+.PHONY: dpsql
+dpsql:
+	docker compose exec db psql "postgres://dev:dev@127.0.0.1:5432/dev_db?options=-c%20search_path%3Dusers"

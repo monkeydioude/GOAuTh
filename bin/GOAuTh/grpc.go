@@ -5,9 +5,9 @@ import (
 	"net"
 
 	"github.com/monkeydioude/goauth/internal/api/handlers"
-	v1 "github.com/monkeydioude/goauth/internal/api/rpc/v1"
 	"github.com/monkeydioude/goauth/internal/config/boot"
 	"github.com/monkeydioude/goauth/internal/config/middleware"
+	v1 "github.com/monkeydioude/goauth/pkg/rpg/v1"
 
 	"google.golang.org/grpc"
 )

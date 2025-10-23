@@ -25,6 +25,7 @@ func apiRouting(layout *handlers.Layout) http.Handler {
 	// Auth
 	mux.HandleFunc("/identity/v1/auth/signup", layout.Post(auth.Signup))
 	mux.HandleFunc("/identity/v1/auth/login", layout.Put(auth.Login))
+
 	// User
 	mux.HandleFunc("/identity/v1/user/password", layout.Put(user.EditPassword))
 	mux.HandleFunc("/identity/v1/user/login", layout.Put(user.EditLogin))
