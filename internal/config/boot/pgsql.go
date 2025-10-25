@@ -37,9 +37,7 @@ func getLogLevel(ev string) logger.LogLevel {
 
 // postgreSQLBoot returns and execute DB related config and processes
 func PostgreSQLBoot(dbentity ...any) result.R[gorm.DB] {
-	if err := godotenv.Load(); err != nil {
-		return result.Error[gorm.DB](err)
-	}
+	godotenv.Load()
 	config, err := env.ParseEnv[DbEnv]()
 	if err != nil {
 		return result.Error[gorm.DB](err)

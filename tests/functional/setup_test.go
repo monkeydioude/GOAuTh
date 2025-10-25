@@ -28,14 +28,12 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 		os.Setenv("DB_PATH", "postgres://test:test@0.0.0.0:5445/test_db")
 	}
 	os.Setenv("JWT_SECRET", "test")
-	var layout *handlers.Layout
-
 	// init layout
-	if res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{}); res.IsErr() {
+	res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
+	if res.IsErr() {
 		log.Fatalf("Could not boot layout: %s", res.Error.Error())
-	} else {
-		layout = res.Result()
 	}
+	layout := res.Result()
 	layout.DB.Exec("TRUNCATE TABLE users")
 
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
@@ -80,6 +78,5 @@ func cleanup(layout *handlers.Layout) {
 		if sql, err := layout.DB.DB(); err != nil {
 			sql.Close()
 		}
-
 	}
 }
