@@ -8,7 +8,6 @@ require (
 	github.com/calqs/gopkg/gormslog v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/monkeydioude/goauth/pkg/tools v0.0.0-00010101000000-000000000000
 	github.com/monkeydioude/heyo v0.0.0-20250126200040-f6155d390de8
 	github.com/oklog/run v1.1.0
 	github.com/stretchr/testify v1.10.0
@@ -30,7 +29,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/monkeydioude/goauth/pkg/http v0.0.0-20250805064623-fd5a998f420e
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
@@ -40,7 +38,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/monkeydioude/goauth/pkg/http => ./pkg/http
-
-replace github.com/monkeydioude/goauth/pkg/tools => ./pkg/tools
