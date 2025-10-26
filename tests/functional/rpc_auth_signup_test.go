@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/monkeydioude/goauth/internal/domain/entities"
-	v1 "github.com/monkeydioude/goauth/pkg/rpg/v1"
+	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

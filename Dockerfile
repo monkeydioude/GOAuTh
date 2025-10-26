@@ -1,5 +1,5 @@
 # BUILD PART
-FROM golang:1.24.0-alpine AS builder
+FROM golang:1.25.0-alpine AS builder
 
 RUN apk add --no-cache bash
 

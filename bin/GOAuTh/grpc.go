@@ -7,7 +7,7 @@ import (
 	"github.com/monkeydioude/goauth/internal/api/handlers"
 	"github.com/monkeydioude/goauth/internal/config/boot"
 	"github.com/monkeydioude/goauth/internal/config/middleware"
-	v1 "github.com/monkeydioude/goauth/pkg/rpg/v1"
+	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
 
 	"google.golang.org/grpc"
 )
