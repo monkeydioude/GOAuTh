@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"runtime/debug"
 	"slices"
 	"sync"
 	"time"
@@ -118,7 +120,14 @@ func handleResult(
 
 func (pr *PluginsRecord) triggerEvent(step Step, event Event, payload any) error {
 	var err error
-
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("triggerEvent: recovered", "error", r, "trace", string(debug.Stack()))
+		}
+	}()
+	if pr.record == nil {
+		return fmt.Errorf("triggerEvent: nil pr.record")
+	}
 	for _, plugin := range pr.record {
 		ctx, cancelFn, errChan := prepareExec(pr.context, pr.timeoutDuration)
 		go pr.execPluginHook(plugin, step, errChan, event, payload)

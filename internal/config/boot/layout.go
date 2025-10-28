@@ -18,7 +18,7 @@ func LayoutBoot(
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
 	}
-	userParams := usersParamsBoot(loginConstraints, passwordConstraints)
+	userParams := UsersParamsBoot(loginConstraints, passwordConstraints)
 	gorm := dbRes.Result()
 	gormSetupHydrate(gorm, userParams)
 	return result.Ok(&handlers.Layout{

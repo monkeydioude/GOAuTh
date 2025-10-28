@@ -8,7 +8,7 @@ import (
 	"github.com/monkeydioude/goauth/internal/domain/models"
 )
 
-func usersParamsBoot(
+func UsersParamsBoot(
 	loginConstraints []constraints.LoginConstraint,
 	passwordConstraints []constraints.PasswordConstraint,
 ) *models.UsersParams {

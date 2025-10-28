@@ -32,6 +32,6 @@ func Please(
 	return result.Ok(&Settings{
 		Layout: layout.Result(),
 		Api:    apiBoot(),
-		Grpc:   grpcBoot(),
+		Grpc:   GrpcBoot(),
 	})
 }

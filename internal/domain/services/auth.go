@@ -2,6 +2,7 @@ package services
 
 import (
 	go_errors "errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -19,6 +20,9 @@ func AuthSignup(
 	userParams *models.UsersParams,
 	db *gorm.DB,
 ) error {
+	if db == nil {
+		return errors.InternalServerError(fmt.Errorf("nil db object"))
+	}
 	if err := userParams.AssertAllConstraints(user.Login, nil, user.Password, nil); err != nil {
 		return errors.UnprocessableEntity(err)
 	}

@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"log/slog"
+
 	"github.com/monkeydioude/goauth/pkg/errors"
 	"github.com/monkeydioude/goauth/pkg/http/response"
 )
@@ -43,6 +45,7 @@ func FromErrToResponse(err error) *Response {
 	if !ok {
 		return InternalServerError(err.Error())
 	}
+	slog.Error(errType.Error(), "code", errType.CodeInt32())
 	return &Response{
 		Code:    errType.CodeInt32(),
 		Message: errType.Error(),
