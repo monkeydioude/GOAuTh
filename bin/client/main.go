@@ -26,7 +26,7 @@ Args & flags:
 	./client "auth" "login"|"signup"
     ./client "user" "password"|"deactivate"
     ./client "jwt" "status"|"refresh"
-    ./client "realm" "add"|"view" <if add:"name of the realm">
+    ./client "realm" "create"|"view" <if create:"name of the realm">
 
 For auth login/signup, login and password should be passed as env vars CLIENT_LOGIN & CLIENT_PASSWORD.
 For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
