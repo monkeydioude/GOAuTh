@@ -8,6 +8,7 @@ COPY . .
 RUN env
 
 RUN go build -C bin/GOAuTh -o /GOAuTh
+RUN go build -C bin/client -o /client
 
 # RUN PART
 FROM alpine:latest
@@ -18,6 +19,7 @@ WORKDIR /app
 
 COPY --from=builder /app/scripts/docker/entrypoint.sh .
 COPY --from=builder /GOAuTh .
+COPY --from=builder /client .
 
 ENTRYPOINT [ "./entrypoint.sh" ]
 CMD ["./GOAuTh"]

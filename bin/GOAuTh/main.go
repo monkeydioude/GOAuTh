@@ -8,7 +8,8 @@ import (
 	"github.com/monkeydioude/goauth/internal/config/boot"
 	"github.com/monkeydioude/goauth/internal/domain/entities"
 	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
-	_ "github.com/monkeydioude/goauth/plugins"
+
+	// _ "github.com/monkeydioude/goauth/plugins"
 
 	"github.com/oklog/run"
 )
