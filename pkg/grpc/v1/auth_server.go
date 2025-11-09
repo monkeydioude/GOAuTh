@@ -61,6 +61,10 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 	return Ok(), nil
 }
 
+func (h *AuthRPCHandler) Delete(ctx context.Context, req *AuthIdRequest) (*Response, error) {
+	return Ok(), h.DB.Delete(&entities.User{}, "id = ?", req.Uid).Error
+}
+
 func NewAuthRPCHandler(layout *handlers.Layout) *AuthRPCHandler {
 	return &AuthRPCHandler{
 		UserParams: layout.UserParams,

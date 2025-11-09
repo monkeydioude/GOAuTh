@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Auth_Signup_FullMethodName = "/v1.Auth/Signup"
 	Auth_Login_FullMethodName  = "/v1.Auth/Login"
+	Auth_Delete_FullMethodName = "/v1.Auth/Delete"
 )
 
 // AuthClient is the client API for Auth service.
@@ -29,6 +30,7 @@ const (
 type AuthClient interface {
 	Signup(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*Response, error)
 	Login(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*Response, error)
+	Delete(ctx context.Context, in *AuthIdRequest, opts ...grpc.CallOption) (*Response, error)
 }
 
 type authClient struct {
@@ -59,12 +61,23 @@ func (c *authClient) Login(ctx context.Context, in *UserRequest, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *authClient) Delete(ctx context.Context, in *AuthIdRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, Auth_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility.
 type AuthServer interface {
 	Signup(context.Context, *UserRequest) (*Response, error)
 	Login(context.Context, *UserRequest) (*Response, error)
+	Delete(context.Context, *AuthIdRequest) (*Response, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedAuthServer) Signup(context.Context, *UserRequest) (*Response,
 }
 func (UnimplementedAuthServer) Login(context.Context, *UserRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthServer) Delete(context.Context, *AuthIdRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 func (UnimplementedAuthServer) testEmbeddedByValue()              {}
@@ -138,6 +154,24 @@ func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).Delete(ctx, req.(*AuthIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Auth_Login_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _Auth_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

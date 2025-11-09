@@ -24,6 +24,13 @@ pub struct EditUserRequest {
     #[prost(string, tag = "3")]
     pub password: ::prost::alloc::string::String,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct AuthIdRequest {
+    #[prost(int32, tag = "1")]
+    pub uid: i32,
+    #[prost(string, tag = "2")]
+    pub reason: ::prost::alloc::string::String,
+}
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {}
 /// Generated client implementations.
@@ -151,6 +158,24 @@ pub mod auth_client {
             let path = http::uri::PathAndQuery::from_static("/v1.Auth/Login");
             let mut req = request.into_request();
             req.extensions_mut().insert(GrpcMethod::new("v1.Auth", "Login"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn delete(
+            &mut self,
+            request: impl tonic::IntoRequest<super::AuthIdRequest>,
+        ) -> std::result::Result<tonic::Response<super::Response>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.Auth/Delete");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.Auth", "Delete"));
             self.inner.unary(req, path, codec).await
         }
     }

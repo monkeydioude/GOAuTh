@@ -7,6 +7,7 @@ option go_package = "pkg/grpc/v1";
 service Auth {
     rpc Signup(UserRequest) returns (Response) {}
     rpc Login(UserRequest) returns (Response) {}
+    rpc Delete(AuthIdRequest) returns (Response) {}
 }
 
 service JWT {
@@ -34,6 +35,11 @@ message EditUserRequest {
     string new_login = 1;
     string new_password = 2;
     string password = 3;
+}
+
+message AuthIdRequest {
+    int32 uid = 1;
+    string reason = 2;
 }
 
 message Empty {}
