@@ -123,3 +123,47 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+// func Test_I_Can_Check_User_Action_Status(t *testing.T) {
+// 	// Set up sqlmock and a mocked *gorm.DB
+// 	db, mock, err := sqlmock.New()
+// 	if err != nil {
+// 		t.Fatalf("Failed to open sqlmock database: %s", err)
+// 	}
+// 	defer db.Close()
+// 	// Use the sqlmock DB connection in Gorm
+// 	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+// 		Conn: db,
+// 	}), &gorm.Config{})
+// 	if err != nil {
+// 		t.Fatalf("Failed to initialize Gorm with sqlmock: %s", err)
+// 	}
+// 	realmIdMock := "22f989a1-852f-4b04-9875-fb7b5e5b141a"
+// 	mock.ExpectQuery(`SELECT \* FROM "realms" WHERE name = \$1 AND "realms"."deleted_at" IS NULL ORDER BY "realms"."id" LIMIT \$2`).
+// 		WithArgs("realm_1", 1).
+// 		WillReturnRows(
+// 			sqlmock.NewRows([]string{"id", "name"}).
+// 				AddRow(realmIdMock, "realm_1"),
+// 		)
+// 	mock.ExpectQuery(`SELECT \* FROM "users" WHERE login = \$1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$2`).
+// 		WithArgs("test_login_1", 1).
+// 		WillReturnRows(
+// 			sqlmock.NewRows([]string{"id"}).AddRow(1),
+// 		)
+// 	mockDate := time.Date(2026, 1, 8, 11, 32, 30, 0, time.UTC)
+// 	mock.ExpectQuery(`SELECT \* FROM "user_actions" WHERE user_id = \$1 AND realm_id = \$2 AND action = \$3 ORDER BY "user_actions"."id" DESC LIMIT \$4`).
+// 		WithArgs(1, realmIdMock, entities.UserActionTypeActivate, 1).
+// 		WillReturnRows(
+// 			sqlmock.NewRows([]string{"action", "validated_at"}).
+// 				AddRow(entities.UserActionTypeActivate.String(), mockDate),
+// 		)
+// 	res, err := UserActionStatuses(gormDB, UserActionStatusIn{
+// 		Login:  "test_login_1",
+// 		Realm:  "realm_1",
+// 		Action: entities.UserActionTypeActivate.String(),
+// 	})
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, entities.UserActionTypeActivate.String(), res.Action)
+// 	assert.NotNil(t, res.ValidatedAt)
+// 	assert.Equal(t, mockDate.Unix(), res.ValidatedAt.Unix())
+// }

@@ -94,6 +94,10 @@ func UserActionValidate(
 	switch action.Action {
 	case entities.UserActionTypePassword:
 		err = userActionResetPassword(db, usersParams, user, in.Against)
+	case entities.UserActionTypeActivate:
+		// if activate account, just do nothing besides updating the validated_at field
+		// which comes later in the code
+		err = nil
 	default:
 		err = fmt.Errorf("UserActionValidate: empty or invalid acton")
 	}
@@ -123,3 +127,51 @@ func userActionResetPassword(
 	}
 	return nil
 }
+
+// type UserActionStatusIn struct {
+// 	Login  string
+// 	Realm  string
+// 	Action string
+// }
+
+// type UserActionStatusOut struct {
+// 	ID          int32
+// 	Action      string
+// 	CreatedAt   time.Time
+// 	UpdatedAt   time.Time
+// 	ValidatedAt *time.Time
+// }
+
+// func UserActionStatuses(
+// 	db *gorm.DB,
+// 	in UserActionStatusIn,
+// ) ([]UserActionStatusOut, error) {
+// 	realm := entities.Realm{}
+// 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
+// 		slog.Error(err.Error(), "realm_name", in.Realm)
+// 		return []UserActionStatusOut{}, errors.BadRequest(err)
+// 	}
+// 	user := entities.User{}
+// 	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
+// 		slog.Error(err.Error(), "login", in.Login)
+// 		return []UserActionStatusOut{}, errors.BadRequest(err)
+// 	}
+// 	action, err := entities.UserActionTypeFromString(in.Action)
+// 	if err != nil {
+// 		return []UserActionStatusOut{}, fmt.Errorf("UserActionStatus: %w", err)
+// 	}
+// 	doms := []entities.UserAction{}
+// 	actionRes := db.Order(`"user_actions"."id" DESC`).Find(&doms, "user_id = ? AND realm_id = ? AND action = ?", user.ID, realm.ID, action)
+// 	if actionRes.Error != nil {
+// 		return []UserActionStatusOut{}, errors.NotFound(actionRes.Error)
+// 	}
+// 	return dt.SliceTransform(doms, func(dom entities.UserAction) UserActionStatusOut {
+// 		return UserActionStatusOut{
+// 			ID:          int32(dom.ID),
+// 			Action:      dom.Action.String(),
+// 			CreatedAt:   dom.CreatedAt,
+// 			UpdatedAt:   dom.UpdatedAt,
+// 			ValidatedAt: dom.ValidatedAt,
+// 		}
+// 	}), nil
+// }

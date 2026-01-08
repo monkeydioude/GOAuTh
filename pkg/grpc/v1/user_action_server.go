@@ -55,3 +55,38 @@ func (h *UserActionRPCHandler) Validate(
 	}
 	return Ok(), nil
 }
+
+// func (h *UserActionRPCHandler) Status(
+// 	ctx context.Context,
+// 	payload *UserActionRequest,
+// ) (*UserActionStatusResponse, error) {
+// 	actions, err := services.UserActionStatuses(h.DB, services.UserActionStatusIn{
+// 		Login:  payload.Login,
+// 		Realm:  payload.Realm,
+// 		Action: payload.Action,
+// 	})
+// 	if err != nil {
+// 		resErr := FromErrToResponse(err)
+// 		return &UserActionStatusResponse{
+// 			Code:    resErr.Code,
+// 			Message: resErr.Message,
+// 		}, nil
+// 	}
+// 	return &UserActionStatusResponse{
+// 		Code:    200,
+// 		Message: "OK",
+// 		ActionStatuses: dt.SliceTransform(actions, func(act services.UserActionStatusOut) *UserActionStatus {
+// 			var validatedAt *timestamppb.Timestamp = nil
+// 			if act.ValidatedAt != nil {
+// 				validatedAt = timestamppb.New(act.ValidatedAt.UTC())
+// 			}
+// 			return &UserActionStatus{
+// 				Id:          act.ID,
+// 				Action:      act.Action,
+// 				CreatedAt:   timestamppb.New(act.CreatedAt.UTC()),
+// 				UpdatedAt:   timestamppb.New(act.UpdatedAt.UTC()),
+// 				ValidatedAt: validatedAt,
+// 			}
+// 		}),
+// 	}, nil
+// }

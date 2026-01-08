@@ -13,6 +13,7 @@ type UserActionType string
 
 const (
 	UserActionTypePassword UserActionType = "reset-password"
+	UserActionTypeActivate UserActionType = "activate-account"
 )
 
 func (uat UserActionType) String() string {
@@ -23,7 +24,10 @@ func UserActionTypeFromString(s string) (UserActionType, error) {
 	switch s {
 	case UserActionTypePassword.String():
 		return UserActionTypePassword, nil
+	case UserActionTypeActivate.String():
+		return UserActionTypeActivate, nil
 	}
+
 	return "", errors.New("invalid UserActionType")
 }
 

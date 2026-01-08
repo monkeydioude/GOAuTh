@@ -13,12 +13,11 @@ require (
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.38.0
 	google.golang.org/grpc v1.74.2
-	google.golang.org/protobuf v1.36.6
+	google.golang.org/protobuf v1.36.11
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.30.3
+	github.com/calqs/gopkg/dt v1.5.0
 )
-
-require github.com/calqs/gopkg/dt v1.0.2 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
