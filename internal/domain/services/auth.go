@@ -28,7 +28,6 @@ func AuthSignup(
 	}
 	tmp_u := &entities.User{}
 	res := db.First(tmp_u, "login = ?", user.Login)
-
 	if res.Error == nil && tmp_u.ID != 0 {
 		slog.Error(consts.ERR_USER_ALREADY_EXIST)
 		return errors.BadRequest(go_errors.New(consts.ERR_USER_ALREADY_EXIST))

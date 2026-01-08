@@ -110,6 +110,24 @@ func (c rpcCall) trigger() error {
 				Password: os.Getenv("CLIENT_PASSWORD"),
 			})
 		}
+	case "action":
+		switch c.action {
+		case "create":
+			client := v1.NewUserActionClient(conn)
+			res, err = client.Create(ctx, &v1.UserActionRequest{
+				Login:  os.Getenv("CLIENT_LOGIN"),
+				Realm:  os.Getenv("CLIENT_REALM"),
+				Action: "reset-password",
+			})
+		case "validate":
+			client := v1.NewUserActionClient(conn)
+			res, err = client.Validate(ctx, &v1.UserActionValidation{
+				Login:   os.Getenv("CLIENT_LOGIN"),
+				Realm:   os.Getenv("CLIENT_REALM"),
+				Data:    os.Getenv("USER_ACTION_VALIDATION_DATA"),
+				Against: os.Getenv("USER_ACTION_VALIDATION_AGAINST"),
+			})
+		}
 	default:
 		return errors.New("unavailable through rpc yet")
 	}

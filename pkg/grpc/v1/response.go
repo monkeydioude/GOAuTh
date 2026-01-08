@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/monkeydioude/goauth/pkg/errors"
 	"github.com/monkeydioude/goauth/pkg/http/response"
 )
@@ -28,6 +30,13 @@ func Ok() *Response {
 	return &Response{
 		Code:    int32(response.OkCode),
 		Message: "Ok",
+	}
+}
+
+func Created(message string) *Response {
+	return &Response{
+		Code:    http.StatusCreated,
+		Message: message,
 	}
 }
 

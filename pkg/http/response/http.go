@@ -75,6 +75,20 @@ func UnprocessableEntity(msg string, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 }
 
+func NotFound(msg string, w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNotFound)
+	res, err := json.Marshal(HTTPResponse{
+		Code:    http.StatusNotFound,
+		Message: msg,
+	})
+	if err != nil {
+		w.Write([]byte("Could not marshal matters"))
+		return
+	}
+	w.Write(res)
+	w.Header().Set("Content-Type", "application/json")
+}
+
 func InternalServerError(msg string, w http.ResponseWriter) {
 	w.WriteHeader(InternalServerErrorCode)
 	res, err := json.Marshal(HTTPResponse{

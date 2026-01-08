@@ -16,7 +16,7 @@ import (
 
 func main() {
 	res := boot.Please(
-		[]any{entities.NewEmptyUser(), &entities.Realm{}},
+		[]any{entities.NewEmptyUser(), &entities.Realm{}, &entities.UserAction{}},
 		[]constraints.LoginConstraint{constraints.EmailConstraint},
 		[]constraints.PasswordConstraint{constraints.PasswordSafetyConstraint},
 	)

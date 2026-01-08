@@ -16,6 +16,14 @@ func (e Err) Error() string {
 	return e.err.Error()
 }
 
+func NotFound(err error) Err {
+	return Err{
+		code:         http.StatusNotFound,
+		err:          err,
+		httpCallback: response.BadRequest,
+	}
+}
+
 func BadRequest(err error) Err {
 	return Err{
 		code:         response.BadRequestCode,

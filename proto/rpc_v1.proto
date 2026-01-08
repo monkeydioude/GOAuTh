@@ -20,6 +20,11 @@ service User {
     rpc EditUser(EditUserRequest) returns (Response) {}
 }
 
+service UserAction {
+    rpc Create(UserActionRequest) returns (Response) {}
+    rpc Validate(UserActionValidation) returns (Response) {}
+}
+
 message UserRequest {
     string login = 1;
     string password = 2;
@@ -35,6 +40,19 @@ message EditUserRequest {
     string new_login = 1;
     string new_password = 2;
     string password = 3;
+}
+
+message UserActionRequest {
+    string login = 1;
+    string realm = 2;
+    string action = 3;
+}
+
+message UserActionValidation{
+    string login = 1;
+    string realm = 2;
+    string data = 3;
+    string against = 4;
 }
 
 message AuthIdRequest {

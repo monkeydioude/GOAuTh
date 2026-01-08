@@ -16,6 +16,7 @@ func grpcHandlers(server *grpc.Server, layout *handlers.Layout) {
 	v1.RegisterJWTServer(server, v1.NewJWTRPCHandler(layout))
 	v1.RegisterAuthServer(server, v1.NewAuthRPCHandler(layout))
 	v1.RegisterUserServer(server, v1.NewUserRPCHandler(layout))
+	v1.RegisterUserActionServer(server, v1.NewUserActionRPCHandler(layout))
 }
 
 func setupGRPCServer(settings *boot.Settings) (*grpc.Server, net.Listener) {

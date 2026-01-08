@@ -23,8 +23,9 @@ Args & flags:
   - flags:
     * method="api"|"rpc"
   - args:
-	./client "auth" "login"|"signup"
+		./client "auth" "login"|"signup"
     ./client "user" "password"|"deactivate"
+    ./client "action" "create"|"validate" (grpc only)
     ./client "jwt" "status"|"refresh"
     ./client "realm" "create"|"view" <if create:"name of the realm">
 
@@ -36,10 +37,11 @@ For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
 var (
 	methodsMap  = map[string]func(string, string) call{"api": newApiCall, "rpc": newRpcCall}
 	servicesMap = map[string][]string{
-		"auth":  {"login", "signup"},
-		"user":  {"password", "login", "deactivate", "change_user"},
-		"jwt":   {"status", "refresh"},
-		"realm": {"create", "view"},
+		"auth":   {"login", "signup"},
+		"user":   {"password", "login", "deactivate", "change_user"},
+		"jwt":    {"status", "refresh"},
+		"realm":  {"create", "view"},
+		"action": {"create", "validate"},
 	}
 )
 
