@@ -122,7 +122,6 @@ func (c rpcCall) trigger() error {
 		case "validate":
 			client := v1.NewUserActionClient(conn)
 			res, err = client.Validate(ctx, &v1.UserActionValidation{
-				Login:   os.Getenv("CLIENT_LOGIN"),
 				Realm:   os.Getenv("CLIENT_REALM"),
 				Data:    os.Getenv("USER_ACTION_VALIDATION_DATA"),
 				Against: os.Getenv("USER_ACTION_VALIDATION_AGAINST"),

@@ -36,12 +36,10 @@ pub struct UserActionRequest {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UserActionValidation {
     #[prost(string, tag = "1")]
-    pub login: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
     pub realm: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "2")]
     pub data: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "3")]
     pub against: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]

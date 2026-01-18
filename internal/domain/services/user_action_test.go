@@ -92,16 +92,16 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 			sqlmock.NewRows([]string{"id", "name"}).
 				AddRow(realmIdMock, "realm_1"),
 		)
-	mock.ExpectQuery(`SELECT \* FROM "users" WHERE login = \$1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$2`).
-		WithArgs("test_login_1", 1).
-		WillReturnRows(
-			sqlmock.NewRows([]string{"id"}).AddRow(1),
-		)
-	mock.ExpectQuery(`SELECT \* FROM "user_actions" WHERE user_id = \$1 AND realm_id = \$2 AND data = \$3 AND validated_at IS NULL ORDER BY "user_actions"."id" LIMIT \$4`).
-		WithArgs(1, realmIdMock, `test`, 1).
+	mock.ExpectQuery(`SELECT \* FROM "user_actions" WHERE realm_id = \$1 AND data = \$2 AND validated_at IS NULL ORDER BY "user_actions"."id" LIMIT \$3`).
+		WithArgs(realmIdMock, `test`, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id", "action", "user_id"}).
 				AddRow(1, entities.UserActionTypePassword, 1),
+		)
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id = \$1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$2`).
+		WithArgs(1, 1).
+		WillReturnRows(
+			sqlmock.NewRows([]string{"id"}).AddRow(1),
 		)
 	mock.ExpectBegin()
 	hashedPassword := "WuMC+ABRzZ6vUwR4IutpHJ0yOUTSvX/m0yD1rnc9mdE="
@@ -115,7 +115,6 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 	err = UserActionValidate(gormDB, up, UserActionValidateIn{
-		Login:   "test_login_1",
 		Realm:   "realm_1",
 		Data:    "test",
 		Against: "test-password",

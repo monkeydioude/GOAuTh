@@ -49,10 +49,9 @@ message UserActionRequest {
 }
 
 message UserActionValidation{
-    string login = 1;
-    string realm = 2;
-    string data = 3;
-    string against = 4;
+    string realm = 1;
+    string data = 2;
+    string against = 3;
 }
 
 message AuthIdRequest {

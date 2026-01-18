@@ -45,7 +45,7 @@ func UserActionCreate(
 	actionRes := db.First(&action, "user_id = ? AND realm_id = ? AND action = ? AND validated_at IS NULL", user.ID, realm.ID, in.Action)
 	if actionRes.Error == nil && action.ID != 0 {
 		if err := db.Model(&action).Update("validated_at", time.Now()).Error; err != nil {
-			return UserActionCreateOut{}, errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
+			return UserActionCreateOut{}, errors.BadRequest(fmt.Errorf("UserActionCreate: %w", err))
 		}
 	}
 	data := uuidGen()
@@ -64,7 +64,6 @@ func UserActionCreate(
 }
 
 type UserActionValidateIn struct {
-	Login   string
 	Realm   string
 	Data    string
 	Against string
@@ -80,15 +79,15 @@ func UserActionValidate(
 		slog.Error(err.Error(), "realm_name", in.Realm)
 		return errors.BadRequest(err)
 	}
-	user := entities.User{}
-	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login)
-		return errors.BadRequest(err)
-	}
 	action := entities.UserAction{}
-	actionRes := db.First(&action, "user_id = ? AND realm_id = ? AND data = ? AND validated_at IS NULL", user.ID, realm.ID, in.Data)
+	actionRes := db.First(&action, "realm_id = ? AND data = ? AND validated_at IS NULL", realm.ID, in.Data)
 	if actionRes.Error != nil {
 		return errors.NotFound(actionRes.Error)
+	}
+	user := entities.User{}
+	if err := db.First(&user, "id = ?", action.UserID).Error; err != nil {
+		slog.Error(err.Error(), "user_id", action.UserID)
+		return errors.BadRequest(err)
 	}
 	var err error
 	switch action.Action {
