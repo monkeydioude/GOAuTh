@@ -73,21 +73,21 @@ func UserActionValidate(
 	db *gorm.DB,
 	usersParams *models.UsersParams,
 	in UserActionValidateIn,
-) error {
+) (string, error) {
 	var realm entities.Realm
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
 		slog.Error(err.Error(), "realm_name", in.Realm)
-		return errors.BadRequest(err)
+		return "", errors.BadRequest(err)
 	}
 	action := entities.UserAction{}
 	actionRes := db.First(&action, "realm_id = ? AND data = ? AND validated_at IS NULL", realm.ID, in.Data)
 	if actionRes.Error != nil {
-		return errors.NotFound(actionRes.Error)
+		return "", errors.NotFound(actionRes.Error)
 	}
 	user := entities.User{}
 	if err := db.First(&user, "id = ?", action.UserID).Error; err != nil {
 		slog.Error(err.Error(), "user_id", action.UserID)
-		return errors.BadRequest(err)
+		return "", errors.BadRequest(err)
 	}
 	var err error
 	switch action.Action {
@@ -97,12 +97,12 @@ func UserActionValidate(
 		err = fmt.Errorf("UserActionValidate: empty or invalid acton")
 	}
 	if err != nil {
-		return errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
+		return "", errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
 	}
 	if err := db.Model(&action).Update("validated_at", time.Now()).Error; err != nil {
-		return errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
+		return "", errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
 	}
-	return nil
+	return user.Login, nil
 }
 
 func userActionResetPassword(

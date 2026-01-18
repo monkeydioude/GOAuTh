@@ -14,6 +14,8 @@ pub struct Response {
     pub code: i32,
     #[prost(string, tag = "2")]
     pub message: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub identifier: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct EditUserRequest {

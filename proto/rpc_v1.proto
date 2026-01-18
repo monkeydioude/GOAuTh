@@ -34,6 +34,7 @@ message UserRequest {
 message Response {
     int32 code = 1;
     string message = 2;
+    string identifier = 3;
 }
 
 message EditUserRequest {

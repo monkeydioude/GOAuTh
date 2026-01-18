@@ -101,7 +101,7 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 	mock.ExpectQuery(`SELECT \* FROM "users" WHERE id = \$1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$2`).
 		WithArgs(1, 1).
 		WillReturnRows(
-			sqlmock.NewRows([]string{"id"}).AddRow(1),
+			sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "test_login_1"),
 		)
 	mock.ExpectBegin()
 	hashedPassword := "WuMC+ABRzZ6vUwR4IutpHJ0yOUTSvX/m0yD1rnc9mdE="
@@ -114,11 +114,12 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), 1).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
-	err = UserActionValidate(gormDB, up, UserActionValidateIn{
+	resEmail, err := UserActionValidate(gormDB, up, UserActionValidateIn{
 		Realm:   "realm_1",
 		Data:    "test",
 		Against: "test-password",
 	})
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
+	assert.Equal(t, "test_login_1", resEmail)
 }

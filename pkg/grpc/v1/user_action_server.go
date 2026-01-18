@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/monkeydioude/goauth/internal/api/handlers"
@@ -44,7 +45,7 @@ func (h *UserActionRPCHandler) Validate(
 	ctx context.Context,
 	payload *UserActionValidation,
 ) (*Response, error) {
-	err := services.UserActionValidate(h.DB, h.UserParams, services.UserActionValidateIn{
+	email, err := services.UserActionValidate(h.DB, h.UserParams, services.UserActionValidateIn{
 		Realm:   payload.Realm,
 		Data:    payload.Data,
 		Against: payload.Against,
@@ -52,5 +53,9 @@ func (h *UserActionRPCHandler) Validate(
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	return Ok(), nil
+	return &Response{
+		Code:       http.StatusOK,
+		Identifier: email,
+		Message:    "Ok",
+	}, nil
 }
