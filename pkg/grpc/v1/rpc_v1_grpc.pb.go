@@ -479,6 +479,7 @@ var User_ServiceDesc = grpc.ServiceDesc{
 const (
 	UserAction_Create_FullMethodName   = "/v1.UserAction/Create"
 	UserAction_Validate_FullMethodName = "/v1.UserAction/Validate"
+	UserAction_Status_FullMethodName   = "/v1.UserAction/Status"
 )
 
 // UserActionClient is the client API for UserAction service.
@@ -487,6 +488,7 @@ const (
 type UserActionClient interface {
 	Create(ctx context.Context, in *UserActionRequest, opts ...grpc.CallOption) (*Response, error)
 	Validate(ctx context.Context, in *UserActionValidation, opts ...grpc.CallOption) (*Response, error)
+	Status(ctx context.Context, in *UserActionRequest, opts ...grpc.CallOption) (*UserActionStatusResponse, error)
 }
 
 type userActionClient struct {
@@ -517,12 +519,23 @@ func (c *userActionClient) Validate(ctx context.Context, in *UserActionValidatio
 	return out, nil
 }
 
+func (c *userActionClient) Status(ctx context.Context, in *UserActionRequest, opts ...grpc.CallOption) (*UserActionStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UserActionStatusResponse)
+	err := c.cc.Invoke(ctx, UserAction_Status_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserActionServer is the server API for UserAction service.
 // All implementations must embed UnimplementedUserActionServer
 // for forward compatibility.
 type UserActionServer interface {
 	Create(context.Context, *UserActionRequest) (*Response, error)
 	Validate(context.Context, *UserActionValidation) (*Response, error)
+	Status(context.Context, *UserActionRequest) (*UserActionStatusResponse, error)
 	mustEmbedUnimplementedUserActionServer()
 }
 
@@ -538,6 +551,9 @@ func (UnimplementedUserActionServer) Create(context.Context, *UserActionRequest)
 }
 func (UnimplementedUserActionServer) Validate(context.Context, *UserActionValidation) (*Response, error) {
 	return nil, status.Error(codes.Unimplemented, "method Validate not implemented")
+}
+func (UnimplementedUserActionServer) Status(context.Context, *UserActionRequest) (*UserActionStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Status not implemented")
 }
 func (UnimplementedUserActionServer) mustEmbedUnimplementedUserActionServer() {}
 func (UnimplementedUserActionServer) testEmbeddedByValue()                    {}
@@ -596,6 +612,24 @@ func _UserAction_Validate_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserAction_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserActionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserActionServer).Status(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserAction_Status_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserActionServer).Status(ctx, req.(*UserActionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserAction_ServiceDesc is the grpc.ServiceDesc for UserAction service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -610,6 +644,10 @@ var UserAction_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Validate",
 			Handler:    _UserAction_Validate_Handler,
+		},
+		{
+			MethodName: "Status",
+			Handler:    _UserAction_Status_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

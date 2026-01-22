@@ -18,7 +18,7 @@ require (
 	gorm.io/gorm v1.30.3
 )
 
-require github.com/calqs/gopkg/dt v1.0.2 // indirect
+require github.com/calqs/gopkg/dt v1.5.0 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

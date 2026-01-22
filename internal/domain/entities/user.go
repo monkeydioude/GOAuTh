@@ -14,7 +14,7 @@ import (
 
 type User struct {
 	ID           uint           `gorm:"primaryKey;autoIncrement" json:"id"`
-	Login        string         `gorm:"unique;not null" json:"login"`
+	Login        string         `gorm:"not null;uniqueIndex:idx_login_active,where:deleted_at IS NULL" json:"login"`
 	Password     string         `gorm:"not null" json:"password,omitempty"`
 	RealmID      uuid.UUID      `gorm:"index"`
 	Realm        *Realm         `gorm:"foreignKey:RealmID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`

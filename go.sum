@@ -2,6 +2,8 @@ github.com/DATA-DOG/go-sqlmock v1.5.2 h1:OcvFkGmslmlZibjAjaHm3L//6LiuBgolP7Oputl
 github.com/DATA-DOG/go-sqlmock v1.5.2/go.mod h1:88MAG/4G7SMwSE3CeA0ZKzrT5CiOU3OJ+JlNzwDqpNU=
 github.com/calqs/gopkg/dt v1.0.2 h1:XFPKf72Vn1RcYq+kE24kWkdKkwet/RAYwUOD/zL//gw=
 github.com/calqs/gopkg/dt v1.0.2/go.mod h1:Hz9Hi7afcM3BFEatkBmhkzC0ZOM9Cqr4RElnI4uShZI=
+github.com/calqs/gopkg/dt v1.5.0 h1:zIPfytTt3Kqa8QmCp8QeG2rJjG+XuAQT3OR+WVaSaYY=
+github.com/calqs/gopkg/dt v1.5.0/go.mod h1:Hz9Hi7afcM3BFEatkBmhkzC0ZOM9Cqr4RElnI4uShZI=
 github.com/calqs/gopkg/env v1.0.2 h1:upySxIRo9gk/QB5jv9ZpzP6TBHbY+MjCBuUrzNNXP60=
 github.com/calqs/gopkg/env v1.0.2/go.mod h1:dTgsyOsr6n965FUfk2R7Davq0COdyVpxRv75sJxMYl0=
 github.com/calqs/gopkg/gormslog v1.0.0 h1:el8U2+Lx/wdlDB/tqrx65a7in3wjSbUocWev0R7RSNc=

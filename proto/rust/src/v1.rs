@@ -9,6 +9,13 @@ pub struct UserRequest {
     pub realm: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct AuthIdRequest {
+    #[prost(int32, tag = "1")]
+    pub uid: i32,
+    #[prost(string, tag = "2")]
+    pub reason: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Response {
     #[prost(int32, tag = "1")]
     pub code: i32,
@@ -45,11 +52,30 @@ pub struct UserActionValidation {
     pub against: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct AuthIdRequest {
-    #[prost(int32, tag = "1")]
-    pub uid: i32,
+pub struct UserActionStatus {
+    #[prost(string, tag = "1")]
+    pub login: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub reason: ::prost::alloc::string::String,
+    pub realm: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub action: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub data: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "5")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "6")]
+    pub updated_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "7")]
+    pub validated_at: ::core::option::Option<::prost_types::Timestamp>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct UserActionStatusResponse {
+    #[prost(int32, tag = "1")]
+    pub code: i32,
+    #[prost(string, tag = "2")]
+    pub message: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub statuses: ::prost::alloc::vec::Vec<UserActionStatus>,
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {}
@@ -583,6 +609,27 @@ pub mod user_action_client {
             let path = http::uri::PathAndQuery::from_static("/v1.UserAction/Validate");
             let mut req = request.into_request();
             req.extensions_mut().insert(GrpcMethod::new("v1.UserAction", "Validate"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn status(
+            &mut self,
+            request: impl tonic::IntoRequest<super::UserActionRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::UserActionStatusResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.UserAction/Status");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.UserAction", "Status"));
             self.inner.unary(req, path, codec).await
         }
     }

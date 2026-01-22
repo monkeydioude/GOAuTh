@@ -9,30 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserActionType string
-
 const (
-	UserActionTypePassword UserActionType = "reset-password"
+	UserActionTypePassword string = "reset-password"
 )
 
-func (uat UserActionType) String() string {
-	return string(uat)
-}
-
-func UserActionTypeFromString(s string) (UserActionType, error) {
-	switch s {
-	case UserActionTypePassword.String():
-		return UserActionTypePassword, nil
-	}
-	return "", errors.New("invalid UserActionType")
-}
-
 type UserAction struct {
-	ID          uint           `gorm:"primaryKey;autoIncrement"`
-	UserID      uint           `gorm:"index"`
-	RealmID     uuid.UUID      `gorm:"index"`
-	Action      UserActionType `gorm:"index"`
-	Data        string         `gorm:"index"`
+	ID          uint      `gorm:"primaryKey;autoIncrement"`
+	UserID      uint      `gorm:"index"`
+	RealmID     uuid.UUID `gorm:"index"`
+	Action      string    `gorm:"index"`
+	Data        string    `gorm:"index"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	ValidatedAt *time.Time

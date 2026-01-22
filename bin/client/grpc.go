@@ -31,7 +31,7 @@ func setupRPCRequest() (*grpc.ClientConn, error) {
 
 func (c rpcCall) trigger() error {
 	slog.Info(fmt.Sprintf("Sending rpc request: %+v\n", c))
-	var res *v1.Response
+	var res any
 	var err error
 	var headerMD metadata.MD
 	conn, err := setupRPCRequest()
@@ -117,7 +117,7 @@ func (c rpcCall) trigger() error {
 			res, err = client.Create(ctx, &v1.UserActionRequest{
 				Login:  os.Getenv("CLIENT_LOGIN"),
 				Realm:  os.Getenv("CLIENT_REALM"),
-				Action: "reset-password",
+				Action: os.Getenv("CLIENT_ACTION"),
 			})
 		case "validate":
 			client := v1.NewUserActionClient(conn)
@@ -125,6 +125,13 @@ func (c rpcCall) trigger() error {
 				Realm:   os.Getenv("CLIENT_REALM"),
 				Data:    os.Getenv("USER_ACTION_VALIDATION_DATA"),
 				Against: os.Getenv("USER_ACTION_VALIDATION_AGAINST"),
+			})
+		case "status":
+			client := v1.NewUserActionClient(conn)
+			res, err = client.Status(ctx, &v1.UserActionRequest{
+				Realm:  os.Getenv("CLIENT_REALM"),
+				Login:  os.Getenv("CLIENT_LOGIN"),
+				Action: os.Getenv("CLIENT_ACTION"),
 			})
 		}
 	default:
@@ -140,7 +147,15 @@ func (c rpcCall) trigger() error {
 	if res == nil {
 		return errors.New("nil response")
 	}
-	slog.Info(fmt.Sprintf("Response: %d\n%s\nHeaders: %+v\n", res.Code, res, headerMD))
+	var code int32 = 0
+	if v, ok := res.(*v1.UserActionStatusResponse); ok {
+		code = v.Code
+	} else if v, ok := res.(*v1.Response); ok {
+		code = v.Code
+	} else {
+		return errors.New("unsuported response")
+	}
+	slog.Info(fmt.Sprintf("Response: %d\n%s\nHeaders: %+v\n%+v\n", code, res, headerMD, res))
 	return err
 }
 

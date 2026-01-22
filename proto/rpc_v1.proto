@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package v1;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "pkg/grpc/v1";
 
 service Auth {
@@ -23,12 +25,18 @@ service User {
 service UserAction {
     rpc Create(UserActionRequest) returns (Response) {}
     rpc Validate(UserActionValidation) returns (Response) {}
+    rpc Status(UserActionRequest) returns (UserActionStatusResponse) {}
 }
 
 message UserRequest {
     string login = 1;
     string password = 2;
     string realm = 3;
+}
+
+message AuthIdRequest {
+    int32 uid = 1;
+    string reason = 2;
 }
 
 message Response {
@@ -49,15 +57,26 @@ message UserActionRequest {
     string action = 3;
 }
 
-message UserActionValidation{
+message UserActionValidation {
     string realm = 1;
     string data = 2;
     string against = 3;
 }
 
-message AuthIdRequest {
-    int32 uid = 1;
-    string reason = 2;
+message UserActionStatus {
+    string login = 1;
+    string realm = 2;
+    string action = 3;
+    string data = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    google.protobuf.Timestamp validated_at = 7;
+}
+
+message UserActionStatusResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated UserActionStatus statuses = 3;
 }
 
 message Empty {}

@@ -41,7 +41,7 @@ var (
 		"user":   {"password", "login", "deactivate", "change_user"},
 		"jwt":    {"status", "refresh"},
 		"realm":  {"create", "view"},
-		"action": {"create", "validate"},
+		"action": {"create", "validate", "status"},
 	}
 )
 

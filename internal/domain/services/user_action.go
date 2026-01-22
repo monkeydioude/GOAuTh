@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/calqs/gopkg/dt"
 	"github.com/monkeydioude/goauth/internal/domain/entities"
 	"github.com/monkeydioude/goauth/internal/domain/models"
 	"github.com/monkeydioude/goauth/pkg/crypt"
@@ -27,10 +28,6 @@ func UserActionCreate(
 	in UserActionCreateIn,
 	uuidGen func() string,
 ) (UserActionCreateOut, error) {
-	actionType, err := entities.UserActionTypeFromString(in.Action)
-	if err != nil {
-		return UserActionCreateOut{}, fmt.Errorf("UserActionCreate: %w", err)
-	}
 	var realm entities.Realm
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
 		slog.Error(err.Error(), "realm_name", in.Realm)
@@ -52,7 +49,7 @@ func UserActionCreate(
 	dom := entities.UserAction{
 		UserID:  user.ID,
 		RealmID: realm.ID,
-		Action:  actionType,
+		Action:  in.Action,
 		Data:    data,
 	}
 	if res := db.Create(&dom); res.Error != nil {
@@ -93,8 +90,6 @@ func UserActionValidate(
 	switch action.Action {
 	case entities.UserActionTypePassword:
 		err = userActionResetPassword(db, usersParams, user, in.Against)
-	default:
-		err = fmt.Errorf("UserActionValidate: empty or invalid acton")
 	}
 	if err != nil {
 		return "", errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
@@ -121,4 +116,55 @@ func userActionResetPassword(
 		return errors.DBError(fmt.Errorf("userActionResetPassword: %w", res.Error))
 	}
 	return nil
+}
+
+type UserActionStatusIn struct {
+	Realm  string
+	Login  string
+	Action string
+}
+
+type UserActionStatusOut struct {
+	Realm       string
+	Login       string
+	Action      string
+	Data        string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	ValidatedAt *time.Time
+}
+
+func UserActionStatus(
+	db *gorm.DB,
+	in UserActionStatusIn,
+) ([]UserActionStatusOut, error) {
+	var realm entities.Realm
+	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
+		slog.Error(err.Error(), "realm_name", in.Realm)
+		return []UserActionStatusOut{}, errors.BadRequest(err)
+	}
+	user := entities.User{}
+	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
+		slog.Error(err.Error(), "login", in.Login)
+		return []UserActionStatusOut{}, errors.BadRequest(err)
+	}
+	actions := []entities.UserAction{}
+	actionRes := db.
+		Where("user_id = ? AND realm_id = ? AND action = ? AND validated_at IS NULL", user.ID, realm.ID, in.Action).
+		Find(&actions).
+		Order("id DESC")
+	if actionRes.Error != nil {
+		return []UserActionStatusOut{}, errors.NotFound(actionRes.Error)
+	}
+	return dt.SliceTransform(actions, func(ua entities.UserAction) UserActionStatusOut {
+		return UserActionStatusOut{
+			Realm:       realm.Name,
+			Login:       user.Login,
+			Action:      ua.Action,
+			Data:        ua.Data,
+			CreatedAt:   ua.CreatedAt,
+			UpdatedAt:   ua.UpdatedAt,
+			ValidatedAt: ua.ValidatedAt,
+		}
+	}), nil
 }

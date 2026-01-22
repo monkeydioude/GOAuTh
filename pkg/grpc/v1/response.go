@@ -57,3 +57,11 @@ func FromErrToResponse(err error) *Response {
 		Message: errType.Error(),
 	}
 }
+
+func FromErrToUserActionStatusResponse(err error) *UserActionStatusResponse {
+	res := FromErrToResponse(err)
+	return &UserActionStatusResponse{
+		Code:    res.Code,
+		Message: res.Message,
+	}
+}
