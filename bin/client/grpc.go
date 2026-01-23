@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/pkg/data_types/slice"
 	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
 	"github.com/monkeydioude/goauth/pkg/http/rpc"
 
@@ -113,12 +115,11 @@ func (c rpcCall) trigger() error {
 	case "action":
 		switch c.action {
 		case "create":
+			args := flag.Args()
+			pl := &v1.UserActionRequest{}
+			slice.MapVars(args[2:], &pl.Login, &pl.Realm, &pl.Action, &pl.Data)
 			client := v1.NewUserActionClient(conn)
-			res, err = client.Create(ctx, &v1.UserActionRequest{
-				Login:  os.Getenv("CLIENT_LOGIN"),
-				Realm:  os.Getenv("CLIENT_REALM"),
-				Action: os.Getenv("CLIENT_ACTION"),
-			})
+			res, err = client.Create(ctx, pl)
 		case "validate":
 			client := v1.NewUserActionClient(conn)
 			res, err = client.Validate(ctx, &v1.UserActionValidation{
@@ -127,12 +128,11 @@ func (c rpcCall) trigger() error {
 				Against: os.Getenv("USER_ACTION_VALIDATION_AGAINST"),
 			})
 		case "status":
+			args := flag.Args()
+			pl := &v1.UserActionRequest{}
+			slice.MapVars(args[2:], &pl.Login, &pl.Realm, &pl.Action, &pl.Data)
 			client := v1.NewUserActionClient(conn)
-			res, err = client.Status(ctx, &v1.UserActionRequest{
-				Realm:  os.Getenv("CLIENT_REALM"),
-				Login:  os.Getenv("CLIENT_LOGIN"),
-				Action: os.Getenv("CLIENT_ACTION"),
-			})
+			res, err = client.Status(ctx, pl)
 		}
 	default:
 		return errors.New("unavailable through rpc yet")

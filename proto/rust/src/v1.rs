@@ -41,6 +41,8 @@ pub struct UserActionRequest {
     pub realm: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
     pub action: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub data: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UserActionValidation {

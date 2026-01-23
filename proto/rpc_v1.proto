@@ -55,6 +55,7 @@ message UserActionRequest {
     string login = 1;
     string realm = 2;
     string action = 3;
+    string data = 4;
 }
 
 message UserActionValidation {

@@ -34,6 +34,7 @@ func (h *UserActionRPCHandler) Create(
 		Login:  payload.Login,
 		Realm:  payload.Realm,
 		Action: payload.Action,
+		Data:   dt.PtrNilOnEmpty(payload.Data),
 	},
 		func() string { return uuid.NewString() },
 	)

@@ -17,6 +17,7 @@ type UserActionCreateIn struct {
 	Login  string
 	Realm  string
 	Action string
+	Data   *string
 }
 
 type UserActionCreateOut struct {
@@ -45,7 +46,10 @@ func UserActionCreate(
 			return UserActionCreateOut{}, errors.BadRequest(fmt.Errorf("UserActionCreate: %w", err))
 		}
 	}
-	data := uuidGen()
+	data := dt.Deref(in.Data)
+	if in.Action == entities.UserActionTypePassword || data == "" {
+		data = uuidGen()
+	}
 	dom := entities.UserAction{
 		UserID:  user.ID,
 		RealmID: realm.ID,
