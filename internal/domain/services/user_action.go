@@ -154,9 +154,10 @@ func UserActionStatus(
 	}
 	actions := []entities.UserAction{}
 	actionRes := db.
-		Where("user_id = ? AND realm_id = ? AND action = ? AND validated_at IS NULL", user.ID, realm.ID, in.Action).
-		Find(&actions).
-		Order("id DESC")
+		Where("user_id = ? AND realm_id = ? AND action = ?", user.ID, realm.ID, in.Action).
+		Limit(50).
+		Order("id DESC").
+		Find(&actions)
 	if actionRes.Error != nil {
 		return []UserActionStatusOut{}, errors.NotFound(actionRes.Error)
 	}
