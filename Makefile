@@ -56,9 +56,7 @@ dev:
 
 .PHONY: docker-build
 docker-build:
-	docker build -t drannoc/goauth .
-	docker tag drannoc/goauth drannoc/goauth:latest
-	docker push drannoc/goauth
+	docker buildx build --platform linux/amd64,linux/arm64 -t drannoc/goauth:latest --push .
 
 .PHONY: dpsql
 dpsql:
