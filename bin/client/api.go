@@ -175,7 +175,7 @@ func (c apiCall) trigger() error {
 			req, err = http.NewRequest(
 				"POST",
 				fmt.Sprintf("%s%s/auth/signup", os.Getenv("API_URL"), consts.BaseAPI_V1),
-				strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s", "realm_name": "cookie-users"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"))),
+				strings.NewReader(fmt.Sprintf(`{"login": "%s","password":"%s", "realm_name": "%s"}`, os.Getenv("CLIENT_LOGIN"), os.Getenv("CLIENT_PASSWORD"), os.Getenv("CLIENT_REALM"))),
 			)
 			if err != nil {
 				return err
