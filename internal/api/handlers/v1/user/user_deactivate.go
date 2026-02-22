@@ -24,7 +24,7 @@ func Deactivate(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jwt, err := h.JWTFactory.DecodeCookieToken(cookie)
+	jwt, err := h.AccessTokenFactory.DecodeCookieToken(cookie)
 	if err != nil {
 		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
 		response.Unauthorized(err.Error(), w)

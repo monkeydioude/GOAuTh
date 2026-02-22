@@ -83,6 +83,6 @@ func NewUserRPCHandler(layout *handlers.Layout) *UserRPCHandler {
 	return &UserRPCHandler{
 		UserParams: layout.UserParams,
 		DB:         layout.DB,
-		JWTFactory: layout.JWTFactory,
+		JWTFactory: layout.AccessTokenFactory,
 	}
 }

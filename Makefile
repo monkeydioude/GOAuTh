@@ -6,7 +6,7 @@ help:
 
 .PHONY: install
 install:
-	cp scripts/git/pre-commit .git/hooks
+	cp scripts/git/pre-push .git/hooks
 
 .PHONY: db_layout
 db_layout:
@@ -35,6 +35,10 @@ unit-test:
 test:
 	@sh scripts/tests.sh
 
+.PHONY: gitleaks
+gitleaks:
+	@sh scripts/gitleaks.sh
+
 .PHONY: proto-go
 proto-go:
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -48,9 +52,9 @@ proto-rust:
 proto: proto-go proto-rust
 
 .PHONY: dev
-dev:
+dev: install
 	@mkdir -p ./pgdata
-	docker compose up -d
+# 	docker compose up -d
 	go install github.com/mitranim/gow@latest
 	gow run ./bin/GOAuTh
 
@@ -61,3 +65,7 @@ docker-build:
 .PHONY: dpsql
 dpsql:
 	docker compose exec db psql "postgres://dev:dev@127.0.0.1:5432/dev_db?options=-c%20search_path%3Dusers"
+
+.PHONY: dpsql-test
+dpsql-test:
+	docker exec -it goauth-tests-db-manual psql -U test -d test_db

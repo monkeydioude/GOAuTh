@@ -29,21 +29,27 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 	}
 	os.Setenv("JWT_SECRET", "test")
 	// init layout
-	res := boot.LayoutBoot([]any{entities.NewEmptyUser()}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
+	res := boot.LayoutBoot([]any{entities.User{}, entities.Realm{}, entities.UserAction{}}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
 	if res.IsErr() {
 		log.Fatalf("Could not boot layout: %s", res.Error.Error())
 	}
 	layout := res.Result()
-	layout.DB.Exec("TRUNCATE TABLE users")
+	layout.DB.Exec("TRUNCATE TABLE users CASCADE")
+	layout.DB.Exec("TRUNCATE TABLE user_actions CASCADE")
+	layout.DB.Exec("TRUNCATE TABLE realms CASCADE")
+	layout.DB.Exec("INSERT INTO realms (id, name, allow_new_user) VALUES (gen_random_uuid(), 'test', true)")
 
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	// change to the JWTFactory, so we can manipulate
+	// change to the AccessTokenFactory, so we can manipulate
 	// its time reference logic
-	layout.JWTFactory.TimeFn = func() time.Time {
+	layout.AccessTokenFactory.TimeFn = func() time.Time {
 		return timeRef
 	}
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
+	layout.RefreshTokenFactory.TimeFn = func() time.Time {
+		return timeRef
+	}
+	layout.RefreshTokenFactory.ExpiresIn = 24 * time.Hour
 
 	return layout, layout.DB, timeRef
 }

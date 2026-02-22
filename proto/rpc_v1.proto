@@ -12,9 +12,32 @@ service Auth {
     rpc Delete(AuthIdRequest) returns (Response) {}
 }
 
+message StatusIn {
+    string accessToken = 1;
+    string refreshToken = 2;
+}
+
+message StatusOut {
+    bool accessTokenValid = 1;
+    bool refreshTokenValid = 2;
+}
+
+message RefreshIn {
+    string refreshToken = 1;
+    optional int64 access_expires_in_seconds = 2;
+    optional int64 refresh_expires_in_seconds = 3;
+}
+
+message RefreshOut {
+    string accessToken = 1;
+    int64 access_expires_at = 2;
+    string refreshToken = 3;
+    int64 refresh_expires_at = 4;
+}
+
 service JWT {
-    rpc Status(Empty) returns (Response) {}
-    rpc Refresh(Empty) returns (Response) {}
+    rpc Status(StatusIn) returns (StatusOut) {}
+    rpc Refresh(RefreshIn) returns (RefreshOut) {}
 }
 
 service User {
@@ -32,6 +55,8 @@ message UserRequest {
     string login = 1;
     string password = 2;
     string realm = 3;
+    optional int64 access_expires_in_seconds = 4;
+    optional int64 refresh_expires_in_seconds = 5;
 }
 
 message AuthIdRequest {

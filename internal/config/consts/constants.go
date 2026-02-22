@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/pkg/data_types/timed"
 )
 
 // Env labels
@@ -15,10 +16,11 @@ const JWT_SECRET = "JWT_SECRET"
 const PASSWD_SALT = "PASSWD_SALT"
 
 const AuthorizationCookie = "Authorization"
+const RefreshTokenCookie = "Refresh"
 const SetCookie = "set-cookie"
 
-const JWTExpiresIn = 1 * 24 * time.Hour
-const JWTRefreshesIn = 4 * 7 * 24 * time.Hour
+const AccessTokenExpiresIn = 1 * time.Hour
+const RefreshTokenExpiresIn = 4 * timed.Week
 
 const BaseAPI_V1 = "/identity/v1"
 
@@ -35,6 +37,7 @@ var Argon2 = crypt.Argon2Bag{
 const X_REQUEST_ID_LABEL = "X-Request-ID"
 const NO_X_REQUEST_ID = "no_x_request_id"
 
+const ERR_TOKENS_DONT_MATCH = "TokensDontMatch"
 const ERR_TOKEN_MISSING_PARAMS = "TokenMissingParameters"
 const ERR_TOKEN_EXPIRED = "TokenExpiredError"
 const ERR_WRONG_TOKEN_SCHEMA = "TokenSchemaError"

@@ -21,10 +21,12 @@ func LayoutBoot(
 	userParams := UsersParamsBoot(loginConstraints, passwordConstraints)
 	gorm := dbRes.Result()
 	gormSetupHydrate(gorm, userParams)
+	atf, rtf := JwtFactoryBoot(gorm)
 	return result.Ok(&handlers.Layout{
-		DB:         gorm,
-		JWTFactory: JwtFactoryBoot(gorm),
-		UserParams: userParams,
-		Plugins:    &plugins.Plugins,
+		DB:                  gorm,
+		AccessTokenFactory:  atf,
+		RefreshTokenFactory: rtf,
+		UserParams:          userParams,
+		Plugins:             &plugins.Plugins,
 	})
 }

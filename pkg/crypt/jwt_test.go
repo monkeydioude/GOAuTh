@@ -8,26 +8,20 @@ import (
 )
 
 func TestICanSignAJWT(t *testing.T) {
-	trials := []JWTDefaultClaims{{
+	trial := JWTDefaultClaims{
 		Expire: time.Date(2024, 10, 04, 22, 22, 22, 22, time.UTC).Unix(),
 		UID:    0,
 		Realm:  "test1",
-	}, {
-		Expire:  time.Date(2024, 10, 04, 22, 22, 22, 22, time.UTC).Unix(),
-		Refresh: time.Date(2024, 10, 04, 23, 22, 22, 22, time.UTC).Unix(),
-		UID:     0,
-		Realm:   "test1",
-	}}
-	goals := []string{
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsInVpZCI6MCwicmVhbG0iOiJ0ZXN0MSJ9.qEiSYDfztM43tVdinryLBb6EYoeJk70ysROuZXvtjpw",
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsInJlZnJlc2giOjE3MjgwODQxNDIsInVpZCI6MCwicmVhbG0iOiJ0ZXN0MSJ9.yChC77_vDG2DTNl6Wh9mGznLR3GKNEDoptvaEGqlsBk",
+		Type:   "test",
 	}
+	goal := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoidGVzdCIsImV4cGlyZSI6MTcyODA4MDU0MiwidWlkIjowLCJyZWFsbSI6InRlc3QxIn0.ZlrudxhikVY8nu_55CC4d4WzOg3i6jIwRJvhVuT_-hA"
 
-	for i, goal := range goals {
-		signature, err := NewJWT(HS256("test"), trials[i])
-		assert.NoError(t, err)
-		assert.Equal(t, goal, signature)
-	}
+	signature, err := NewJWT(HS256("test"), trial)
+	assert.NoError(t, err)
+	assert.Equal(t, goal, signature)
+	res, err := DecodeJWT[JWTDefaultClaims](signature, HS256("test"))
+	assert.NoError(t, err)
+	assert.Equal(t, trial, res)
 }
 
 func TestICanAssertATokenWasNotTemperedWith(t *testing.T) {

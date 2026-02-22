@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/monkeydioude/goauth/pkg/errors"
 )
@@ -22,16 +21,10 @@ type JWTClaims interface {
 
 // JWTDefaultClaims should be used as base minimal claims
 type JWTDefaultClaims struct {
-	Expire  int64  `json:"expire"`
-	Refresh int64  `json:"refresh,omitempty"`
-	UID     uint   `json:"uid"`
-	Realm   string `json:"realm"`
-}
-
-// RemainingRefresh returns the remaining available refresh time.Duration.
-// timeRef can be time.Now()
-func (c JWTDefaultClaims) RemainingRefresh(timeRef time.Time) time.Duration {
-	return time.Unix(c.Refresh, 0).Sub(timeRef)
+	Type   string `json:"type"`
+	Expire int64  `json:"expire"`
+	UID    uint   `json:"uid"`
+	Realm  string `json:"realm"`
 }
 
 // GetClaims implmentation from the JWTClaims interface

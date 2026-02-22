@@ -16,11 +16,12 @@ import (
 // It mostly holds dependencies and settings that need to get passed on
 // up the execution tree.
 type Layout struct {
-	DB            *gorm.DB
-	SigningMethod crypt.JWTSigningMethod
-	UserParams    *models.UsersParams
-	JWTFactory    *services.JWTFactory
-	Plugins       *plugins.PluginsRecord
+	DB                  *gorm.DB
+	SigningMethod       crypt.JWTSigningMethod
+	UserParams          *models.UsersParams
+	AccessTokenFactory  *services.JWTFactory
+	RefreshTokenFactory *services.JWTFactory
+	Plugins             *plugins.PluginsRecord
 }
 
 // Handler our basic generic route handler

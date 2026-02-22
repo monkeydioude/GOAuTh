@@ -22,7 +22,12 @@ func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res, err := services.JWTStatus(cookie.Value, *h.JWTFactory)
+	tok, err := services.GetTokenFromBearer(cookie.Value)
+	if err != nil {
+		response.Unauthorized(err.Error(), w)
+		return
+	}
+	res, err := services.JWTStatus(tok, *h.AccessTokenFactory)
 	if err != nil {
 		response.Unauthorized(err.Error(), w)
 		return

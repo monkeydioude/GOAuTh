@@ -21,8 +21,7 @@ func TestJsonAPICanNotChangeLoginOnMissingUID(t *testing.T) {
 	layout, _, _ := setup()
 	defer cleanup(layout)
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/user/login", layout.Put(user.EditLogin))
@@ -32,7 +31,7 @@ func TestJsonAPICanNotChangeLoginOnMissingUID(t *testing.T) {
 
 	// create the user
 	rec := httptest.NewRecorder()
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		UID:   1,
 		Realm: "fake-realm",
 		// Name: login,
@@ -61,8 +60,7 @@ func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
 	layout, _, _ := setup()
 	defer cleanup(layout)
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/user/login", layout.Put(user.EditLogin))
@@ -70,7 +68,7 @@ func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
 	// login := "TestJsonAPICanNotChangeLoginOnIncorrectPassword@test.com"
 	// create the user
 	rec := httptest.NewRecorder()
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		UID:   1,
 		Realm: "fake-realm",
@@ -98,8 +96,7 @@ func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
 func TestJsonAPICanChangeAnUserLogin(t *testing.T) {
 	layout, gormDB, _ := setup()
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/user/login", layout.Put(user.EditLogin))
@@ -132,7 +129,7 @@ func TestJsonAPICanChangeAnUserLogin(t *testing.T) {
 	assert.Nil(t, gormDB.Create(&user).Error)
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		UID:   user.ID,
 		Realm: realm.Name,

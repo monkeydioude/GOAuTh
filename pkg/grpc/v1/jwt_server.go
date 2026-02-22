@@ -6,55 +6,77 @@ import (
 	"github.com/monkeydioude/goauth/internal/api/handlers"
 	"github.com/monkeydioude/goauth/internal/config/consts"
 	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/pkg/data_types/timed"
 	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	"gorm.io/gorm"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 type JWTRPCHandler struct {
 	UnimplementedJWTServer
-	JWTFactory *services.JWTFactory
+	AccessTokenFactory  *services.JWTFactory
+	RefreshTokenFactory *services.JWTFactory
+	DB                  *gorm.DB
 }
 
-func (h *JWTRPCHandler) Status(ctx context.Context, req *Empty) (*Response, error) {
+func (h *JWTRPCHandler) Status(ctx context.Context, req *StatusIn) (*StatusOut, error) {
 	if req == nil {
-		return InternalServerError("no req pointer"), nil
+		return nil, StatusInternalServerError("no req pointer")
 	}
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return BadRequest("didnt find any metadata"), nil
-	}
-	cookie, err := rpc.FetchCookie(md, consts.AuthorizationCookie)
+	token, err := FetchAccessToken(ctx, req)
 	if err != nil {
-		return BadRequest("could not find token metadata"), nil
+		return nil, StatusBadRequest("could not find access token in metadata or payload")
 	}
-	res, err := services.JWTStatus(cookie.Value, *h.JWTFactory)
+	res, err := services.JWTStatus(token, *h.AccessTokenFactory)
 	if err != nil {
-		return FromErrToResponse(err), nil
+		return nil, StatusFromErr(err)
 	}
 	grpc.SendHeader(ctx, rpc.SetCookie(res))
-	return Ok(), nil
+	return &StatusOut{
+		AccessTokenValid: res.Value != "",
+		// RefreshTokenValid: true,
+	}, nil
 }
 
-func (h *JWTRPCHandler) Refresh(ctx context.Context, req *Empty) (*Response, error) {
+func (h *JWTRPCHandler) Refresh(ctx context.Context, req *RefreshIn) (*RefreshOut, error) {
 	if req == nil {
-		return InternalServerError("no req pointer"), nil
+		return nil, StatusInternalServerError("no req pointer")
 	}
-	cookie, err := rpc.FetchCookieFromContext(ctx, consts.AuthorizationCookie)
+	token := req.RefreshToken
+	cookie, err := rpc.FetchCookieFromContext(ctx, consts.RefreshTokenCookie)
 	if err != nil {
-		return BadRequest(err.Error()), nil
+		if token == "" {
+			return nil, StatusBadRequest(err.Error())
+		}
+	} else {
+		token = cookie.Value
 	}
-	res, err := services.JWTRefresh(cookie.Value, *h.JWTFactory)
+	atf := h.AccessTokenFactory
+	if req.AccessExpiresInSeconds != nil {
+		atf = atf.WithExpiresIn(timed.Seconds(*req.AccessExpiresInSeconds))
+	}
+	rtf := h.RefreshTokenFactory
+	if req.RefreshExpiresInSeconds != nil {
+		rtf = rtf.WithExpiresIn(timed.Seconds(*req.RefreshExpiresInSeconds))
+	}
+	accessToken, refreshToken, err := services.JWTRefresh(token, *atf, *rtf, h.DB)
 	if err != nil {
-		return FromErrToResponse(err), nil
+		return nil, StatusFromErr(err)
 	}
-	grpc.SendHeader(ctx, rpc.SetCookie(res))
-	return Ok(), nil
+	grpc.SendHeader(ctx, rpc.SetCookies(accessToken, refreshToken))
+	return &RefreshOut{
+		AccessToken:      accessToken.Value,
+		AccessExpiresAt:  accessToken.Expires.Unix(),
+		RefreshToken:     refreshToken.Value,
+		RefreshExpiresAt: refreshToken.Expires.Unix(),
+	}, nil
 }
 
 func NewJWTRPCHandler(layout *handlers.Layout) *JWTRPCHandler {
 	return &JWTRPCHandler{
-		JWTFactory: layout.JWTFactory,
+		AccessTokenFactory:  layout.AccessTokenFactory,
+		RefreshTokenFactory: layout.RefreshTokenFactory,
+		DB:                  layout.DB,
 	}
 }

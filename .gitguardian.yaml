@@ -1,0 +1,5 @@
+version: 2
+secret:
+  ignored-paths:
+    - "**/*_test.go"
+    - ".gitleaks.toml"

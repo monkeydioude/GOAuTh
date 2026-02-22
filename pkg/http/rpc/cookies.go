@@ -19,17 +19,31 @@ func AppendCookie(md metadata.MD, cookie http.Cookie) metadata.MD {
 	return md
 }
 
+func SetCookies(cookies ...http.Cookie) metadata.MD {
+	md := metadata.Pairs()
+	for _, cookie := range cookies {
+		md = AppendCookie(md, cookie)
+	}
+	return md
+}
+
+func AppendCookies(md metadata.MD, cookies ...http.Cookie) metadata.MD {
+	for _, cookie := range cookies {
+		md = AppendCookie(md, cookie)
+	}
+	return md
+}
+
 func FetchCookie(headers metadata.MD, key string) (http.Cookie, error) {
 	cookies := headers.Get(SetCookieLabel)
 	if len(cookies) == 0 {
 		return http.Cookie{}, errors.New("no cookies")
 	}
 	for _, cookieLine := range cookies {
-		cookieSlice, err := http.ParseCookie(cookieLine)
-		if err != nil {
-			continue
-		}
-		for _, cookie := range cookieSlice {
+		header := http.Header{}
+		header.Add("Set-Cookie", cookieLine)
+		resp := http.Response{Header: header}
+		for _, cookie := range resp.Cookies() {
 			if cookie.Name == key {
 				return *cookie, nil
 			}
@@ -43,7 +57,7 @@ func FetchCookieFromContext(ctx context.Context, key string) (http.Cookie, error
 	if !ok {
 		return http.Cookie{}, errors.New("didnt find any metadata")
 	}
-	return FetchCookie(md, AuthorizationCookie)
+	return FetchCookie(md, key)
 }
 
 func SetOutgoingCookie(ctx context.Context, cookie http.Cookie) context.Context {

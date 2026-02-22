@@ -25,7 +25,7 @@ func TestJsonAPICanGetAValidTokensStatus(t *testing.T) {
 	login := "TestICanGetAValidTokensStatus@test.com"
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		UID:   1,
 		Realm: login,
 	})
@@ -52,7 +52,7 @@ func TestJsonAPIGetA401OnInvalidToken(t *testing.T) {
 	// login := "TestIGetA401OnInvalidToken@test.com"
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 	})
 	assert.NoError(t, err)
@@ -81,17 +81,16 @@ func TestJsonAPIGetA401OnExpiredToken(t *testing.T) {
 	// login := "TestIGetA401OnInvalidToken@test.com"
 	rec := httptest.NewRecorder()
 	// ensuring factory's timeline
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		UID:   1,
 		Realm: "cabane123",
 		// Name: login,
 	})
 	assert.NoError(t, err)
-	timeRef := layout.JWTFactory.TimeFn()
+	timeRef := layout.AccessTokenFactory.TimeFn()
 	// sending the factory into the futur, making sure we are past refresh time
-	layout.JWTFactory.TimeFn = func() time.Time {
+	layout.AccessTokenFactory.TimeFn = func() time.Time {
 		return timeRef.Add(12 * time.Second)
 	}
 	req, err := http.NewRequest("POST", "/v1/jwt/status", nil)
