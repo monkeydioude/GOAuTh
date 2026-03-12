@@ -3,7 +3,7 @@ package errors
 import (
 	"net/http"
 
-	"github.com/monkeydioude/goauth/pkg/http/response"
+	"github.com/monkeydioude/goauth/v2/pkg/http/response"
 )
 
 type Err struct {

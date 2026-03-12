@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/monkeydioude/goauth/pkg/plugins"
+	"github.com/monkeydioude/goauth/v2/pkg/plugins"
 
 	"github.com/google/uuid"
 	"github.com/monkeydioude/heyo/pkg/rpc"

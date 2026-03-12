@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/calqs/gopkg/dt"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/internal/domain/models"
-	"github.com/monkeydioude/goauth/pkg/crypt"
-	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
 	"gorm.io/gorm"
 )
 

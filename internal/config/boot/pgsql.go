@@ -9,8 +9,8 @@ import (
 	"github.com/calqs/gopkg/env"
 	"github.com/calqs/gopkg/gormslog"
 	"github.com/joho/godotenv"
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/pkg/tools/result"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

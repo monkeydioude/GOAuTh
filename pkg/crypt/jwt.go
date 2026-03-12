@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
 )
 
 // JWTClaims is a mandatory part of the JWT generation.

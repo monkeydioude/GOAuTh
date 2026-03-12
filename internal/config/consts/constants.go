@@ -3,8 +3,8 @@ package consts
 import (
 	"time"
 
-	"github.com/monkeydioude/goauth/pkg/crypt"
-	"github.com/monkeydioude/goauth/pkg/data_types/timed"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/pkg/data_types/timed"
 )
 
 // Env labels

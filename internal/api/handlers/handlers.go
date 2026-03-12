@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/monkeydioude/goauth/internal/domain/models"
-	"github.com/monkeydioude/goauth/internal/domain/services"
-	"github.com/monkeydioude/goauth/pkg/crypt"
-	"github.com/monkeydioude/goauth/pkg/plugins"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/pkg/plugins"
 
 	"gorm.io/gorm"
 )

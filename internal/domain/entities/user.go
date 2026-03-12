@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/monkeydioude/goauth/internal/domain/models"
-	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

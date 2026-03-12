@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 )
 
 func TestFactoryCanGenerateAndDecodeAToken(t *testing.T) {

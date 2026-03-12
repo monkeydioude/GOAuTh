@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/services"
-	"github.com/monkeydioude/goauth/pkg/http/response"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/pkg/http/response"
 )
 
 func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {

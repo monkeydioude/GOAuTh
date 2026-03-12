@@ -1,9 +1,9 @@
 package boot
 
 import (
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
-	"github.com/monkeydioude/goauth/pkg/tools/result"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
+	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 
 	"github.com/joho/godotenv"
 )

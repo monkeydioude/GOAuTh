@@ -6,9 +6,9 @@ import (
 
 	"github.com/calqs/gopkg/dt"
 	"github.com/google/uuid"
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/domain/models"
-	"github.com/monkeydioude/goauth/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/internal/domain/services"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )

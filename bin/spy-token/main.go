@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/internal/domain/services"
-	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

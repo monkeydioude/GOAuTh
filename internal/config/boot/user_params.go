@@ -3,9 +3,9 @@ package boot
 import (
 	"os"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
-	"github.com/monkeydioude/goauth/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
 )
 
 func UsersParamsBoot(

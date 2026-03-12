@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/monkeydioude/goauth/internal/config/boot"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/pkg/data_types/slice"
+	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/pkg/data_types/slice"
 )
 
 func realmCreate() error {

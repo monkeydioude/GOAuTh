@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/internal/domain/models"
-	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
 
 	"gorm.io/gorm"
 )

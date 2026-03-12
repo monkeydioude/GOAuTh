@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/monkeydioude/goauth/pkg/tools/result"
+	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 )
 
 func Json[T any](req *http.Request) result.R[T] {

@@ -3,8 +3,8 @@ package v1
 import (
 	"net/http"
 
-	"github.com/monkeydioude/goauth/pkg/errors"
-	"github.com/monkeydioude/goauth/pkg/http/response"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/pkg/http/response"
 )
 
 func BadRequest(msg string) *Response {

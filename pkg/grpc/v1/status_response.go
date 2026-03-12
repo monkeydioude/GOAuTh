@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

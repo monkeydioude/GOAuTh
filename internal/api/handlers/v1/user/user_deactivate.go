@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/services"
-	"github.com/monkeydioude/goauth/pkg/errors"
-	"github.com/monkeydioude/goauth/pkg/http/response"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/pkg/http/response"
 )
 
 // Login would be the route used for logging a user in the a system

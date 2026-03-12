@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers/v1/user"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/user"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

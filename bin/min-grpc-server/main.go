@@ -6,11 +6,11 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/config/boot"
-	"github.com/monkeydioude/goauth/internal/config/middleware"
-	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
-	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/config/middleware"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
+	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
 	"github.com/oklog/run"
 	"google.golang.org/grpc"
 )

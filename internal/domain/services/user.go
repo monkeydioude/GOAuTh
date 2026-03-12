@@ -4,10 +4,10 @@ import (
 	stdErr "errors"
 	"log/slog"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/pkg/crypt"
-	"github.com/monkeydioude/goauth/pkg/errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
 
 	"gorm.io/gorm"
 )

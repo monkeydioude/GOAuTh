@@ -6,12 +6,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/internal/domain/models"
-	"github.com/monkeydioude/goauth/internal/domain/services"
-	"github.com/monkeydioude/goauth/pkg/http/rpc"
-	"github.com/monkeydioude/goauth/pkg/plugins"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
+	"github.com/monkeydioude/goauth/v2/pkg/plugins"
 
 	"google.golang.org/grpc"
 	"gorm.io/gorm"

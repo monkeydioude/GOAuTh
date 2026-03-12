@@ -5,7 +5,7 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 )
 
 // EmailConstraint is a simple and basic email format tester

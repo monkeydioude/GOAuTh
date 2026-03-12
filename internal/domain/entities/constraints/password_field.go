@@ -3,7 +3,7 @@ package constraints
 import (
 	"errors"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 )
 
 // PasswordSafetyConstraint is a simple and basic password format tester

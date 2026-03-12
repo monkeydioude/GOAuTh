@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/api/handlers/v1/auth"
-	"github.com/monkeydioude/goauth/internal/api/handlers/v1/jwt"
-	"github.com/monkeydioude/goauth/internal/api/handlers/v1/user"
-	"github.com/monkeydioude/goauth/internal/config/boot"
-	"github.com/monkeydioude/goauth/internal/config/middleware"
-	"github.com/monkeydioude/goauth/pkg/http/middlewares"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/auth"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/jwt"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/user"
+	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/config/middleware"
+	"github.com/monkeydioude/goauth/v2/pkg/http/middlewares"
 )
 
 func healthcheck(w http.ResponseWriter, req *http.Request) {

@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/pkg/data_types/slice"
-	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
-	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/pkg/data_types/slice"
+	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
+	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"

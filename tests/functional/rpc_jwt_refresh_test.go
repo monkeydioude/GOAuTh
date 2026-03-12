@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
-	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
+	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"

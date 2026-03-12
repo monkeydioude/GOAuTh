@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/config/boot"
-	"github.com/monkeydioude/goauth/internal/domain/entities/constraints"
-	"github.com/monkeydioude/goauth/pkg/tools/result"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
+	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 )
 
 func layoutBoot(

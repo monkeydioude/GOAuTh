@@ -4,10 +4,10 @@ import (
 	"log"
 	"net"
 
-	"github.com/monkeydioude/goauth/internal/api/handlers"
-	"github.com/monkeydioude/goauth/internal/config/boot"
-	"github.com/monkeydioude/goauth/internal/config/middleware"
-	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/config/middleware"
+	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
 
 	"google.golang.org/grpc"
 )

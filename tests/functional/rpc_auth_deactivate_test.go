@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	"github.com/monkeydioude/goauth/pkg/crypt"
-	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
-	"github.com/monkeydioude/goauth/pkg/http/rpc"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
+	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

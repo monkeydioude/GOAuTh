@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/monkeydioude/goauth/internal/domain/entities"
-	v1 "github.com/monkeydioude/goauth/pkg/grpc/v1"
+	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

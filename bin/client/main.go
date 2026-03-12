@@ -8,7 +8,7 @@ import (
 	"os"
 	"slices"
 
-	"github.com/monkeydioude/goauth/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/config/boot"
 
 	"github.com/joho/godotenv"
 )

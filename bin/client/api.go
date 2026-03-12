@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/monkeydioude/goauth/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 
 	"github.com/google/uuid"
 )
