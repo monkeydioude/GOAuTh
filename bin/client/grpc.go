@@ -84,7 +84,7 @@ func (c rpcCall) trigger() error {
 			})
 			res, err = client.Status(
 				ctx,
-				&v1.Empty{},
+				&v1.StatusIn{},
 				grpc.Header(&headerMD),
 			)
 		case "refresh":
@@ -95,7 +95,7 @@ func (c rpcCall) trigger() error {
 			})
 			res, err = client.Refresh(
 				ctx,
-				&v1.Empty{},
+				&v1.RefreshIn{},
 				grpc.Header(&headerMD),
 			)
 		}

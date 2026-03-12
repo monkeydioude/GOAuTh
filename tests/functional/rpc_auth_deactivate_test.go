@@ -49,8 +49,8 @@ func TestRPCCantDeactivateAnUserIfMissingID(t *testing.T) {
 	ctx := context.Background()
 
 	var headerMD metadata.MD
-	// enforcing JWTFactory time creation date forward in time
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	// enforcing AccessTokenFactory time creation date forward in time
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		Realm: realm.Name,
 	})
@@ -102,8 +102,8 @@ func TestRPCCanDeactivateAnUserByID(t *testing.T) {
 	ctx := context.Background()
 
 	var headerMD metadata.MD
-	// enforcing JWTFactory time creation date forward in time
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	// enforcing AccessTokenFactory time creation date forward in time
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		UID:   1,
 		Realm: realm.Name,

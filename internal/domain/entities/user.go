@@ -18,6 +18,7 @@ type User struct {
 	Password     string         `gorm:"not null" json:"password,omitempty"`
 	RealmID      uuid.UUID      `gorm:"index"`
 	Realm        *Realm         `gorm:"foreignKey:RealmID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
+	RefreshToken *string        `json:"refresh_token,omitempty"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	LastLoggedAt *time.Time     `json:"last_logged_at"`

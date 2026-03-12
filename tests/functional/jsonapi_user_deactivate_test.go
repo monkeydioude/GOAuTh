@@ -20,8 +20,7 @@ import (
 func TestJsonAPICanNotDeactivateAJWTMissingUID(t *testing.T) {
 	layout, gormDB, _ := setup()
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/user/deactivate", layout.Delete(user.Deactivate))
@@ -50,7 +49,7 @@ func TestJsonAPICanNotDeactivateAJWTMissingUID(t *testing.T) {
 	// create the user
 	assert.Nil(t, gormDB.Save(&user).Error)
 	rec := httptest.NewRecorder()
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		// UID:   user.ID,
 		Realm: realm.Name,
@@ -75,8 +74,7 @@ func TestJsonAPICanNotDeactivateAJWTMissingUID(t *testing.T) {
 func TestJsonAPICanDeactivateAnUserByID(t *testing.T) {
 	layout, gormDB, _ := setup()
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/user/deactivate", layout.Delete(user.Deactivate))
@@ -106,7 +104,7 @@ func TestJsonAPICanDeactivateAnUserByID(t *testing.T) {
 	assert.Nil(t, gormDB.Create(&user).Error)
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		UID:   user.ID,
 		Realm: realm.Name,

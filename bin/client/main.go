@@ -67,7 +67,8 @@ func setupCall(args []string, method string) call {
 	}
 
 	if token := os.Getenv("CLIENT_JWT"); token != "" {
-		jwt, err := boot.JwtFactoryBoot(nil).DecodeToken(token)
+		aft, _ := boot.JwtFactoryBoot(nil)
+		jwt, err := aft.DecodeToken(token)
 		if err != nil {
 			slog.Warn(err.Error(), "location", "CLIENT_JWT DeecodeToken")
 		}

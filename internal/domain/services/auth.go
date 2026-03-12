@@ -50,27 +50,43 @@ func AuthLogin(
 	user *entities.User,
 	db *gorm.DB,
 	usersParams *models.UsersParams,
-	JWTFactory *JWTFactory,
-) (http.Cookie, error) {
-	if user == nil || db == nil || usersParams == nil || JWTFactory == nil {
-		return http.Cookie{}, go_errors.New("nil pointer(s) in AuthLogin param")
+	accessTokenFactory *JWTFactory,
+	refreshTokenFactory *JWTFactory,
+) (http.Cookie, http.Cookie, error) {
+	if user == nil || db == nil || usersParams == nil || accessTokenFactory == nil || refreshTokenFactory == nil {
+		return http.Cookie{}, http.Cookie{}, go_errors.New("nil pointer(s) in AuthLogin param")
 	}
 	if user.IsRevoked(time.Now()) {
-		return http.Cookie{}, errors.Unauthorized(go_errors.New("user's access was revoked"))
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("user's access was revoked"))
 	}
 	if err := user.AssertAuth(db, usersParams); err != nil {
-		return http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
 	}
-	sign, err := JWTFactory.GenerateToken(user.IntoClaims())
+	accessToken, err := accessTokenFactory.GenerateToken(user.IntoClaims())
 	if err != nil {
-		return http.Cookie{}, errors.InternalServerError(err)
+		return http.Cookie{}, http.Cookie{}, errors.InternalServerError(err)
+	}
+	refreshToken, err := refreshTokenFactory.GenerateToken(user.IntoClaims())
+	if err != nil {
+		return http.Cookie{}, http.Cookie{}, errors.InternalServerError(err)
+	}
+	res := db.Model(&entities.User{}).Where("id = ?", user.ID).Update("refresh_token", refreshToken.GetToken())
+	if res.Error != nil {
+		return http.Cookie{}, http.Cookie{}, errors.DBError(res.Error)
 	}
 	return http.Cookie{
-		Name:   consts.AuthorizationCookie,
-		Value:  "Bearer " + sign.GetToken(),
-		MaxAge: int(sign.GetExpiresIn().Seconds()),
-		Path:   "/",
-	}, nil
+			Name:    consts.AuthorizationCookie,
+			Value:   "Bearer " + accessToken.GetToken(),
+			MaxAge:  int(accessTokenFactory.ExpiresIn.Seconds()),
+			Path:    "/",
+			Expires: time.Now().Add(accessTokenFactory.ExpiresIn),
+		}, http.Cookie{
+			Name:    consts.RefreshTokenCookie,
+			Value:   refreshToken.GetToken(),
+			MaxAge:  int(refreshTokenFactory.ExpiresIn.Seconds()),
+			Path:    "/",
+			Expires: time.Now().Add(refreshTokenFactory.ExpiresIn),
+		}, nil
 }
 
 func AuthDeactivate(

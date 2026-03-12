@@ -1,4 +1,14 @@
 #!/bin/sh
+
+echo "🔍 Running leaks check before commit..."
+make gitleaks
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+  echo "❌ Leaks check failed. Commit aborted."
+  exit 1
+fi
+
 # Check for added fmt.Println or fmt.Printf in the staged changes
 
 # Get the list of staged Go files

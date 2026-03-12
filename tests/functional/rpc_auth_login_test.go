@@ -43,10 +43,9 @@ func TestRPCCanLogin(t *testing.T) {
 	})
 
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	layout.JWTFactory.TimeFn = func() time.Time { return timeRef }
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
-	trialJWT, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	layout.AccessTokenFactory.TimeFn = func() time.Time { return timeRef }
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
+	trialJWT, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		UID:   user.ID,
 		Realm: realm.Name,

@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func TestRPCCanGetAValidTokensStatus(t *testing.T) {
@@ -21,7 +22,7 @@ func TestRPCCanGetAValidTokensStatus(t *testing.T) {
 	conn := setupRPC(t, layout)
 	defer conn.Close()
 	login := "TestRPCCanGetAValidTokensStatus@test.com"
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		// Name: login,
 		UID:   123,
 		Realm: login,
@@ -32,13 +33,13 @@ func TestRPCCanGetAValidTokensStatus(t *testing.T) {
 		Name:  consts.AuthorizationCookie,
 		Value: "Bearer " + jwt.Token,
 	}))
-	res, _ := client.Status(
-		ctx,
-		&v1.Empty{},
-	)
-	assert.NoError(t, err)
-	assert.Equal(t, int32(200), res.Code)
-	assert.Equal(t, "Ok", res.Message)
+	{
+		_, err := client.Status(
+			ctx,
+			&v1.StatusIn{},
+		)
+		assert.NoError(t, err)
+	}
 }
 
 func TestRPCWontValidateABadTokenStatus(t *testing.T) {
@@ -51,13 +52,18 @@ func TestRPCWontValidateABadTokenStatus(t *testing.T) {
 		Name:  consts.AuthorizationCookie,
 		Value: "Bearer fake-token",
 	}))
-	res, _ := client.Status(
-		ctx,
-		&v1.Empty{},
-	)
-	assert.NotNil(t, res)
-	assert.Equal(t, int32(400), res.Code)
-	assert.NotEqual(t, "Ok", res.Message)
+	{
+		res, err := client.Status(
+			ctx,
+			&v1.StatusIn{},
+		)
+		assert.Nil(t, res)
+		assert.Error(t, err)
+		st, ok := status.FromError(err)
+		assert.True(t, ok)
+		assert.Equal(t, "invalid token format", st.Message())
+		assert.Equal(t, http.StatusBadRequest, int(st.Code()))
+	}
 }
 
 func TestRPCWontValidateAnExpiredToken(t *testing.T) {
@@ -67,27 +73,31 @@ func TestRPCWontValidateAnExpiredToken(t *testing.T) {
 	defer conn.Close()
 	client := v1.NewJWTClient(conn)
 	// ensuring factory's timeline
-	layout.JWTFactory.ExpiresIn = 3 * time.Second
-	layout.JWTFactory.RefreshesIn = 10 * time.Second
-	jwt, err := layout.JWTFactory.GenerateToken(crypt.JWTDefaultClaims{
+	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
+	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		Realm: "TestRPCWontValidateAnExpiredToken@test.com",
 		UID:   123,
 	})
 	assert.NoError(t, err)
-	timeRef := layout.JWTFactory.TimeFn()
+	timeRef := layout.AccessTokenFactory.TimeFn()
 	// sending the factory into the futur, making sure we are past refresh time
-	layout.JWTFactory.TimeFn = func() time.Time {
+	layout.AccessTokenFactory.TimeFn = func() time.Time {
 		return timeRef.Add(12 * time.Second)
 	}
 	ctx := metadata.NewOutgoingContext(context.Background(), rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
 		Value: "Bearer " + jwt.Token,
 	}))
-	res, _ := client.Status(
-		ctx,
-		&v1.Empty{},
-	)
-	assert.NotNil(t, res)
-	assert.Equal(t, int32(401), res.Code)
-	assert.Equal(t, consts.ERR_TOKEN_EXPIRED, res.Message)
+	{
+		res, err := client.Status(
+			ctx,
+			&v1.StatusIn{},
+		)
+		assert.Nil(t, res)
+		assert.Error(t, err)
+		st, ok := status.FromError(err)
+		assert.True(t, ok)
+		assert.Equal(t, "TokenExpiredError", st.Message())
+		assert.Equal(t, http.StatusUnauthorized, int(st.Code()))
+	}
 }

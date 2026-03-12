@@ -15,18 +15,20 @@ func Refresh(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.InternalServerError("no layout or req pointer", w)
 		return
 	}
-	cookie, err := req.Cookie(consts.AuthorizationCookie)
+	cookie, err := req.Cookie(consts.RefreshTokenCookie)
 	if err != nil {
 		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())
 		response.Unauthorized("No JWT provided in the request", w)
 		return
 	}
 
-	res, err := services.JWTRefresh(cookie.Value, *h.JWTFactory)
+	at, rt, err := services.JWTRefresh(cookie.Value, *h.AccessTokenFactory, *h.RefreshTokenFactory, h.DB)
 	if err != nil {
 		response.Unauthorized(err.Error(), w)
 		return
 	}
-	http.SetCookie(w, &res)
-	response.Json(res, w)
+
+	http.SetCookie(w, &at)
+	http.SetCookie(w, &rt)
+	response.Json(rt, w)
 }

@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/monkeydioude/goauth/internal/api/handlers/v1/auth"
+	"github.com/monkeydioude/goauth/internal/config/consts"
 	"github.com/monkeydioude/goauth/internal/domain/entities"
 
 	"github.com/google/uuid"
@@ -52,12 +54,24 @@ func TestJsonAPICanLogin(t *testing.T) {
 	assert.NoError(t, err)
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, 200, rec.Code)
+	idx := slices.IndexFunc(rec.Result().Cookies(), func(c *http.Cookie) bool {
+		return c.Name == consts.AuthorizationCookie
+	})
+	assert.NotEqual(t, -1, idx)
 	// retrieve the token from the response
-	cookies, err := http.ParseCookie(rec.Result().Header["Set-Cookie"][0])
+	cookies, err := http.ParseCookie(rec.Result().Cookies()[idx].String())
 	assert.NoError(t, err)
-	trialJWT, err := layout.JWTFactory.DecodeCookieToken(cookies[0])
+	trialJWT, err := layout.AccessTokenFactory.DecodeCookieToken(cookies[0])
 	assert.NoError(t, err)
 	// assert.Equal(t, trialJWT.Claims.Name, login)
 	assert.Equal(t, trialJWT.Claims.Expire, int64(timeRef.Add(3*time.Second).Unix()))
-	assert.Equal(t, trialJWT.Claims.Refresh, int64(timeRef.Add(10*time.Second).Unix()))
+	idx = slices.IndexFunc(rec.Result().Cookies(), func(c *http.Cookie) bool {
+		return c.Name == consts.RefreshTokenCookie
+	})
+	assert.NotEqual(t, -1, idx)
+	cookies, err = http.ParseCookie(rec.Result().Cookies()[idx].String())
+	assert.NoError(t, err)
+	trialRefreshToken, err := layout.RefreshTokenFactory.DecodeToken(cookies[0].Value)
+	assert.NoError(t, err)
+	assert.Equal(t, trialRefreshToken.Claims.Expire, int64(timeRef.Add(24*time.Hour).Unix()))
 }

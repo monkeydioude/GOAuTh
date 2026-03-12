@@ -32,7 +32,7 @@ func EditLogin(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	editUserPayload := rawPayload.Result()
 	editUserPayload.UserParams = h.UserParams
-	if err := services.UserEditLogin(cookie.Value, h.JWTFactory, h.DB, editUserPayload); err != nil {
+	if err := services.UserEditLogin(cookie.Value, h.AccessTokenFactory, h.DB, editUserPayload); err != nil {
 		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
 		errors.HTTPError(err, w)
 		return

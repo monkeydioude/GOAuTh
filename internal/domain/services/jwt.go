@@ -4,12 +4,14 @@ import (
 	stdErr "errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/monkeydioude/goauth/internal/config/consts"
 	"github.com/monkeydioude/goauth/internal/domain/entities"
 	"github.com/monkeydioude/goauth/pkg/crypt"
 	"github.com/monkeydioude/goauth/pkg/errors"
 	"github.com/monkeydioude/goauth/pkg/tools/result"
+	"gorm.io/gorm"
 )
 
 func GetTokenFromBearer(tokenWithBearer string) (string, error) {
@@ -33,11 +35,7 @@ func GetJWTFromBearer(tokenWithBearer string, factory *JWTFactory) result.R[enti
 	return result.Ok(&jwt)
 }
 
-func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) {
-	token, err := GetTokenFromBearer(tokenWithBearer)
-	if err != nil {
-		return http.Cookie{}, err
-	}
+func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
 	jwt, err := factory.DecodeToken(token)
 	if err != nil {
 		return http.Cookie{}, err
@@ -46,8 +44,7 @@ func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) 
 	if !JWTClaimsValidation(jwt.Claims) {
 		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
 	}
-
-	if jwt.Claims.RemainingRefresh(factory.TimeFn()) <= 0 {
+	if jwt.Claims.Expire < factory.TimeFn().Unix() {
 		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
 	}
 	return http.Cookie{
@@ -58,30 +55,50 @@ func JWTStatus(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) 
 	}, nil
 }
 
-func JWTRefresh(tokenWithBearer string, factory JWTFactory) (http.Cookie, error) {
-	token, err := GetTokenFromBearer(tokenWithBearer)
+func JWTRefresh(
+	token string,
+	accessTokenFactory JWTFactory,
+	refreshTokenFactory JWTFactory,
+	db *gorm.DB,
+) (http.Cookie, http.Cookie, error) {
+	jwt, err := refreshTokenFactory.DecodeToken(token)
 	if err != nil {
-		return http.Cookie{}, err
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(err)
 	}
-
-	jwt, err := factory.DecodeToken(token)
-	if err != nil {
-		return http.Cookie{}, errors.Unauthorized(err)
-	}
-
 	if !JWTClaimsValidation(jwt.Claims) {
-		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
 	}
-
-	jwt, err = factory.TryRefresh(jwt)
+	var user entities.User
+	res := db.Select("refresh_token").Where("id = ?", jwt.Claims.UID).First(&user)
+	if res.Error != nil {
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(res.Error)
+	}
+	if user.RefreshToken == nil {
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_MISSING_TOKEN))
+	}
+	if *user.RefreshToken != jwt.GetToken() {
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKENS_DONT_MATCH))
+	}
+	newAT, err := accessTokenFactory.GenerateToken(jwt.Claims)
 	if err != nil {
-		return http.Cookie{}, errors.Unauthorized(err)
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(err)
+	}
+	newRT, err := refreshTokenFactory.TryRefresh(jwt)
+	if err != nil {
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(err)
 	}
 
 	return http.Cookie{
-		Name:   consts.AuthorizationCookie,
-		Value:  "Bearer " + jwt.GetToken(),
-		MaxAge: int(jwt.GetExpiresIn().Seconds()),
-		Path:   "/",
-	}, nil
+			Name:    consts.AuthorizationCookie,
+			Value:   "Bearer " + newAT.GetToken(),
+			Expires: time.Now().Add(newAT.GetExpiresIn()),
+			MaxAge:  int(newAT.GetExpiresIn().Seconds()),
+			Path:    "/",
+		}, http.Cookie{
+			Name:    consts.RefreshTokenCookie,
+			Value:   newRT.GetToken(),
+			Expires: time.Now().Add(newRT.GetExpiresIn()),
+			MaxAge:  int(newRT.GetExpiresIn().Seconds()),
+			Path:    "/",
+		}, nil
 }

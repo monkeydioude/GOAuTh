@@ -35,8 +35,7 @@ func main() {
 	args := flag.Args()
 	factory := &services.JWTFactory{
 		SigningMethod:       crypt.HS256(os.Getenv(consts.JWT_SECRET)),
-		ExpiresIn:           consts.JWTExpiresIn,
-		RefreshesIn:         consts.JWTRefreshesIn,
+		ExpiresIn:           consts.AccessTokenExpiresIn,
 		TimeFn:              func() time.Time { return time.Now() },
 		RevocationCheckerFn: func(uid uint, timeFn func() time.Time) (bool, error) { return false, nil },
 	}
@@ -56,10 +55,9 @@ func main() {
 		return
 	}
 	token, err := factory.GenerateToken(crypt.JWTDefaultClaims{
-		Expire:  expRef.Unix(),
-		Refresh: expRef.Unix(),
-		UID:     user.ID,
-		Realm:   args[2],
+		Expire: expRef.Unix(),
+		UID:    user.ID,
+		Realm:  args[2],
 	})
 	if err != nil {
 		slog.Error("factory.GenerateToken error", "err", err.Error())

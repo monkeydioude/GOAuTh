@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -39,11 +38,8 @@ type JWTFactory struct {
 	SigningMethod crypt.JWTSigningMethod
 
 	// ExpiresIn < RefreshesIn
-	ExpiresIn time.Duration
-
-	// RefreshesIn > ExpiresIn
-	RefreshesIn time.Duration
-
+	ExpiresIn           time.Duration
+	Type                string
 	TimeFn              func() time.Time
 	RevocationCheckerFn func(uint, func() time.Time) (bool, error)
 }
@@ -52,8 +48,7 @@ type JWTFactory struct {
 func (jf JWTFactory) GenerateToken(claims crypt.JWTDefaultClaims) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	timeRef := jf.TimeFn()
 	claims.Expire = timeRef.Add(jf.ExpiresIn).Unix()
-	claims.Refresh = timeRef.Add(jf.RefreshesIn).Unix()
-
+	claims.Type = jf.Type
 	token, err := crypt.NewJWT(jf.SigningMethod, claims)
 	if err != nil {
 		return entities.JWT[crypt.JWTDefaultClaims]{}, err
@@ -96,21 +91,17 @@ func (jf JWTFactory) TryRefresh(j entities.JWT[crypt.JWTDefaultClaims]) (entitie
 		log.Printf("[ERR ] while decoding a entities.JWT: %s", err.Error())
 		return entities.JWT[crypt.JWTDefaultClaims]{}, errors.New(INVALID_JWT_ERR)
 	}
+	return jf.GenerateToken(claims)
+}
 
-	timeRef := jf.TimeFn()
-	// too old to be refreshed => exit with error
-	if timeRef.After(time.Unix(claims.Refresh, 0)) {
-		return entities.JWT[crypt.JWTDefaultClaims]{}, errors.New(TOO_OLD_JWT_ERR)
+func (jf JWTFactory) WithExpiresIn(d time.Duration) *JWTFactory {
+	return &JWTFactory{
+		SigningMethod:       jf.SigningMethod,
+		ExpiresIn:           d,
+		TimeFn:              jf.TimeFn,
+		RevocationCheckerFn: jf.RevocationCheckerFn,
+		Type:                jf.Type,
 	}
-	// expired but not too old to be refreshed
-	if timeRef.After(time.Unix(claims.Expire, 0)) {
-		revoked, err := jf.RevocationCheckerFn(j.Claims.UID, jf.TimeFn)
-		if err != nil || revoked {
-			return entities.JWT[crypt.JWTDefaultClaims]{}, fmt.Errorf(REVOKED_OR_REVOCATION_ERR, err)
-		}
-		return jf.GenerateToken(claims)
-	}
-	return j, nil
 }
 
 func NewEmptyJWTFactory() *JWTFactory {
@@ -127,15 +118,15 @@ func NewEmptyJWTFactory() *JWTFactory {
 func NewJWTFactory(
 	signingMethod crypt.JWTSigningMethod,
 	expiresIn time.Duration,
-	refreshesIn time.Duration,
 	timeRefFn func() time.Time,
 	revocationCheckerFn func(uint, func() time.Time) (bool, error),
+	typ string,
 ) *JWTFactory {
 	return &JWTFactory{
 		SigningMethod:       signingMethod,
 		ExpiresIn:           expiresIn,
-		RefreshesIn:         refreshesIn,
 		TimeFn:              timeRefFn,
 		RevocationCheckerFn: revocationCheckerFn,
+		Type:                typ,
 	}
 }
