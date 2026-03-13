@@ -6,10 +6,29 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "pkg/grpc/v1";
 
+message UserRequest {
+    string login = 1;
+    string password = 2;
+    string realm = 3;
+    optional int64 access_expires_in_seconds = 4;
+    optional int64 refresh_expires_in_seconds = 5;
+}
+
+message AuthIdRequest {
+    int32 uid = 1;
+    string reason = 2;
+}
+
+message LogoutRequest {
+    int32 uid = 1;
+    string realm = 2;
+}
+
 service Auth {
     rpc Signup(UserRequest) returns (Response) {}
     rpc Login(UserRequest) returns (Response) {}
     rpc Delete(AuthIdRequest) returns (Response) {}
+    rpc Logout(LogoutRequest) returns (Response) {}
 }
 
 message StatusIn {
@@ -40,40 +59,15 @@ service JWT {
     rpc Refresh(RefreshIn) returns (RefreshOut) {}
 }
 
-service User {
-    rpc Deactivate(Empty) returns (Response) {}
-    rpc EditUser(EditUserRequest) returns (Response) {}
-}
-
-service UserAction {
-    rpc Create(UserActionRequest) returns (Response) {}
-    rpc Validate(UserActionValidation) returns (Response) {}
-    rpc Status(UserActionRequest) returns (UserActionStatusResponse) {}
-}
-
-message UserRequest {
-    string login = 1;
-    string password = 2;
-    string realm = 3;
-    optional int64 access_expires_in_seconds = 4;
-    optional int64 refresh_expires_in_seconds = 5;
-}
-
-message AuthIdRequest {
-    int32 uid = 1;
-    string reason = 2;
-}
-
-message Response {
-    int32 code = 1;
-    string message = 2;
-    string identifier = 3;
-}
-
 message EditUserRequest {
     string new_login = 1;
     string new_password = 2;
     string password = 3;
+}
+
+service User {
+    rpc Deactivate(Empty) returns (Response) {}
+    rpc EditUser(EditUserRequest) returns (Response) {}
 }
 
 message UserActionRequest {
@@ -103,6 +97,18 @@ message UserActionStatusResponse {
     int32 code = 1;
     string message = 2;
     repeated UserActionStatus statuses = 3;
+}
+
+service UserAction {
+    rpc Create(UserActionRequest) returns (Response) {}
+    rpc Validate(UserActionValidation) returns (Response) {}
+    rpc Status(UserActionRequest) returns (UserActionStatusResponse) {}
+}
+
+message Response {
+    int32 code = 1;
+    string message = 2;
+    string identifier = 3;
 }
 
 message Empty {}

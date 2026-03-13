@@ -80,3 +80,10 @@ func NewAuthRPCHandler(layout *handlers.Layout) *AuthRPCHandler {
 		Plugins:             layout.Plugins,
 	}
 }
+
+func (h *AuthRPCHandler) Logout(ctx context.Context, req *LogoutRequest) (*Response, error) {
+	if req == nil {
+		return InternalServerError("no req pointer"), errors.New("no req pointer")
+	}
+	return Ok(), h.DB.Model(&entities.User{}).Where("id = ? AND realm_id = (?)", req.Uid, h.DB.Table("realms").Select("id").Where("name = ?", req.Realm)).Update("refresh_token", nil).Error
+}
