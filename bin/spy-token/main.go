@@ -38,6 +38,7 @@ func main() {
 		ExpiresIn:           consts.AccessTokenExpiresIn,
 		TimeFn:              func() time.Time { return time.Now() },
 		RevocationCheckerFn: func(uid uint, timeFn func() time.Time) (bool, error) { return false, nil },
+		Type:                consts.AuthorizationCookie,
 	}
 	if len(args) != 3 {
 		slog.Error("invalid args. Must be 3 args: <expire date YYYY-MM-DD> <email> <realm>", "length", len(args))
