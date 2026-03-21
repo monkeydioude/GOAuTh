@@ -1,0 +1,34 @@
+# BUILD PART
+FROM dhi.io/golang:1.25-alpine3.22 AS builder
+
+RUN apk add --no-cache bash
+
+WORKDIR /app
+
+# 2. Redirect Go caches to writable subfolders
+ENV GOMODCACHE=/tmp/app/.modcache
+ENV GOCACHE=/tmp/app/.buildcache
+
+# 3. Force ownership to the nonroot user (65532) during COPY
+# This is usually more reliable than host-side chowns
+COPY --chown=65532:65532 go.mod go.sum ./
+RUN go mod download
+
+# 4. Again, force ownership for all source code
+COPY --chown=65532:65532 . .
+RUN env
+
+RUN CGO_ENABLED=0 GOOS=linux go build -C bin/GOAuTh -o /GOAuTh
+RUN CGO_ENABLED=0 GOOS=linux go build -C bin/client -o /client
+
+# RUN PART
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /GOAuTh .
+COPY --from=builder /client .
+
+EXPOSE 8100
+EXPOSE 9100
+CMD ["./GOAuTh"]
