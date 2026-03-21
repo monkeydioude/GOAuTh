@@ -21,10 +21,7 @@ func Please(
 	loginConstraints []constraints.LoginConstraint,
 	passwordConstraints []constraints.PasswordConstraint,
 ) result.R[Settings] {
-	err := godotenv.Load()
-	if err != nil {
-		return result.Error[Settings](err)
-	}
+	godotenv.Load()
 	layout := LayoutBoot(dbentity, loginConstraints, passwordConstraints)
 	if layout.IsErr() {
 		return result.Error[Settings](layout.Error)
