@@ -1,0 +1,25 @@
+# Dependency directories
+vendor/
+
+# Go build outputs
+# bin/ is actually source code here
+
+# Test coverage profiles
+*.out
+
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+
+# Database Data
+pgdata/

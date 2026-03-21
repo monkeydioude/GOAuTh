@@ -1,8 +1,6 @@
 # BUILD PART
 FROM dhi.io/golang:1.25-alpine3.22 AS builder
 
-RUN apk add --no-cache bash
-
 WORKDIR /app
 
 # 2. Redirect Go caches to writable subfolders
@@ -18,16 +16,16 @@ RUN go mod download
 COPY --chown=65532:65532 . .
 RUN env
 
-RUN CGO_ENABLED=0 GOOS=linux go build -C bin/GOAuTh -o /GOAuTh
-RUN CGO_ENABLED=0 GOOS=linux go build -C bin/client -o /client
+RUN CGO_ENABLED=0 GOOS=linux go build -C bin/GOAuTh -o /tmp/GOAuTh
+RUN CGO_ENABLED=0 GOOS=linux go build -C bin/client -o /tmp/client
 
 # RUN PART
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /GOAuTh .
-COPY --from=builder /client .
+COPY --from=builder /tmp/GOAuTh .
+COPY --from=builder /tmp/client .
 
 EXPOSE 8100
 EXPOSE 9100
