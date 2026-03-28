@@ -49,6 +49,7 @@ func (h *UserActionRPCHandler) Validate(
 	payload *UserActionValidation,
 ) (*Response, error) {
 	email, err := services.UserActionValidate(h.DB, h.UserParams, services.UserActionValidateIn{
+		Login:   payload.Login,
 		Realm:   payload.Realm,
 		Data:    payload.Data,
 		Against: payload.Against,
