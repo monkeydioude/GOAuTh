@@ -90,6 +90,8 @@ pub struct UserActionValidation {
     pub data: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
     pub against: ::prost::alloc::string::String,
+    #[prost(bool, tag = "5")]
+    pub self_contained_code: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct UserActionStatus {

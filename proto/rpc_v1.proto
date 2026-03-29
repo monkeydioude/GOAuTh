@@ -82,6 +82,7 @@ message UserActionValidation {
     string realm = 2;
     string data = 3;
     string against = 4;
+    bool self_contained_code = 5;
 }
 
 message UserActionStatus {

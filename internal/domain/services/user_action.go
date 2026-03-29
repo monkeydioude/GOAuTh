@@ -65,10 +65,42 @@ func UserActionCreate(
 }
 
 type UserActionValidateIn struct {
-	Login   string
-	Realm   string
-	Data    string
-	Against string
+	Login             string
+	Realm             string
+	Data              string
+	Against           string
+	SelfContainedCode bool
+}
+
+func getUserAndAction(
+	db *gorm.DB,
+	realm entities.Realm,
+	in UserActionValidateIn,
+) (*entities.User, *entities.UserAction, error) {
+	if in.SelfContainedCode {
+		action := entities.UserAction{}
+		actionRes := db.First(&action, "realm_id = ? AND data = ? AND validated_at IS NULL", realm.ID, in.Data)
+		if actionRes.Error != nil {
+			return nil, nil, errors.NotFound(actionRes.Error)
+		}
+		user := entities.User{}
+		if err := db.First(&user, "id = ?", action.UserID).Error; err != nil {
+			slog.Error(err.Error(), "user_id", action.UserID)
+			return nil, nil, errors.BadRequest(err)
+		}
+		return &user, &action, nil
+	}
+	user := entities.User{}
+	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
+		slog.Error(err.Error(), "login", in.Login)
+		return nil, nil, errors.BadRequest(err)
+	}
+	action := entities.UserAction{}
+	actionRes := db.First(&action, "user_id = ? AND realm_id = ? AND data = ? AND validated_at IS NULL", user.ID, realm.ID, in.Data)
+	if actionRes.Error != nil {
+		return nil, nil, errors.NotFound(actionRes.Error)
+	}
+	return &user, &action, nil
 }
 
 func UserActionValidate(
@@ -81,20 +113,16 @@ func UserActionValidate(
 		slog.Error(err.Error(), "realm_name", in.Realm)
 		return "", errors.BadRequest(err)
 	}
-	user := entities.User{}
-	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login)
-		return "", errors.BadRequest(err)
+	user, action, err := getUserAndAction(db, realm, in)
+	if err != nil {
+		return "", err
 	}
-	action := entities.UserAction{}
-	actionRes := db.First(&action, "user_id = ? AND realm_id = ? AND data = ? AND validated_at IS NULL", user.ID, realm.ID, in.Data)
-	if actionRes.Error != nil {
-		return "", errors.NotFound(actionRes.Error)
+	if user == nil || action == nil {
+		return "", errors.InternalServerError(fmt.Errorf("user or action not found"))
 	}
-	var err error
 	switch action.Action {
 	case entities.UserActionTypePassword:
-		err = userActionResetPassword(db, usersParams, user, in.Against)
+		err = userActionResetPassword(db, usersParams, *user, in.Against)
 	}
 	if err != nil {
 		return "", errors.BadRequest(fmt.Errorf("UserActionValidate: %w", err))
