@@ -114,3 +114,21 @@ message Response {
 }
 
 message Empty {}
+
+service Info {
+    rpc GetUsers(UserFilters) returns (UsersInfo) {}
+}
+
+message UserFilters {
+    optional string login = 1;
+    optional string realm = 2;
+}
+
+message UsersInfo {
+    repeated UserInfo users = 1;
+}
+
+message UserInfo {
+    string login = 1;
+    string realm = 2;
+}

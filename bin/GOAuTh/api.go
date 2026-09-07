@@ -36,6 +36,8 @@ func apiRouting(layout *handlers.Layout) http.Handler {
 	// Healthcheck
 	mux.HandleFunc("/identity/healthcheck", healthcheck)
 
+	mux.HandleFunc("/users", layout.Get(user.List))
+
 	app := middlewares.Mux(mux)
 	app.Use(
 		middleware.APILogRequest,
