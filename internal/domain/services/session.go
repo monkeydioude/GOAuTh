@@ -62,6 +62,49 @@ func isUserActive(db *gorm.DB, uid uint) (bool, error) {
 	return err == nil, err
 }
 
+// ListSessions lists the user's active sessions, most recently used first.
+// includeRevoked adds the revoked and expired ones.
+func ListSessions(db *gorm.DB, uid uint, includeRevoked bool, now time.Time) ([]entities.Session, error) {
+	query := db.Where("user_id = ?", uid)
+	if includeRevoked {
+		query = query.Unscoped()
+	} else {
+		query = query.Where("expires_at > ?", now)
+	}
+	var sessions []entities.Session
+	err := query.Order("last_connection DESC, created_at DESC").Find(&sessions).Error
+	return sessions, err
+}
+
+// RevokeSession revokes one active session of the user.
+// It is false when the user has no such session.
+func RevokeSession(db *gorm.DB, uid uint, sid string, reason string, now time.Time) (bool, error) {
+	id, err := uuid.Parse(sid)
+	if err != nil {
+		return false, nil
+	}
+	// the soft-delete scope only matches a session not revoked yet
+	res := db.Model(&entities.Session{}).
+		Where("id = ? AND user_id = ? AND expires_at > ?", id, uid, now).
+		Updates(map[string]any{"deleted_at": now, "revoked_reason": reason})
+	return res.RowsAffected == 1, res.Error
+}
+
+// RevokeAllSessions revokes the user's active sessions, except keepSID when not empty.
+func RevokeAllSessions(db *gorm.DB, uid uint, keepSID string, now time.Time) error {
+	if keepSID == "" {
+		return RevokeSessions(db, entities.SessionRevokedLogoutAll, now, "user_id = ? AND expires_at > ?", uid, now)
+	}
+	return RevokeSessions(db, entities.SessionRevokedLogoutAll, now, "user_id = ? AND expires_at > ? AND id <> ?", uid, now, keepSID)
+}
+
+// LogoutSession revokes the session a token's claims name. A session already
+// revoked or expired is left as is.
+func LogoutSession(db *gorm.DB, claims crypt.JWTDefaultClaims, now time.Time) error {
+	_, err := RevokeSession(db, claims.UID, claims.SID, entities.SessionRevokedLogout, now)
+	return err
+}
+
 // IsSessionRevoked tells whether the session a token's sid names can no longer be used:
 // gone, revoked, expired, or its user deactivated. It is a single query.
 func IsSessionRevoked(db *gorm.DB, claims crypt.JWTDefaultClaims, now time.Time) (bool, error) {

@@ -38,33 +38,54 @@ func GetJWTFromBearer(tokenWithBearer string, factory *JWTFactory) result.R[enti
 	return result.Ok(&jwt)
 }
 
-// JWTStatus validates an access token: signed, of the access type, not expired,
-// and belonging to a session that is still active.
-func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
+// SessionOfToken reads which session a token belongs to: signed, of the factory's
+// type, naming a session. Its expiry is not checked.
+func SessionOfToken(token string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
+	var none entities.JWT[crypt.JWTDefaultClaims]
 	jwt, err := factory.DecodeToken(token)
 	if err != nil {
-		return http.Cookie{}, err
+		return none, err
 	}
 	if jwt.Claims.Type != factory.Type {
-		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_WRONG_TOKEN_TYPE))
+		return none, errors.Unauthorized(stdErr.New(consts.ERR_WRONG_TOKEN_TYPE))
 	}
-	if !JWTClaimsValidation(jwt.Claims) || jwt.Claims.SID == "" {
-		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
+	if _, err := uuid.Parse(jwt.Claims.SID); err != nil || !JWTClaimsValidation(jwt.Claims) {
+		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
+	}
+	return jwt, nil
+}
+
+// AuthenticateAccessToken validates an access token: signed, of the access type,
+// not expired, and belonging to a session that is still active.
+func AuthenticateAccessToken(token string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
+	var none entities.JWT[crypt.JWTDefaultClaims]
+	jwt, err := SessionOfToken(token, factory)
+	if err != nil {
+		return none, err
 	}
 	now := factory.TimeFn()
 	if jwt.Claims.Expire < now.Unix() {
-		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
+		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
 	}
 	// no checker means no way to know: refuse
 	if factory.RevocationCheckerFn == nil {
-		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
+		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
 	}
 	revoked, err := factory.RevocationCheckerFn(jwt.Claims, now)
 	if err != nil {
-		return http.Cookie{}, errors.DBError(err)
+		return none, errors.DBError(err)
 	}
 	if revoked {
-		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
+		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
+	}
+	return jwt, nil
+}
+
+// JWTStatus checks an access token (AuthenticateAccessToken) and hands it back as a cookie.
+func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
+	jwt, err := AuthenticateAccessToken(token, factory)
+	if err != nil {
+		return http.Cookie{}, err
 	}
 	return http.Cookie{
 		Name:   consts.AuthorizationCookie,

@@ -23,12 +23,16 @@ pub struct AuthIdRequest {
     #[prost(string, tag = "2")]
     pub reason: ::prost::alloc::string::String,
 }
+/// Logout ends the session of the access token in the Authorization metadata, or
+/// of refresh_token. Without either, it ends all of uid's sessions in realm (deprecated).
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LogoutRequest {
     #[prost(int32, tag = "1")]
     pub uid: i32,
     #[prost(string, tag = "2")]
     pub realm: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub refresh_token: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct StatusIn {
@@ -147,6 +151,58 @@ pub struct ClientInfo {
     pub ip: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub user_agent: ::prost::alloc::string::String,
+}
+/// SessionInfo is one session of the user: a login on a device, kept alive by refreshes.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct SessionInfo {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub user_agent: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub login_ip: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub last_ip: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "5")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "6")]
+    pub last_connection: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(message, optional, tag = "7")]
+    pub expires_at: ::core::option::Option<::prost_types::Timestamp>,
+    /// unset while the session is not revoked
+    #[prost(message, optional, tag = "8")]
+    pub revoked_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(string, tag = "9")]
+    pub revoked_reason: ::prost::alloc::string::String,
+    /// the session of the access token the call was made with
+    #[prost(bool, tag = "10")]
+    pub current: bool,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct ListSessionsRequest {
+    /// also list revoked and expired sessions
+    #[prost(bool, tag = "1")]
+    pub include_revoked: bool,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListSessionsResponse {
+    #[prost(int32, tag = "1")]
+    pub code: i32,
+    #[prost(string, tag = "2")]
+    pub message: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub sessions: ::prost::alloc::vec::Vec<SessionInfo>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct RevokeSessionRequest {
+    #[prost(string, tag = "1")]
+    pub session_id: ::prost::alloc::string::String,
+}
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct RevokeAllSessionsRequest {
+    /// keep the session of the access token the call was made with
+    #[prost(bool, tag = "1")]
+    pub keep_current: bool,
 }
 /// Generated client implementations.
 pub mod auth_client {
@@ -717,6 +773,158 @@ pub mod user_action_client {
             let path = http::uri::PathAndQuery::from_static("/v1.UserAction/Status");
             let mut req = request.into_request();
             req.extensions_mut().insert(GrpcMethod::new("v1.UserAction", "Status"));
+            self.inner.unary(req, path, codec).await
+        }
+    }
+}
+/// Generated client implementations.
+pub mod session_client {
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
+    use tonic::codegen::*;
+    use tonic::codegen::http::Uri;
+    /// Session calls act on the sessions of the user whose access token is in the
+    /// Authorization metadata.
+    #[derive(Debug, Clone)]
+    pub struct SessionClient<T> {
+        inner: tonic::client::Grpc<T>,
+    }
+    impl SessionClient<tonic::transport::Channel> {
+        /// Attempt to create a new client by connecting to a given endpoint.
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
+        where
+            D: TryInto<tonic::transport::Endpoint>,
+            D::Error: Into<StdError>,
+        {
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
+            Ok(Self::new(conn))
+        }
+    }
+    impl<T> SessionClient<T>
+    where
+        T: tonic::client::GrpcService<tonic::body::BoxBody>,
+        T::Error: Into<StdError>,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
+    {
+        pub fn new(inner: T) -> Self {
+            let inner = tonic::client::Grpc::new(inner);
+            Self { inner }
+        }
+        pub fn with_origin(inner: T, origin: Uri) -> Self {
+            let inner = tonic::client::Grpc::with_origin(inner, origin);
+            Self { inner }
+        }
+        pub fn with_interceptor<F>(
+            inner: T,
+            interceptor: F,
+        ) -> SessionClient<InterceptedService<T, F>>
+        where
+            F: tonic::service::Interceptor,
+            T::ResponseBody: Default,
+            T: tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+                Response = http::Response<
+                    <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
+                >,
+            >,
+            <T as tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+        {
+            SessionClient::new(InterceptedService::new(inner, interceptor))
+        }
+        /// Compress requests with the given encoding.
+        ///
+        /// This requires the server to support it otherwise it might respond with an
+        /// error.
+        #[must_use]
+        pub fn send_compressed(mut self, encoding: CompressionEncoding) -> Self {
+            self.inner = self.inner.send_compressed(encoding);
+            self
+        }
+        /// Enable decompressing responses.
+        #[must_use]
+        pub fn accept_compressed(mut self, encoding: CompressionEncoding) -> Self {
+            self.inner = self.inner.accept_compressed(encoding);
+            self
+        }
+        /// Limits the maximum size of a decoded message.
+        ///
+        /// Default: `4MB`
+        #[must_use]
+        pub fn max_decoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_decoding_message_size(limit);
+            self
+        }
+        /// Limits the maximum size of an encoded message.
+        ///
+        /// Default: `usize::MAX`
+        #[must_use]
+        pub fn max_encoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_encoding_message_size(limit);
+            self
+        }
+        pub async fn list(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListSessionsRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListSessionsResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.Session/List");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.Session", "List"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn revoke(
+            &mut self,
+            request: impl tonic::IntoRequest<super::RevokeSessionRequest>,
+        ) -> std::result::Result<tonic::Response<super::Response>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.Session/Revoke");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.Session", "Revoke"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn revoke_all(
+            &mut self,
+            request: impl tonic::IntoRequest<super::RevokeAllSessionsRequest>,
+        ) -> std::result::Result<tonic::Response<super::Response>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.Session/RevokeAll");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.Session", "RevokeAll"));
             self.inner.unary(req, path, codec).await
         }
     }
