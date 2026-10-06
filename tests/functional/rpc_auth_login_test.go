@@ -7,7 +7,6 @@ import (
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
-	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
 	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
@@ -45,12 +44,6 @@ func TestRPCCanLogin(t *testing.T) {
 	timeRef := time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	layout.AccessTokenFactory.TimeFn = func() time.Time { return timeRef }
 	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
-	trialJWT, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   user.ID,
-		Realm: realm.Name,
-	})
-	assert.NoError(t, err)
 
 	// create the user
 	conn := setupRPC(t, layout)
@@ -72,8 +65,13 @@ func TestRPCCanLogin(t *testing.T) {
 	assert.NoError(t, err)
 	cookie, err := rpc.FetchCookie(headerMD, consts.AuthorizationCookie)
 	assert.NoError(t, err)
-	assert.Equal(t, "Bearer "+trialJWT.Token, cookie.Value)
+	// every token carries a random jti, so compare claims rather than tokens
+	trialJWT, err := layout.AccessTokenFactory.DecodeCookieToken(&cookie)
 	assert.NoError(t, err)
+	assert.Equal(t, user.ID, trialJWT.Claims.UID)
+	assert.Equal(t, realm.Name, trialJWT.Claims.Realm)
+	assert.Equal(t, timeRef.Add(3*time.Second).Unix(), trialJWT.Claims.Expire)
+	assert.NotEmpty(t, trialJWT.Claims.JTI)
 	assert.Equal(t, int32(200), res.Code)
 	assert.Equal(t, "Ok", res.Message)
 }
