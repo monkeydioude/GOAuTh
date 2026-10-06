@@ -1,8 +1,12 @@
 package boot
 
 import (
+	"os"
+
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
+	"github.com/monkeydioude/goauth/v2/pkg/http/request"
 	"github.com/monkeydioude/goauth/v2/pkg/plugins"
 	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 )
@@ -14,6 +18,10 @@ func LayoutBoot(
 	loginConstraints []constraints.LoginConstraint,
 	passwordConstraints []constraints.PasswordConstraint,
 ) result.R[handlers.Layout] {
+	trustedProxies, err := request.ParseTrustedProxies(os.Getenv(consts.TRUSTED_PROXIES))
+	if err != nil {
+		return result.Error[handlers.Layout](err)
+	}
 	dbRes := PostgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
@@ -28,5 +36,6 @@ func LayoutBoot(
 		RefreshTokenFactory: rtf,
 		UserParams:          userParams,
 		Plugins:             &plugins.Plugins,
+		TrustedProxies:      trustedProxies,
 	})
 }

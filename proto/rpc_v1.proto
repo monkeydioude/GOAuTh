@@ -12,6 +12,7 @@ message UserRequest {
     string realm = 3;
     optional int64 access_expires_in_seconds = 4;
     optional int64 refresh_expires_in_seconds = 5;
+    ClientInfo client = 6;
 }
 
 message AuthIdRequest {
@@ -45,6 +46,7 @@ message RefreshIn {
     string refreshToken = 1;
     optional int64 access_expires_in_seconds = 2;
     optional int64 refresh_expires_in_seconds = 3;
+    ClientInfo client = 4;
 }
 
 message RefreshOut {
@@ -114,3 +116,9 @@ message Response {
 }
 
 message Empty {}
+
+// ClientInfo is the end user's client, sent by the backend calling goauth on their behalf.
+message ClientInfo {
+    string ip = 1;
+    string user_agent = 2;
+}

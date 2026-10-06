@@ -14,6 +14,7 @@ const DB_PASSWD = "DB_PASSWD"
 const DB_SCHEMA = "DB_SCHEMA"
 const JWT_SECRET = "JWT_SECRET"
 const PASSWD_SALT = "PASSWD_SALT"
+const TRUSTED_PROXIES = "TRUSTED_PROXIES"
 
 const AuthorizationCookie = "Authorization"
 const RefreshTokenCookie = "Refresh"

@@ -11,6 +11,8 @@ pub struct UserRequest {
     pub access_expires_in_seconds: ::core::option::Option<i64>,
     #[prost(int64, optional, tag = "5")]
     pub refresh_expires_in_seconds: ::core::option::Option<i64>,
+    #[prost(message, optional, tag = "6")]
+    pub client: ::core::option::Option<ClientInfo>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AuthIdRequest {
@@ -48,6 +50,8 @@ pub struct RefreshIn {
     pub access_expires_in_seconds: ::core::option::Option<i64>,
     #[prost(int64, optional, tag = "3")]
     pub refresh_expires_in_seconds: ::core::option::Option<i64>,
+    #[prost(message, optional, tag = "4")]
+    pub client: ::core::option::Option<ClientInfo>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RefreshOut {
@@ -130,6 +134,14 @@ pub struct Response {
 }
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct Empty {}
+/// ClientInfo is the end user's client, sent by the backend calling goauth on their behalf.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ClientInfo {
+    #[prost(string, tag = "1")]
+    pub ip: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub user_agent: ::prost::alloc::string::String,
+}
 /// Generated client implementations.
 pub mod auth_client {
     #![allow(

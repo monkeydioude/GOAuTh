@@ -81,6 +81,7 @@ Environment variables can be provided through a `.env` file in GOAuTh's working 
 | `PASSWD_SALT`            | —         | Salt used for Argon2 password hashing    |
 | `DB_LOG_LEVEL`           | `error`   | GORM log level (`info`, `warn`, `error`) |
 | `DB_SLOW_QUERY_LOG_MS`   | `20`      | Slow query threshold in milliseconds     |
+| `TRUSTED_PROXIES`        | —         | Comma-separated CIDRs or IPs of the proxies allowed to set `X-Forwarded-For`; empty trusts none |
 
 > **Security note:** `JWT_SECRET` and `PASSWD_SALT` should be provided via system environment variables or a secrets manager in production. The `.env` file is only suitable for development.
 
@@ -166,8 +167,18 @@ message UserRequest {
     string login = 1;
     string password = 2;
     string realm = 3;
+    optional int64 access_expires_in_seconds = 4;
+    optional int64 refresh_expires_in_seconds = 5;
+    ClientInfo client = 6;
+}
+
+message ClientInfo {
+    string ip = 1;
+    string user_agent = 2;
 }
 ```
+
+gRPC callers are usually backends, so goauth would otherwise see their address, not the user's. They send the end user's IP and user agent in `client`, on `UserRequest` and `RefreshIn`. Over HTTP, goauth reads the `User-Agent` header and the client IP, honoring `X-Forwarded-For` only from `TRUSTED_PROXIES`.
 
 ### Edit User (Password / Login)
 

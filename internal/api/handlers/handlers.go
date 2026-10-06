@@ -3,10 +3,12 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"net/netip"
 
 	"github.com/monkeydioude/goauth/v2/internal/domain/models"
 	"github.com/monkeydioude/goauth/v2/internal/domain/services"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+	"github.com/monkeydioude/goauth/v2/pkg/http/request"
 	"github.com/monkeydioude/goauth/v2/pkg/plugins"
 
 	"gorm.io/gorm"
@@ -22,6 +24,13 @@ type Layout struct {
 	AccessTokenFactory  *services.JWTFactory
 	RefreshTokenFactory *services.JWTFactory
 	Plugins             *plugins.PluginsRecord
+	// TrustedProxies may set X-Forwarded-For
+	TrustedProxies []netip.Prefix
+}
+
+// ClientInfo reads the end user's IP and user agent from req.
+func (l *Layout) ClientInfo(req *http.Request) services.ClientInfo {
+	return services.NewClientInfo(request.ClientIP(req, l.TrustedProxies), req.UserAgent())
 }
 
 // Handler our basic generic route handler
