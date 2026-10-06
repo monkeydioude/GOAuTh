@@ -29,11 +29,12 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 	}
 	os.Setenv("JWT_SECRET", "test")
 	// init layout
-	res := boot.LayoutBoot([]any{entities.User{}, entities.Realm{}, entities.UserAction{}}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
+	res := boot.LayoutBoot([]any{entities.User{}, entities.Realm{}, entities.UserAction{}, entities.Session{}}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
 	if res.IsErr() {
 		log.Fatalf("Could not boot layout: %s", res.Error.Error())
 	}
 	layout := res.Result()
+	layout.DB.Exec("TRUNCATE TABLE sessions CASCADE")
 	layout.DB.Exec("TRUNCATE TABLE users CASCADE")
 	layout.DB.Exec("TRUNCATE TABLE user_actions CASCADE")
 	layout.DB.Exec("TRUNCATE TABLE realms CASCADE")
