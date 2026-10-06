@@ -84,6 +84,7 @@ Environment variables can be provided through a `.env` file in GOAuTh's working 
 | `TRUSTED_PROXIES`        | —         | Comma-separated CIDRs or IPs of the proxies allowed to set `X-Forwarded-For`; empty trusts none |
 | `SESSION_TTL_DAYS`       | `30`      | Days a session lives without a refresh; each refresh resets it |
 | `SESSION_MAX_ACTIVE`     | `10`      | Active sessions per user; a login beyond it revokes the least recently used one |
+| `SESSION_REUSE_GRACE_SECONDS` | `30` | After a refresh, how long the previous refresh token still gets an access token, for refreshes racing each other |
 
 > **Security note:** `JWT_SECRET` and `PASSWD_SALT` should be provided via system environment variables or a secrets manager in production. The `.env` file is only suitable for development.
 
@@ -104,7 +105,7 @@ All routes are prefixed with `/identity/v1`.
 | `POST`   | `/identity/v1/auth/signup`     | Create a new user      |
 | `PUT`    | `/identity/v1/auth/login`      | Authenticate a user    |
 | `GET`    | `/identity/v1/jwt/status`      | Check JWT validity     |
-| `PUT`    | `/identity/v1/jwt/refresh`     | Refresh an expired JWT |
+| `PUT`    | `/identity/v1/jwt/refresh`     | Rotate the refresh token, get a new access token |
 | `PUT`    | `/identity/v1/user/password`   | Change password        |
 | `PUT`    | `/identity/v1/user/login`      | Change login (email)   |
 | `DELETE` | `/identity/v1/user/deactivate` | Soft-delete a user     |
@@ -129,7 +130,7 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 | RPC                        | Description            |
 |----------------------------|------------------------|
 | `Status(Empty) → Response` | Check JWT validity     |
-| `Refresh(Empty) → Response`| Refresh an expired JWT |
+| `Refresh(RefreshIn) → RefreshOut` | Rotate the refresh token, get a new access token |
 
 ### User Service
 
@@ -216,7 +217,9 @@ message EditUserRequest {
 
 ### JWT (Status / Refresh)
 
-No JSON body. Requires an `Authorization` cookie (HTTP) or `set-cookie` metadata (gRPC) containing `Bearer {JWT}`.
+No JSON body. Status reads the `Authorization` cookie (HTTP) or `set-cookie` metadata (gRPC) containing `Bearer {JWT}`. Refresh reads the `Refresh` cookie, or `refreshToken` in `RefreshIn` over gRPC.
+
+Each refresh rotates the session's refresh token: store the new one, the old one stops working. If two refreshes race with the same token, the second gets a new access token but no refresh token (`RefreshOut.refreshToken` empty, no `Refresh` cookie), so keep the one the first returned. Presenting an older refresh token after `SESSION_REUSE_GRACE_SECONDS` revokes the session (`TokenReused`). A refresh only touches the session its token belongs to.
 
 ### User Actions
 

@@ -7,6 +7,7 @@ import (
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/internal/domain/services"
+	"github.com/monkeydioude/goauth/v2/pkg/errors"
 	"github.com/monkeydioude/goauth/v2/pkg/http/response"
 )
 
@@ -17,18 +18,21 @@ func Refresh(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	cookie, err := req.Cookie(consts.RefreshTokenCookie)
 	if err != nil {
-		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())
+		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.RefreshTokenCookie, err.Error())
 		response.Unauthorized("No JWT provided in the request", w)
 		return
 	}
 
-	at, rt, err := services.JWTRefresh(cookie.Value, *h.AccessTokenFactory, *h.RefreshTokenFactory, h.DB)
+	res, err := services.JWTRefresh(cookie.Value, h.ClientInfo(req), *h.AccessTokenFactory, *h.RefreshTokenFactory, h.SessionReuseGrace, h.DB)
 	if err != nil {
-		response.Unauthorized(err.Error(), w)
+		errors.HTTPError(err, w)
 		return
 	}
 
-	http.SetCookie(w, &at)
-	http.SetCookie(w, &rt)
-	response.Json(rt, w)
+	http.SetCookie(w, &res.AccessToken)
+	// nil when a parallel refresh already rotated the token: the client keeps the one it got
+	if res.RefreshToken != nil {
+		http.SetCookie(w, res.RefreshToken)
+	}
+	response.JsonOk(w)
 }

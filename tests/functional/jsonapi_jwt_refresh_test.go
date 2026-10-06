@@ -3,61 +3,26 @@ package functional
 import (
 	"net/http"
 	"net/http/httptest"
-	"slices"
 	"testing"
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/jwt"
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
-	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJsonAPICanRefreshAValidToken(t *testing.T) {
-	layout, gormDB, _ := setup()
+	layout, gormDB, timeRef := setup()
 	defer cleanup(layout)
-	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
-	layout.RefreshTokenFactory.ExpiresIn = 3 * time.Second
+	login := "TestICanRefreshAValidToken@test.com"
+	newLoginUser(t, gormDB, login)
+	refreshToken, _ := loginSession(t, layout, login)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/jwt/refresh", layout.Post(jwt.Refresh))
-	login := "TestICanRefreshAValidToken@test.com"
-	passwd := "test"
-	realm := entities.Realm{
-		ID:           uuid.New(),
-		Name:         login,
-		AllowNewUser: true,
-	}
-	assert.NoError(t, gormDB.Create(&realm).Error)
-	jwt, err := layout.RefreshTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		UID:   1,
-		Realm: login,
-	})
-	assert.NoError(t, err)
-	user := entities.User{
-		Login:        login,
-		Password:     passwd,
-		RevokedAt:    nil,
-		ID:           1,
-		RealmID:      realm.ID,
-		RealmName:    login,
-		RefreshToken: &jwt.Token,
-	}
-	assert.NoError(t, gormDB.Save(&user).Error)
-	t.Cleanup(func() {
-		gormDB.Unscoped().Delete(&user, "login = ?", login)
-		gormDB.Unscoped().Delete(&realm)
-	})
-
-	// create the user
-	rec := httptest.NewRecorder()
-
-	timeRef := layout.RefreshTokenFactory.TimeFn()
-	// we go 5s forward in time, so we are in refresh spot
-	// (expiresIn 3s, refreshesIn 10s, 5 is between, so it's cool)
+	// 5s after the login
 	layout.RefreshTokenFactory.TimeFn = func() time.Time {
 		return timeRef.Add(5 * time.Second)
 	}
@@ -65,22 +30,16 @@ func TestJsonAPICanRefreshAValidToken(t *testing.T) {
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  consts.RefreshTokenCookie,
-		Value: jwt.Token,
+		Value: refreshToken,
 	})
+	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, 200, rec.Code)
-	idx := slices.IndexFunc(rec.Result().Cookies(), func(c *http.Cookie) bool {
-		return c.Name == consts.RefreshTokenCookie
-	})
-	assert.NotEqual(t, -1, idx)
-	// retrieve the token from the response
-	cookies, err := http.ParseCookie(rec.Result().Cookies()[idx].String())
+	refreshed, err := layout.RefreshTokenFactory.DecodeToken(findCookie(t, rec.Result().Cookies(), consts.RefreshTokenCookie).Value)
 	assert.NoError(t, err)
-	jwt2, err := layout.RefreshTokenFactory.DecodeToken(cookies[0].Value)
-	assert.NoError(t, err)
-	// 5 + 3 seconds, because we went 5s forward in time, and JWTFactory ExpiresIn config is 3s
-	assert.NotEqual(t, jwt2.Token, jwt.Token)
-	assert.Equal(t, timeRef.Add((5+3)*time.Second).Unix(), jwt2.Claims.Expire)
+	assert.NotEqual(t, refreshToken, refreshed.Token)
+	// the session lives for its whole TTL again, counted from this refresh
+	assert.Equal(t, timeRef.Add(5*time.Second).Add(layout.RefreshTokenFactory.ExpiresIn).Unix(), refreshed.Claims.Expire)
 }
 
 func TestJsonAPIGetA401OnRefreshingAnInvalidToken(t *testing.T) {
