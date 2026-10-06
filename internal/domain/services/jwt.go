@@ -77,9 +77,8 @@ func JWTRefresh(
 	if user.RefreshToken == nil {
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_MISSING_TOKEN))
 	}
-	log.Println("tokens and jwt compare", "user_refresh_token", *user.RefreshToken, "jwt_token", jwt.GetToken())
 	if *user.RefreshToken != jwt.GetToken() {
-		log.Println("tokens dont match", "user_refresh_token", *user.RefreshToken, "jwt_token", jwt.GetToken())
+		log.Println("tokens dont match", "uid", jwt.Claims.UID)
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKENS_DONT_MATCH))
 	}
 	newAT, err := accessTokenFactory.GenerateToken(jwt.Claims)

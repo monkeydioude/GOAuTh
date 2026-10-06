@@ -51,6 +51,21 @@ func GRPCLogRequest(
 		xReqId = uuid.NewString()
 	}
 	md, _ := metadata.FromIncomingContext(ctx)
-	log.Printf("[%s] >>> RPC call on %s, with metadata: %+v\n", xReqId, info.FullMethod, md)
+	log.Printf("[%s] >>> RPC call on %s, with metadata: %+v\n", xReqId, info.FullMethod, redactMetadata(md))
 	return handler(ctx, req)
+}
+
+const redactedValue = "[redacted]"
+
+// sensitiveMetadataKeys carry tokens or cookies, so their values never reach the logs.
+var sensitiveMetadataKeys = []string{"authorization", "cookie", rpc.SetCookieLabel}
+
+func redactMetadata(md metadata.MD) metadata.MD {
+	redacted := md.Copy()
+	for _, key := range sensitiveMetadataKeys {
+		for i := range redacted[key] {
+			redacted[key][i] = redactedValue
+		}
+	}
+	return redacted
 }
