@@ -24,7 +24,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 )
 
@@ -129,7 +131,7 @@ func TestJsonAPIRefreshWithinTheGraceWindow(t *testing.T) {
 	login := "TestJsonAPIRefreshWithinTheGraceWindow@test.com"
 	newLoginUser(t, gormDB, login)
 	token, session := loginSession(t, layout, login)
-	assert.Equal(t, 30*time.Second, layout.SessionReuseGrace)
+	layout.SessionReuseGrace = 30 * time.Second
 	clock := timeRef
 	layout.RefreshTokenFactory.TimeFn = func() time.Time {
 		return clock
@@ -192,6 +194,7 @@ func TestJsonAPIRefreshReuseAfterTheGraceWindowRevokesTheSession(t *testing.T) {
 	login := "TestJsonAPIRefreshReuse@test.com"
 	newLoginUser(t, gormDB, login)
 	token, session := loginSession(t, layout, login)
+	layout.SessionReuseGrace = 30 * time.Second
 	clock := timeRef
 	layout.RefreshTokenFactory.TimeFn = func() time.Time {
 		return clock
@@ -269,6 +272,45 @@ func TestJsonAPIRefreshRefusesADeactivatedUser(t *testing.T) {
 	assert.Equal(t, consts.ERR_TOKEN_REVOKED, errorMessage(t, rec))
 }
 
+func TestJsonAPIRefreshRefusesAnAccessToken(t *testing.T) {
+	layout, gormDB, _ := setup()
+	defer cleanup(layout)
+	login := "TestJsonAPIRefreshRefusesAnAccessToken@test.com"
+	newLoginUser(t, gormDB, login)
+	refreshToken, session := loginSession(t, layout, login)
+	decoded, err := layout.RefreshTokenFactory.DecodeToken(refreshToken)
+	assert.NoError(t, err)
+	accessToken, err := layout.AccessTokenFactory.GenerateToken(decoded.Claims)
+	assert.NoError(t, err)
+
+	// an access token of the session is neither a rotation nor a reuse
+	rec := refreshOverHTTP(t, layout, accessToken.Token)
+	assert.Equal(t, 401, rec.Code)
+	assert.Equal(t, consts.ERR_WRONG_TOKEN_TYPE, errorMessage(t, rec))
+	stored := findSessionRow(t, gormDB, session.ID.String())
+	assert.False(t, stored.DeletedAt.Valid)
+	assert.Equal(t, crypt.HashToken(refreshToken), stored.TokenHash)
+	assert.Equal(t, 200, refreshOverHTTP(t, layout, refreshToken).Code)
+}
+
+// sb_back maps a gRPC status whose code is 401 to its own unauthorized error.
+func TestRPCRefreshRefusalsCarryCode401(t *testing.T) {
+	layout, gormDB, _ := setup()
+	defer cleanup(layout)
+	login := "TestRPCRefreshRefusalsCarryCode401@test.com"
+	newLoginUser(t, gormDB, login)
+	token, session := loginSession(t, layout, login)
+	assert.NoError(t, gormDB.Delete(&session).Error)
+	conn := setupRPC(t, layout)
+	defer conn.Close()
+
+	_, err := v1.NewJWTClient(conn).Refresh(context.Background(), &v1.RefreshIn{RefreshToken: token})
+	st, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Code(401), st.Code())
+	assert.Equal(t, consts.ERR_TOKEN_REVOKED, st.Message())
+}
+
 func TestRPCRefreshRotatesAndStoresTheClient(t *testing.T) {
 	layout, gormDB, timeRef := setup()
 	defer cleanup(layout)
@@ -307,6 +349,7 @@ func TestRPCRefreshWithinTheGraceWindowReturnsNoRefreshToken(t *testing.T) {
 	login := "TestRPCRefreshWithinTheGraceWindow@test.com"
 	newLoginUser(t, gormDB, login)
 	token, _ := loginSession(t, layout, login)
+	layout.SessionReuseGrace = 30 * time.Second
 	conn := setupRPC(t, layout)
 	defer conn.Close()
 	client := v1.NewJWTClient(conn)

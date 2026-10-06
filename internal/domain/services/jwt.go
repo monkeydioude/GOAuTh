@@ -80,6 +80,10 @@ func JWTRefresh(
 	if err != nil {
 		return RefreshResult{}, errors.Unauthorized(err)
 	}
+	// an access token must not rotate, nor revoke, the session
+	if jwt.Claims.Type != refreshTokenFactory.Type {
+		return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_WRONG_TOKEN_TYPE))
+	}
 	sid, err := uuid.Parse(jwt.Claims.SID)
 	if err != nil || !JWTClaimsValidation(jwt.Claims) {
 		return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
@@ -136,8 +140,13 @@ func refreshWithoutRotation(
 	}
 	switch refreshOutcomeOf(session, attempt.tokenHash, attempt.now, reuseGrace) {
 	case refreshInGrace:
-		if err := touchSession(db, attempt); err != nil {
+		touched, err := touchSession(db, attempt)
+		if err != nil {
 			return RefreshResult{}, errors.DBError(err)
+		}
+		// revoked between the read and the touch
+		if !touched {
+			return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
 		}
 		return RefreshResult{AccessToken: accessTokenCookie(newAT), SessionExpires: session.ExpiresAt}, nil
 	case refreshExpired:

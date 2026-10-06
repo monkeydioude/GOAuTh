@@ -100,10 +100,13 @@ func findSession(db *gorm.DB, attempt refreshAttempt) (*entities.Session, error)
 }
 
 // touchSession records a use of the session without rotating its token.
-func touchSession(db *gorm.DB, attempt refreshAttempt) error {
-	return db.Model(&entities.Session{}).
+// It is false when the session is not active anymore.
+func touchSession(db *gorm.DB, attempt refreshAttempt) (bool, error) {
+	// the soft-delete scope only matches an active session
+	res := db.Model(&entities.Session{}).
 		Where("id = ?", attempt.sessionID).
-		Updates(touchColumns(attempt.client, attempt.now)).Error
+		Updates(touchColumns(attempt.client, attempt.now))
+	return res.RowsAffected == 1, res.Error
 }
 
 // touchColumns records when a session was last used and, when known, from where.
