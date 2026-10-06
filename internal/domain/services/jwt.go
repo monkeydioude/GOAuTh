@@ -84,6 +84,14 @@ func JWTRefresh(
 	if err != nil || !JWTClaimsValidation(jwt.Claims) {
 		return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
 	}
+	// a deactivated or deleted user can't refresh anymore
+	active, err := isUserActive(db, jwt.Claims.UID)
+	if err != nil {
+		return RefreshResult{}, errors.DBError(err)
+	}
+	if !active {
+		return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
+	}
 	newAT, err := accessTokenFactory.GenerateToken(jwt.Claims)
 	if err != nil {
 		return RefreshResult{}, errors.Unauthorized(err)

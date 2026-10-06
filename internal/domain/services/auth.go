@@ -120,3 +120,20 @@ func AuthDeactivate(
 
 	return db.Delete(&entities.User{}, uid).Error
 }
+
+// AuthLogout ends every session of the user of realm, as logout did when a
+// user had a single session.
+func AuthLogout(
+	uid uint,
+	realm string,
+	db *gorm.DB,
+	now time.Time,
+) error {
+	if db == nil {
+		return go_errors.New("nil pointer(s) in AuthLogout param")
+	}
+	user := db.Model(&entities.User{}).
+		Select("id").
+		Where("id = ? AND realm_id = (?)", uid, db.Table("realms").Select("id").Where("name = ?", realm))
+	return RevokeSessions(db, entities.SessionRevokedLogout, now, "user_id IN (?)", user)
+}

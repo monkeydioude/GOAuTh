@@ -84,5 +84,5 @@ func (h *AuthRPCHandler) Logout(ctx context.Context, req *LogoutRequest) (*Respo
 	if req == nil {
 		return InternalServerError("no req pointer"), errors.New("no req pointer")
 	}
-	return Ok(), h.DB.Model(&entities.User{}).Where("id = ? AND realm_id = (?)", req.Uid, h.DB.Table("realms").Select("id").Where("name = ?", req.Realm)).Update("refresh_token", nil).Error
+	return Ok(), services.AuthLogout(uint(req.Uid), req.Realm, h.DB, h.RefreshTokenFactory.TimeFn())
 }

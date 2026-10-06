@@ -52,6 +52,15 @@ func RevokeSessions(tx *gorm.DB, reason string, now time.Time, query string, arg
 		Updates(map[string]any{"deleted_at": now, "revoked_reason": reason}).Error
 }
 
+// isUserActive tells whether the user still exists and is not deactivated.
+func isUserActive(db *gorm.DB, uid uint) (bool, error) {
+	err := db.Select("id").First(&entities.User{}, uid).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return err == nil, err
+}
+
 // refreshAttempt is a refresh token presented for the session its sid names.
 type refreshAttempt struct {
 	sessionID uuid.UUID

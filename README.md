@@ -124,6 +124,7 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 | `Signup(UserRequest) → Response`   | Create a new user     |
 | `Login(UserRequest) → Response`    | Authenticate a user   |
 | `Delete(AuthIdRequest) → Response` | Delete a user by ID   |
+| `Logout(LogoutRequest) → Response` | End all of the user's sessions |
 
 ### JWT Service
 

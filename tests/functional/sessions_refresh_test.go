@@ -211,7 +211,7 @@ func TestJsonAPIRefreshReuseAfterTheGraceWindowRevokesTheSession(t *testing.T) {
 	assert.Equal(t, consts.ERR_TOKEN_REUSED, errorMessage(t, reuse))
 	stored := findSessionRow(t, gormDB, session.ID.String())
 	assert.True(t, stored.DeletedAt.Valid)
-	assert.Equal(t, entities.SessionRevokedReuseDetected, *stored.RevokedReason)
+	assert.Equal(t, ptr.Ptr(entities.SessionRevokedReuseDetected), stored.RevokedReason)
 
 	// whoever holds the rotated token is logged out too
 	revoked := refreshOverHTTP(t, layout, rotated)
@@ -253,6 +253,20 @@ func TestJsonAPIRefreshRefusesExpiredAndRevokedSessions(t *testing.T) {
 	expired := refreshOverHTTP(t, layout, expiringToken)
 	assert.Equal(t, 401, expired.Code)
 	assert.Equal(t, consts.ERR_TOKEN_EXPIRED, errorMessage(t, expired))
+}
+
+func TestJsonAPIRefreshRefusesADeactivatedUser(t *testing.T) {
+	layout, gormDB, _ := setup()
+	defer cleanup(layout)
+	login := "TestJsonAPIRefreshRefusesADeactivatedUser@test.com"
+	user := newLoginUser(t, gormDB, login)
+	token, _ := loginSession(t, layout, login)
+
+	assert.NoError(t, services.AuthDeactivate(user.ID, gormDB))
+
+	rec := refreshOverHTTP(t, layout, token)
+	assert.Equal(t, 401, rec.Code)
+	assert.Equal(t, consts.ERR_TOKEN_REVOKED, errorMessage(t, rec))
 }
 
 func TestRPCRefreshRotatesAndStoresTheClient(t *testing.T) {

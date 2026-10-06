@@ -165,6 +165,6 @@ func TestLoginBeyondTheCapRevokesTheLeastRecentlyUsedSession(t *testing.T) {
 	assert.NoError(t, gormDB.Unscoped().Where("user_id = ? AND deleted_at IS NOT NULL", user.ID).Find(&revoked).Error)
 	if assert.Len(t, revoked, 1) {
 		assert.True(t, revoked[0].LastConnection.Equal(timeRef))
-		assert.Equal(t, entities.SessionRevokedLimitExceeded, *revoked[0].RevokedReason)
+		assert.Equal(t, ptr.Ptr(entities.SessionRevokedLimitExceeded), revoked[0].RevokedReason)
 	}
 }
