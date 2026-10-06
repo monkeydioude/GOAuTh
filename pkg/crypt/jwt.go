@@ -25,6 +25,8 @@ type JWTDefaultClaims struct {
 	Expire int64  `json:"expire"`
 	UID    uint   `json:"uid"`
 	Realm  string `json:"realm"`
+	SID    string `json:"sid,omitempty"` // session the token belongs to
+	JTI    string `json:"jti,omitempty"` // random per token, so no two tokens are alike
 }
 
 // GetClaims implmentation from the JWTClaims interface

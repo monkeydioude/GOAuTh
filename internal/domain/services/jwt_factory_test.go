@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFactoryCanGenerateAndDecodeAToken(t *testing.T) {
@@ -59,4 +61,40 @@ func TestFactoryCanRefreshAToken(t *testing.T) {
 		trial.Claims.Expire != time.Date(2024, 10, 04, 22, 22, 37, 0, time.UTC).Unix() {
 		t.Fail()
 	}
+}
+
+func TestFactoryGeneratesUniqueTokensFromTheSameClaims(t *testing.T) {
+	// a frozen clock: both tokens are generated in the same second
+	jf := NewJWTFactory(crypt.HS256("test"), 1*time.Second, func() time.Time {
+		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
+	}, func(uint, func() time.Time) (bool, error) {
+		return false, nil
+	}, "test")
+	claims := crypt.JWTDefaultClaims{UID: 1, Realm: "test", SID: "session-1"}
+
+	jwt1, err := jf.GenerateToken(claims)
+	assert.NoError(t, err)
+	jwt2, err := jf.GenerateToken(claims)
+	assert.NoError(t, err)
+
+	assert.NotEqual(t, jwt1.Token, jwt2.Token)
+	assert.NotEmpty(t, jwt1.Claims.JTI)
+	assert.NotEqual(t, jwt1.Claims.JTI, jwt2.Claims.JTI)
+}
+
+func TestFactoryRefreshKeepsTheSessionAndChangesTheJTI(t *testing.T) {
+	jf := NewJWTFactory(crypt.HS256("test"), 5*time.Second, func() time.Time {
+		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
+	}, func(uint, func() time.Time) (bool, error) {
+		return false, nil
+	}, "test")
+	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{UID: 1, Realm: "test", SID: "session-1"})
+	assert.NoError(t, err)
+
+	trial, err := jf.TryRefresh(jwt1)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "session-1", trial.Claims.SID)
+	assert.NotEmpty(t, trial.Claims.JTI)
+	assert.NotEqual(t, jwt1.Claims.JTI, trial.Claims.JTI)
 }
