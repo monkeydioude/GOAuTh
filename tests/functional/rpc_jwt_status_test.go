@@ -11,27 +11,24 @@ import (
 	v1 "github.com/monkeydioude/goauth/v2/pkg/grpc/v1"
 	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
 func TestRPCCanGetAValidTokensStatus(t *testing.T) {
-	layout, _, _ := setup()
+	layout, gormDB, _ := setup()
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)
 	defer conn.Close()
 	login := "TestRPCCanGetAValidTokensStatus@test.com"
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   123,
-		Realm: login,
-	})
-	assert.NoError(t, err)
+	newLoginUser(t, gormDB, login)
+	accessToken, _ := loginAccessToken(t, layout, login)
 	client := v1.NewJWTClient(conn)
 	ctx := metadata.NewOutgoingContext(context.Background(), rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
-		Value: "Bearer " + jwt.Token,
+		Value: "Bearer " + accessToken,
 	}))
 	{
 		_, err := client.Status(
@@ -77,6 +74,7 @@ func TestRPCWontValidateAnExpiredToken(t *testing.T) {
 	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		Realm: "TestRPCWontValidateAnExpiredToken@test.com",
 		UID:   123,
+		SID:   uuid.NewString(),
 	})
 	assert.NoError(t, err)
 	timeRef := layout.AccessTokenFactory.TimeFn()

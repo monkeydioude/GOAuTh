@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
-	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/internal/domain/services"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 
@@ -22,8 +21,8 @@ func JwtFactoryBoot(db *gorm.DB, sessionTTL time.Duration) (*services.JWTFactory
 			TimeFn: func() time.Time {
 				return time.Now()
 			},
-			RevocationCheckerFn: func(uid uint, timeFn func() time.Time) (bool, error) {
-				return services.IsLoginRevoked[crypt.JWTDefaultClaims, entities.User](uid, db, timeFn())
+			RevocationCheckerFn: func(claims crypt.JWTDefaultClaims, now time.Time) (bool, error) {
+				return services.IsSessionRevoked(db, claims, now)
 			},
 		}, &services.JWTFactory{
 			SigningMethod: crypt.HS256(os.Getenv(consts.JWT_SECRET)),
@@ -32,8 +31,8 @@ func JwtFactoryBoot(db *gorm.DB, sessionTTL time.Duration) (*services.JWTFactory
 			TimeFn: func() time.Time {
 				return time.Now()
 			},
-			RevocationCheckerFn: func(uid uint, timeFn func() time.Time) (bool, error) {
-				return services.IsLoginRevoked[crypt.JWTDefaultClaims, entities.User](uid, db, timeFn())
+			RevocationCheckerFn: func(claims crypt.JWTDefaultClaims, now time.Time) (bool, error) {
+				return services.IsSessionRevoked(db, claims, now)
 			},
 		}
 }

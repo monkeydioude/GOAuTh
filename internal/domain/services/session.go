@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -59,6 +60,22 @@ func isUserActive(db *gorm.DB, uid uint) (bool, error) {
 		return false, nil
 	}
 	return err == nil, err
+}
+
+// IsSessionRevoked tells whether the session a token's sid names can no longer be used:
+// gone, revoked, expired, or its user deactivated. It is a single query.
+func IsSessionRevoked(db *gorm.DB, claims crypt.JWTDefaultClaims, now time.Time) (bool, error) {
+	sid, err := uuid.Parse(claims.SID)
+	if err != nil {
+		return true, nil
+	}
+	var active int64
+	// the soft-delete scope also requires the session not to be revoked
+	err = db.Model(&entities.Session{}).
+		Joins("JOIN users ON users.id = sessions.user_id AND users.deleted_at IS NULL").
+		Where("sessions.id = ? AND sessions.user_id = ? AND sessions.expires_at > ?", sid, claims.UID, now).
+		Count(&active).Error
+	return active == 0, err
 }
 
 // refreshAttempt is a refresh token presented for the session its sid names.
