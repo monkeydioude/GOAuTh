@@ -42,5 +42,6 @@ func LayoutBoot(
 		Plugins:             &plugins.Plugins,
 		TrustedProxies:      trustedProxies,
 		MaxActiveSessions:   sessionEnv.MaxActive,
+		SessionReuseGrace:   sessionEnv.ReuseGrace(),
 	})
 }

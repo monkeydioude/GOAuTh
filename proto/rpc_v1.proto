@@ -46,10 +46,13 @@ message StatusOut {
 message RefreshIn {
     string refreshToken = 1;
     optional int64 access_expires_in_seconds = 2;
-    optional int64 refresh_expires_in_seconds = 3;
+    // ignored: a refresh token lives as long as its session (SESSION_TTL_DAYS)
+    optional int64 refresh_expires_in_seconds = 3 [deprecated = true];
     ClientInfo client = 4;
 }
 
+// refreshToken is empty when a parallel refresh already rotated the token
+// (within SESSION_REUSE_GRACE_SECONDS): keep the refresh token that one returned.
 message RefreshOut {
     string accessToken = 1;
     int64 access_expires_at = 2;

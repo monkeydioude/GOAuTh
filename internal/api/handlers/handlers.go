@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/netip"
+	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/domain/models"
 	"github.com/monkeydioude/goauth/v2/internal/domain/services"
@@ -28,6 +29,8 @@ type Layout struct {
 	TrustedProxies []netip.Prefix
 	// MaxActiveSessions a user may have; a login beyond it revokes the least recently used one
 	MaxActiveSessions int
+	// SessionReuseGrace lets a just-rotated refresh token still get an access token
+	SessionReuseGrace time.Duration
 }
 
 // ClientInfo reads the end user's IP and user agent from req.

@@ -50,11 +50,15 @@ pub struct RefreshIn {
     pub refresh_token: ::prost::alloc::string::String,
     #[prost(int64, optional, tag = "2")]
     pub access_expires_in_seconds: ::core::option::Option<i64>,
+    /// ignored: a refresh token lives as long as its session (SESSION_TTL_DAYS)
+    #[deprecated]
     #[prost(int64, optional, tag = "3")]
     pub refresh_expires_in_seconds: ::core::option::Option<i64>,
     #[prost(message, optional, tag = "4")]
     pub client: ::core::option::Option<ClientInfo>,
 }
+/// refreshToken is empty when a parallel refresh already rotated the token
+/// (within SESSION_REUSE_GRACE_SECONDS): keep the refresh token that one returned.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RefreshOut {
     #[prost(string, tag = "1")]

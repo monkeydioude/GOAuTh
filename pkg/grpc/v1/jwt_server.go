@@ -2,6 +2,8 @@ package v1
 
 import (
 	"context"
+	"net/http"
+	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
@@ -18,6 +20,7 @@ type JWTRPCHandler struct {
 	AccessTokenFactory  *services.JWTFactory
 	RefreshTokenFactory *services.JWTFactory
 	DB                  *gorm.DB
+	SessionReuseGrace   time.Duration
 }
 
 func (h *JWTRPCHandler) Status(ctx context.Context, req *StatusIn) (*StatusOut, error) {
@@ -56,21 +59,24 @@ func (h *JWTRPCHandler) Refresh(ctx context.Context, req *RefreshIn) (*RefreshOu
 	if req.AccessExpiresInSeconds != nil {
 		atf = atf.WithExpiresIn(timed.Seconds(*req.AccessExpiresInSeconds))
 	}
-	rtf := h.RefreshTokenFactory
-	if req.RefreshExpiresInSeconds != nil {
-		rtf = rtf.WithExpiresIn(timed.Seconds(*req.RefreshExpiresInSeconds))
-	}
-	accessToken, refreshToken, err := services.JWTRefresh(token, *atf, *rtf, h.DB)
+	// refresh_expires_in_seconds is ignored: a refresh token lives as long as its session
+	res, err := services.JWTRefresh(token, req.GetClient().IntoClientInfo(), *atf, *h.RefreshTokenFactory, h.SessionReuseGrace, h.DB)
 	if err != nil {
 		return nil, StatusFromErr(err)
 	}
-	grpc.SendHeader(ctx, rpc.SetCookies(accessToken, refreshToken))
-	return &RefreshOut{
-		AccessToken:      accessToken.Value,
-		AccessExpiresAt:  accessToken.Expires.Unix(),
-		RefreshToken:     refreshToken.Value,
-		RefreshExpiresAt: refreshToken.Expires.Unix(),
-	}, nil
+	out := &RefreshOut{
+		AccessToken:      res.AccessToken.Value,
+		AccessExpiresAt:  res.AccessToken.Expires.Unix(),
+		RefreshExpiresAt: res.SessionExpires.Unix(),
+	}
+	cookies := []http.Cookie{res.AccessToken}
+	// nil when a parallel refresh already rotated the token: the caller keeps the one it got
+	if res.RefreshToken != nil {
+		out.RefreshToken = res.RefreshToken.Value
+		cookies = append(cookies, *res.RefreshToken)
+	}
+	grpc.SendHeader(ctx, rpc.SetCookies(cookies...))
+	return out, nil
 }
 
 func NewJWTRPCHandler(layout *handlers.Layout) *JWTRPCHandler {
@@ -78,5 +84,6 @@ func NewJWTRPCHandler(layout *handlers.Layout) *JWTRPCHandler {
 		AccessTokenFactory:  layout.AccessTokenFactory,
 		RefreshTokenFactory: layout.RefreshTokenFactory,
 		DB:                  layout.DB,
+		SessionReuseGrace:   layout.SessionReuseGrace,
 	}
 }
