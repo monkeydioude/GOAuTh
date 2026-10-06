@@ -24,6 +24,7 @@ type AuthRPCHandler struct {
 	AccessTokenFactory  *services.JWTFactory
 	RefreshTokenFactory *services.JWTFactory
 	Plugins             *plugins.PluginsRecord
+	MaxActiveSessions   int
 }
 
 func (h *AuthRPCHandler) Signup(ctx context.Context, req *UserRequest) (*Response, error) {
@@ -54,11 +55,8 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 	if req.AccessExpiresInSeconds != nil {
 		atf = h.AccessTokenFactory.WithExpiresIn(time.Second * time.Duration(*req.AccessExpiresInSeconds))
 	}
-	rtf := h.RefreshTokenFactory
-	if req.RefreshExpiresInSeconds != nil {
-		rtf = h.RefreshTokenFactory.WithExpiresIn(time.Second * time.Duration(*req.RefreshExpiresInSeconds))
-	}
-	accessToken, refreshToken, err := services.AuthLogin(user, h.DB, h.UserParams, atf, rtf)
+	// refresh_expires_in_seconds is ignored: a refresh token lives as long as its session
+	accessToken, refreshToken, err := services.AuthLogin(user, req.GetClient().IntoClientInfo(), h.DB, h.UserParams, atf, h.RefreshTokenFactory, h.MaxActiveSessions)
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
@@ -78,6 +76,7 @@ func NewAuthRPCHandler(layout *handlers.Layout) *AuthRPCHandler {
 		AccessTokenFactory:  layout.AccessTokenFactory,
 		RefreshTokenFactory: layout.RefreshTokenFactory,
 		Plugins:             layout.Plugins,
+		MaxActiveSessions:   layout.MaxActiveSessions,
 	}
 }
 

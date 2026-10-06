@@ -24,6 +24,23 @@ func TestICanSignAJWT(t *testing.T) {
 	assert.Equal(t, trial, res)
 }
 
+func TestICanEncodeAndDecodeSidAndJti(t *testing.T) {
+	trial := JWTDefaultClaims{
+		Expire: time.Date(2024, 10, 04, 22, 22, 22, 22, time.UTC).Unix(),
+		UID:    1,
+		Realm:  "test1",
+		Type:   "test",
+		SID:    "2f1c7f4e-5b1a-4d8e-9a43-6c1e0b7d9f21",
+		JTI:    "9b2d5e1a-7c3f-4a6b-8e0d-1f4c2a9b7e53",
+	}
+
+	token, err := NewJWT(HS256("test"), trial)
+	assert.NoError(t, err)
+	res, err := DecodeJWT[JWTDefaultClaims](token, HS256("test"))
+	assert.NoError(t, err)
+	assert.Equal(t, trial, res)
+}
+
 func TestICanAssertATokenWasNotTemperedWith(t *testing.T) {
 	trial := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE3MjgwODA1NDIsIm5hbWUiOiJ0ZXN0QHRlc3QuY29tIn0.0RbVgcJ7ZuMjfXwvbZjkrKG-5HQ2-NgSGKHUWn3_oeM"
 	_, err := DecodeJWT[JWTDefaultClaims](trial, HS256("test"))

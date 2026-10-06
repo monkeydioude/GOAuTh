@@ -9,6 +9,8 @@ pub struct UserRequest {
     pub realm: ::prost::alloc::string::String,
     #[prost(int64, optional, tag = "4")]
     pub access_expires_in_seconds: ::core::option::Option<i64>,
+    /// ignored: a refresh token lives as long as its session (SESSION_TTL_DAYS)
+    #[deprecated]
     #[prost(int64, optional, tag = "5")]
     pub refresh_expires_in_seconds: ::core::option::Option<i64>,
     #[prost(message, optional, tag = "6")]

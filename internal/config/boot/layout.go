@@ -22,6 +22,10 @@ func LayoutBoot(
 	if err != nil {
 		return result.Error[handlers.Layout](err)
 	}
+	sessionEnv, err := SessionBoot()
+	if err != nil {
+		return result.Error[handlers.Layout](err)
+	}
 	dbRes := PostgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
@@ -29,7 +33,7 @@ func LayoutBoot(
 	userParams := UsersParamsBoot(loginConstraints, passwordConstraints)
 	gorm := dbRes.Result()
 	gormSetupHydrate(gorm, userParams)
-	atf, rtf := JwtFactoryBoot(gorm)
+	atf, rtf := JwtFactoryBoot(gorm, sessionEnv.TTL())
 	return result.Ok(&handlers.Layout{
 		DB:                  gorm,
 		AccessTokenFactory:  atf,
@@ -37,5 +41,6 @@ func LayoutBoot(
 		UserParams:          userParams,
 		Plugins:             &plugins.Plugins,
 		TrustedProxies:      trustedProxies,
+		MaxActiveSessions:   sessionEnv.MaxActive,
 	})
 }

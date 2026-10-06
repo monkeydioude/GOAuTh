@@ -41,7 +41,7 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		Password:  dto.Password,
 		RealmName: dto.RealmName,
 	}
-	accessToken, refreshToken, err := services.AuthLogin(&user, h.DB, h.UserParams, h.AccessTokenFactory, h.RefreshTokenFactory)
+	accessToken, refreshToken, err := services.AuthLogin(&user, h.ClientInfo(req), h.DB, h.UserParams, h.AccessTokenFactory, h.RefreshTokenFactory, h.MaxActiveSessions)
 	if err != nil {
 		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
 		errors.HTTPError(err, w)

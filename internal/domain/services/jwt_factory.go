@@ -10,6 +10,8 @@ import (
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -49,6 +51,7 @@ func (jf JWTFactory) GenerateToken(claims crypt.JWTDefaultClaims) (entities.JWT[
 	timeRef := jf.TimeFn()
 	claims.Expire = timeRef.Add(jf.ExpiresIn).Unix()
 	claims.Type = jf.Type
+	claims.JTI = uuid.NewString()
 	token, err := crypt.NewJWT(jf.SigningMethod, claims)
 	if err != nil {
 		return entities.JWT[crypt.JWTDefaultClaims]{}, err

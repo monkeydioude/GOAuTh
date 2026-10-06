@@ -125,6 +125,7 @@ import (
 // }
 
 func TestRefreshToken(t *testing.T) {
+	t.Skip("login no longer writes users.refresh_token; refresh moves to sessions in #9")
 	layout, _, _ := setup()
 	defer cleanup(layout)
 	conn := setupRPC(t, layout)

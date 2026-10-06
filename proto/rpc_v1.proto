@@ -11,7 +11,8 @@ message UserRequest {
     string password = 2;
     string realm = 3;
     optional int64 access_expires_in_seconds = 4;
-    optional int64 refresh_expires_in_seconds = 5;
+    // ignored: a refresh token lives as long as its session (SESSION_TTL_DAYS)
+    optional int64 refresh_expires_in_seconds = 5 [deprecated = true];
     ClientInfo client = 6;
 }
 
