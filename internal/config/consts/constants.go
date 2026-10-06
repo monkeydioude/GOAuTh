@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
-	"github.com/monkeydioude/goauth/v2/pkg/data_types/timed"
 )
 
 // Env labels
@@ -21,7 +20,6 @@ const RefreshTokenCookie = "Refresh"
 const SetCookie = "set-cookie"
 
 const AccessTokenExpiresIn = 1 * time.Hour
-const RefreshTokenExpiresIn = 4 * timed.Week
 
 const BaseAPI_V1 = "/identity/v1"
 

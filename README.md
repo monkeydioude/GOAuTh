@@ -82,13 +82,15 @@ Environment variables can be provided through a `.env` file in GOAuTh's working 
 | `DB_LOG_LEVEL`           | `error`   | GORM log level (`info`, `warn`, `error`) |
 | `DB_SLOW_QUERY_LOG_MS`   | `20`      | Slow query threshold in milliseconds     |
 | `TRUSTED_PROXIES`        | —         | Comma-separated CIDRs or IPs of the proxies allowed to set `X-Forwarded-For`; empty trusts none |
+| `SESSION_TTL_DAYS`       | `30`      | Days a session lives without a refresh; each refresh resets it |
+| `SESSION_MAX_ACTIVE`     | `10`      | Active sessions per user; a login beyond it revokes the least recently used one |
 
 > **Security note:** `JWT_SECRET` and `PASSWD_SALT` should be provided via system environment variables or a secrets manager in production. The `.env` file is only suitable for development.
 
 ### Defaults
 
-- JWT expiration: **24 hours**
-- JWT refresh window: **4 weeks**
+- Access token expiration: **1 hour**
+- Session (refresh token) lifetime: **30 days**, reset on every refresh
 - Argon2 parameters: time=3, memory=32 MiB, threads=4, keyLen=32 (RFC draft defaults)
 - Minimum password length: **4 characters**
 - Login constraint: must be a **valid email address**
@@ -168,7 +170,8 @@ message UserRequest {
     string password = 2;
     string realm = 3;
     optional int64 access_expires_in_seconds = 4;
-    optional int64 refresh_expires_in_seconds = 5;
+    // ignored: a refresh token lives as long as its session (SESSION_TTL_DAYS)
+    optional int64 refresh_expires_in_seconds = 5 [deprecated = true];
     ClientInfo client = 6;
 }
 

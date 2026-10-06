@@ -12,7 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func JwtFactoryBoot(db *gorm.DB) (*services.JWTFactory, *services.JWTFactory) {
+// JwtFactoryBoot returns the access and refresh token factories.
+// A refresh token lives as long as its session: sessionTTL.
+func JwtFactoryBoot(db *gorm.DB, sessionTTL time.Duration) (*services.JWTFactory, *services.JWTFactory) {
 	return &services.JWTFactory{
 			SigningMethod: crypt.HS256(os.Getenv(consts.JWT_SECRET)),
 			ExpiresIn:     consts.AccessTokenExpiresIn,
@@ -25,7 +27,7 @@ func JwtFactoryBoot(db *gorm.DB) (*services.JWTFactory, *services.JWTFactory) {
 			},
 		}, &services.JWTFactory{
 			SigningMethod: crypt.HS256(os.Getenv(consts.JWT_SECRET)),
-			ExpiresIn:     consts.RefreshTokenExpiresIn,
+			ExpiresIn:     sessionTTL,
 			Type:          consts.RefreshTokenCookie,
 			TimeFn: func() time.Time {
 				return time.Now()

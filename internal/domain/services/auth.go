@@ -10,8 +10,10 @@ import (
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 	"github.com/monkeydioude/goauth/v2/pkg/errors"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -46,12 +48,16 @@ func AuthSignup(
 	return nil
 }
 
+// AuthLogin checks the user's credentials and creates a session for this login:
+// both tokens carry its id as their sid, and it stores the refresh token's hash.
 func AuthLogin(
 	user *entities.User,
+	client ClientInfo,
 	db *gorm.DB,
 	usersParams *models.UsersParams,
 	accessTokenFactory *JWTFactory,
 	refreshTokenFactory *JWTFactory,
+	maxActiveSessions int,
 ) (http.Cookie, http.Cookie, error) {
 	if user == nil || db == nil || usersParams == nil || accessTokenFactory == nil || refreshTokenFactory == nil {
 		return http.Cookie{}, http.Cookie{}, go_errors.New("nil pointer(s) in AuthLogin param")
@@ -62,17 +68,32 @@ func AuthLogin(
 	if err := user.AssertAuth(db, usersParams); err != nil {
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
 	}
-	accessToken, err := accessTokenFactory.GenerateToken(user.IntoClaims())
+	sid := uuid.New()
+	claims := user.IntoClaims()
+	claims.SID = sid.String()
+	accessToken, err := accessTokenFactory.GenerateToken(claims)
 	if err != nil {
 		return http.Cookie{}, http.Cookie{}, errors.InternalServerError(err)
 	}
-	refreshToken, err := refreshTokenFactory.GenerateToken(user.IntoClaims())
+	refreshToken, err := refreshTokenFactory.GenerateToken(claims)
 	if err != nil {
 		return http.Cookie{}, http.Cookie{}, errors.InternalServerError(err)
 	}
-	res := db.Model(&entities.User{}).Where("id = ?", user.ID).Update("refresh_token", refreshToken.GetToken())
-	if res.Error != nil {
-		return http.Cookie{}, http.Cookie{}, errors.DBError(res.Error)
+	now := refreshTokenFactory.TimeFn()
+	err = db.Transaction(func(tx *gorm.DB) error {
+		return createSession(tx, &entities.Session{
+			ID:             sid,
+			UserID:         user.ID,
+			TokenHash:      crypt.HashToken(refreshToken.GetToken()),
+			UserAgent:      client.UserAgent,
+			LoginIP:        client.IP,
+			LastIP:         client.IP,
+			LastConnection: now,
+			ExpiresAt:      time.Unix(refreshToken.Claims.Expire, 0),
+		}, maxActiveSessions, now)
+	})
+	if err != nil {
+		return http.Cookie{}, http.Cookie{}, errors.DBError(err)
 	}
 	return http.Cookie{
 			Name:    consts.AuthorizationCookie,

@@ -26,6 +26,8 @@ type Layout struct {
 	Plugins             *plugins.PluginsRecord
 	// TrustedProxies may set X-Forwarded-For
 	TrustedProxies []netip.Prefix
+	// MaxActiveSessions a user may have; a login beyond it revokes the least recently used one
+	MaxActiveSessions int
 }
 
 // ClientInfo reads the end user's IP and user agent from req.
