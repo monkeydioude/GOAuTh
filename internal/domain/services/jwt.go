@@ -38,17 +38,33 @@ func GetJWTFromBearer(tokenWithBearer string, factory *JWTFactory) result.R[enti
 	return result.Ok(&jwt)
 }
 
+// JWTStatus validates an access token: signed, of the access type, not expired,
+// and belonging to a session that is still active.
 func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
 	jwt, err := factory.DecodeToken(token)
 	if err != nil {
 		return http.Cookie{}, err
 	}
-
-	if !JWTClaimsValidation(jwt.Claims) {
+	if jwt.Claims.Type != factory.Type {
+		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_WRONG_TOKEN_TYPE))
+	}
+	if !JWTClaimsValidation(jwt.Claims) || jwt.Claims.SID == "" {
 		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_MISSING_PARAMS))
 	}
-	if jwt.Claims.Expire < factory.TimeFn().Unix() {
+	now := factory.TimeFn()
+	if jwt.Claims.Expire < now.Unix() {
 		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
+	}
+	// no checker means no way to know: refuse
+	if factory.RevocationCheckerFn == nil {
+		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
+	}
+	revoked, err := factory.RevocationCheckerFn(jwt.Claims, now)
+	if err != nil {
+		return http.Cookie{}, errors.DBError(err)
+	}
+	if revoked {
+		return http.Cookie{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
 	}
 	return http.Cookie{
 		Name:   consts.AuthorizationCookie,

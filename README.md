@@ -218,7 +218,7 @@ message EditUserRequest {
 
 ### JWT (Status / Refresh)
 
-No JSON body. Status reads the `Authorization` cookie (HTTP) or `set-cookie` metadata (gRPC) containing `Bearer {JWT}`. Refresh reads the `Refresh` cookie, or `refreshToken` in `RefreshIn` over gRPC.
+No JSON body. Status reads the `Authorization` cookie (HTTP) or `set-cookie` metadata (gRPC) containing `Bearer {JWT}`. Refresh reads the `Refresh` cookie, or `refreshToken` in `RefreshIn` over gRPC. Status also checks, in one query, that the token's session is still active and its user not deactivated, so a revoked session loses access on its next request.
 
 Each refresh rotates the session's refresh token: store the new one, the old one stops working. If two refreshes race with the same token, the second gets a new access token but no refresh token (`RefreshOut.refreshToken` empty, no `Refresh` cookie), so keep the one the first returned. Presenting an older refresh token after `SESSION_REUSE_GRACE_SECONDS` revokes the session (`TokenReused`). A refresh only touches the session its token belongs to.
 

@@ -37,7 +37,7 @@ func main() {
 		SigningMethod:       crypt.HS256(os.Getenv(consts.JWT_SECRET)),
 		ExpiresIn:           consts.AccessTokenExpiresIn,
 		TimeFn:              func() time.Time { return time.Now() },
-		RevocationCheckerFn: func(uid uint, timeFn func() time.Time) (bool, error) { return false, nil },
+		RevocationCheckerFn: func(crypt.JWTDefaultClaims, time.Time) (bool, error) { return false, nil },
 		Type:                consts.AuthorizationCookie,
 	}
 	if len(args) != 3 {
@@ -55,10 +55,18 @@ func main() {
 		slog.Error("db.Where error", "err", err.Error())
 		return
 	}
+	// JWT.Status only accepts tokens of an active session: borrow the user's latest one
+	session := entities.Session{}
+	err = db.Where("user_id = ? AND expires_at > ?", user.ID, time.Now()).Order("last_connection DESC").First(&session).Error
+	if err != nil {
+		slog.Error("the user has no active session: log in once first", "err", err.Error())
+		return
+	}
 	token, err := factory.GenerateToken(crypt.JWTDefaultClaims{
 		Expire: expRef.Unix(),
 		UID:    user.ID,
 		Realm:  args[2],
+		SID:    session.ID.String(),
 	})
 	if err != nil {
 		slog.Error("factory.GenerateToken error", "err", err.Error())

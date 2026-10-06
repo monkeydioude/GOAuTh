@@ -40,10 +40,11 @@ type JWTFactory struct {
 	SigningMethod crypt.JWTSigningMethod
 
 	// ExpiresIn < RefreshesIn
-	ExpiresIn           time.Duration
-	Type                string
-	TimeFn              func() time.Time
-	RevocationCheckerFn func(uint, func() time.Time) (bool, error)
+	ExpiresIn time.Duration
+	Type      string
+	TimeFn    func() time.Time
+	// RevocationCheckerFn tells whether the session a token belongs to is revoked
+	RevocationCheckerFn func(crypt.JWTDefaultClaims, time.Time) (bool, error)
 }
 
 // GenerateToken implements "github.com/monkeydioude/goauth/v2/pkg/domain/entities".JWTFactory
@@ -112,7 +113,7 @@ func NewEmptyJWTFactory() *JWTFactory {
 		TimeFn: func() time.Time {
 			return time.Now()
 		},
-		RevocationCheckerFn: func(_ uint, _ func() time.Time) (bool, error) {
+		RevocationCheckerFn: func(crypt.JWTDefaultClaims, time.Time) (bool, error) {
 			return true, nil
 		},
 	}
@@ -122,7 +123,7 @@ func NewJWTFactory(
 	signingMethod crypt.JWTSigningMethod,
 	expiresIn time.Duration,
 	timeRefFn func() time.Time,
-	revocationCheckerFn func(uint, func() time.Time) (bool, error),
+	revocationCheckerFn func(crypt.JWTDefaultClaims, time.Time) (bool, error),
 	typ string,
 ) *JWTFactory {
 	return &JWTFactory{

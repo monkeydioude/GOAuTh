@@ -12,7 +12,7 @@ import (
 func TestFactoryCanGenerateAndDecodeAToken(t *testing.T) {
 	jf := NewJWTFactory(crypt.HS256("test"), 1*time.Second, func() time.Time {
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	}, func(uint, func() time.Time) (bool, error) {
+	}, func(crypt.JWTDefaultClaims, time.Time) (bool, error) {
 		return false, nil
 	}, "test")
 
@@ -32,7 +32,7 @@ func TestFactoryCanRefreshAToken(t *testing.T) {
 		// 2024-10-04 22:22:22
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
 	}
-	revocCheckerFn := func(uint, func() time.Time) (bool, error) {
+	revocCheckerFn := func(crypt.JWTDefaultClaims, time.Time) (bool, error) {
 		return false, nil
 	}
 	// expire time is 2024-10-04 22:22:27
@@ -67,7 +67,7 @@ func TestFactoryGeneratesUniqueTokensFromTheSameClaims(t *testing.T) {
 	// a frozen clock: both tokens are generated in the same second
 	jf := NewJWTFactory(crypt.HS256("test"), 1*time.Second, func() time.Time {
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	}, func(uint, func() time.Time) (bool, error) {
+	}, func(crypt.JWTDefaultClaims, time.Time) (bool, error) {
 		return false, nil
 	}, "test")
 	claims := crypt.JWTDefaultClaims{UID: 1, Realm: "test", SID: "session-1"}
@@ -85,7 +85,7 @@ func TestFactoryGeneratesUniqueTokensFromTheSameClaims(t *testing.T) {
 func TestFactoryRefreshKeepsTheSessionAndChangesTheJTI(t *testing.T) {
 	jf := NewJWTFactory(crypt.HS256("test"), 5*time.Second, func() time.Time {
 		return time.Date(2024, 10, 04, 22, 22, 22, 0, time.UTC)
-	}, func(uint, func() time.Time) (bool, error) {
+	}, func(crypt.JWTDefaultClaims, time.Time) (bool, error) {
 		return false, nil
 	}, "test")
 	jwt1, err := jf.GenerateToken(crypt.JWTDefaultClaims{UID: 1, Realm: "test", SID: "session-1"})

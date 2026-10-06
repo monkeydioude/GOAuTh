@@ -13,34 +13,31 @@ import (
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 	"github.com/monkeydioude/goauth/v2/pkg/http/response"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJsonAPICanGetAValidTokensStatus(t *testing.T) {
-	layout, _, _ := setup()
+	layout, gormDB, _ := setup()
 	defer cleanup(layout)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/jwt/status", layout.Post(jwt.Status))
 
 	login := "TestICanGetAValidTokensStatus@test.com"
+	newLoginUser(t, gormDB, login)
+	accessToken, _ := loginAccessToken(t, layout, login)
 	rec := httptest.NewRecorder()
-
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		UID:   1,
-		Realm: login,
-	})
-	assert.NoError(t, err)
 	req, err := http.NewRequest("POST", "/v1/jwt/status", nil)
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{
 		Name:  "Authorization",
-		Value: "Bearer " + jwt.Token,
+		Value: "Bearer " + accessToken,
 	})
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, 200, rec.Code)
 	trial, err := http.ParseCookie(rec.Header().Get("Set-Cookie"))
 	assert.NoError(t, err)
-	assert.Equal(t, "Bearer "+jwt.Token, trial[0].Value)
+	assert.Equal(t, "Bearer "+accessToken, trial[0].Value)
 }
 
 func TestJsonAPIGetA401OnInvalidToken(t *testing.T) {
@@ -85,7 +82,7 @@ func TestJsonAPIGetA401OnExpiredToken(t *testing.T) {
 	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
 		UID:   1,
 		Realm: "cabane123",
-		// Name: login,
+		SID:   uuid.NewString(),
 	})
 	assert.NoError(t, err)
 	timeRef := layout.AccessTokenFactory.TimeFn()
