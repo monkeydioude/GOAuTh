@@ -108,6 +108,10 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 	mock.ExpectExec(`UPDATE "users" SET "password"=\$1,"updated_at"=\$2 WHERE "users"."deleted_at" IS NULL AND "id" = \$3`).
 		WithArgs(hashedPassword, sqlmock.AnyArg(), 1).
 		WillReturnResult(sqlmock.NewResult(0, 1))
+	// in the same transaction, every session of the user is revoked
+	mock.ExpectExec(`UPDATE "sessions" SET "deleted_at"=\$1,"revoked_reason"=\$2 WHERE user_id = \$3 AND "sessions"."deleted_at" IS NULL`).
+		WithArgs(sqlmock.AnyArg(), entities.SessionRevokedPasswordReset, 1).
+		WillReturnResult(sqlmock.NewResult(0, 2))
 	mock.ExpectCommit()
 	mock.ExpectBegin()
 	mock.ExpectExec(`UPDATE "user_actions" SET "validated_at"=\$1,"updated_at"=\$2 WHERE "id" = \$3`).

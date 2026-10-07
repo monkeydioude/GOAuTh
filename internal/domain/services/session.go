@@ -98,6 +98,15 @@ func RevokeAllSessions(db *gorm.DB, uid uint, keepSID string, now time.Time) err
 	return RevokeSessions(db, entities.SessionRevokedLogoutAll, now, "user_id = ? AND expires_at > ? AND id <> ?", uid, now, keepSID)
 }
 
+// revokeUserSessions revokes every session of the user not revoked yet, except
+// keepSID when it names one. For account events: password change, reset, deactivation.
+func revokeUserSessions(tx *gorm.DB, uid uint, keepSID string, reason string, now time.Time) error {
+	if keep, err := uuid.Parse(keepSID); err == nil {
+		return RevokeSessions(tx, reason, now, "user_id = ? AND id <> ?", uid, keep)
+	}
+	return RevokeSessions(tx, reason, now, "user_id = ?", uid)
+}
+
 // LogoutSession revokes the session a token's claims name. A session already
 // revoked or expired is left as is.
 func LogoutSession(db *gorm.DB, claims crypt.JWTDefaultClaims, now time.Time) error {

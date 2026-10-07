@@ -67,8 +67,9 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 	return Ok(), nil
 }
 
+// Delete soft-deletes the user and revokes all their sessions.
 func (h *AuthRPCHandler) Delete(ctx context.Context, req *AuthIdRequest) (*Response, error) {
-	return Ok(), h.DB.Delete(&entities.User{}, "id = ?", req.Uid).Error
+	return Ok(), services.AuthDeactivate(uint(req.Uid), h.DB, h.RefreshTokenFactory.TimeFn())
 }
 
 func NewAuthRPCHandler(layout *handlers.Layout) *AuthRPCHandler {

@@ -144,9 +144,14 @@ func userActionResetPassword(
 		usersParams.GetArgon2Params(),
 		usersParams.GetPasswordSalt(),
 	)
-	res := db.Model(&user).Update("password", passwd)
-	if res.Error != nil {
-		return errors.DBError(fmt.Errorf("userActionResetPassword: %w", res.Error))
+	err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&user).Update("password", passwd).Error; err != nil {
+			return err
+		}
+		return revokeUserSessions(tx, user.ID, "", entities.SessionRevokedPasswordReset, time.Now())
+	})
+	if err != nil {
+		return errors.DBError(fmt.Errorf("userActionResetPassword: %w", err))
 	}
 	return nil
 }
