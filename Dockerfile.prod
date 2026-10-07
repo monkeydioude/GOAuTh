@@ -18,6 +18,7 @@ RUN env
 
 RUN CGO_ENABLED=0 GOOS=linux go build -C bin/GOAuTh -o /tmp/GOAuTh
 RUN CGO_ENABLED=0 GOOS=linux go build -C bin/client -o /tmp/client
+RUN CGO_ENABLED=0 GOOS=linux go build -C bin/job-session-purge -o /tmp/job-session-purge
 
 # RUN PART
 FROM alpine:latest
@@ -26,6 +27,7 @@ WORKDIR /app
 
 COPY --from=builder /tmp/GOAuTh .
 COPY --from=builder /tmp/client .
+COPY --from=builder /tmp/job-session-purge .
 
 EXPOSE 8100
 EXPOSE 9100
