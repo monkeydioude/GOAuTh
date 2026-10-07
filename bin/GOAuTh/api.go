@@ -7,6 +7,7 @@ import (
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/auth"
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/jwt"
+	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/session"
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers/v1/user"
 	"github.com/monkeydioude/goauth/v2/internal/config/boot"
 	"github.com/monkeydioude/goauth/v2/internal/config/middleware"
@@ -25,6 +26,7 @@ func apiRouting(layout *handlers.Layout) http.Handler {
 	// Auth
 	mux.HandleFunc("/identity/v1/auth/signup", layout.Post(auth.Signup))
 	mux.HandleFunc("/identity/v1/auth/login", layout.Put(auth.Login))
+	mux.HandleFunc("PUT /identity/v1/auth/logout", layout.Put(auth.Logout))
 
 	// User
 	mux.HandleFunc("/identity/v1/user/password", layout.Put(user.EditPassword))
@@ -33,6 +35,10 @@ func apiRouting(layout *handlers.Layout) http.Handler {
 	// JWT
 	mux.HandleFunc("/identity/v1/jwt/status", layout.Get(jwt.Status))
 	mux.HandleFunc("/identity/v1/jwt/refresh", layout.Put(jwt.Refresh))
+	// Sessions
+	mux.HandleFunc("GET /identity/v1/sessions", layout.Get(session.List))
+	mux.HandleFunc("DELETE /identity/v1/sessions", layout.Delete(session.RevokeAll))
+	mux.HandleFunc("DELETE /identity/v1/sessions/{id}", layout.Delete(session.Revoke))
 	// Healthcheck
 	mux.HandleFunc("/identity/healthcheck", healthcheck)
 
