@@ -41,13 +41,10 @@ func UserEditPassword(
 	if err != nil {
 		return errors.BadRequest(err)
 	}
-	jwtRes := GetJWTFromBearer(tokenWithBearer, factory)
-	if jwtRes.IsErr() {
-		return jwtRes.Error
-	}
-	jwt := jwtRes.Result()
-	if !JWTClaimsValidation(jwt.Claims) {
-		return errors.Unauthorized(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
+	// only an active session may change the password
+	jwt, err := AuthenticateBearer(tokenWithBearer, *factory)
+	if err != nil {
+		return err
 	}
 	signedPasswd := crypt.HashPassword(
 		editEntity.Password,
@@ -86,13 +83,10 @@ func UserEditLogin(
 		return errors.InternalServerError(stdErr.New(consts.ERR_INTERNAL_ERROR))
 	}
 
-	jwtRes := GetJWTFromBearer(tokenWithBearer, factory)
-	if jwtRes.IsErr() {
-		return jwtRes.Error
-	}
-	jwt := jwtRes.Result()
-	if !JWTClaimsValidation(jwt.Claims) {
-		return errors.Unauthorized(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
+	// only an active session may change the login
+	jwt, err := AuthenticateBearer(tokenWithBearer, *factory)
+	if err != nil {
+		return err
 	}
 
 	signedPasswd := crypt.HashPassword(
@@ -111,7 +105,7 @@ func UserEditLogin(
 	if user.ID == 0 {
 		return errors.BadRequest(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
 	}
-	err := editEntity.UserParams.AssertLogin(*editEntity.NewLogin, &user.Login)
+	err = editEntity.UserParams.AssertLogin(*editEntity.NewLogin, &user.Login)
 	if err != nil {
 		return errors.BadRequest(err)
 	}

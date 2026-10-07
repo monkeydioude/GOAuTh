@@ -109,12 +109,8 @@ func TestJsonAPICanChangeAnUserPassword(t *testing.T) {
 	assert.Nil(t, gormDB.Create(&user).Error)
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   user.ID,
-		Realm: realm.Name,
-	})
-	assert.NoError(t, err)
+	// the access token of an active session
+	jwt := loginAccessJWT(t, layout, login, passwd)
 	newPasswd := "test"
 	body, err := json.Marshal(entities.EditUserPayload{
 		Password:    passwd,

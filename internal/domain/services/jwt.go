@@ -11,7 +11,6 @@ import (
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 	"github.com/monkeydioude/goauth/v2/pkg/errors"
-	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -26,16 +25,13 @@ func GetTokenFromBearer(tokenWithBearer string) (string, error) {
 	return parts[1], nil
 }
 
-func GetJWTFromBearer(tokenWithBearer string, factory *JWTFactory) result.R[entities.JWT[crypt.JWTDefaultClaims]] {
+// AuthenticateBearer checks a "Bearer {token}" value with AuthenticateAccessToken.
+func AuthenticateBearer(tokenWithBearer string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	token, err := GetTokenFromBearer(tokenWithBearer)
 	if err != nil {
-		return result.Error[entities.JWT[crypt.JWTDefaultClaims]](err)
+		return entities.JWT[crypt.JWTDefaultClaims]{}, err
 	}
-	jwt, err := factory.DecodeToken(token)
-	if err != nil {
-		return result.Error[entities.JWT[crypt.JWTDefaultClaims]](errors.Unauthorized(err))
-	}
-	return result.Ok(&jwt)
+	return AuthenticateAccessToken(token, factory)
 }
 
 // SessionOfToken reads which session a token belongs to: signed, of the factory's
