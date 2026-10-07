@@ -50,14 +50,15 @@ func TestJsonAPICanNotChangeLoginOnMissingUID(t *testing.T) {
 		Value: "Bearer " + jwt.Token,
 	})
 	mux.ServeHTTP(rec, req)
-	assert.Equal(t, 400, rec.Code)
+	// a token without a session is refused
+	assert.Equal(t, 401, rec.Code)
 	body, err = io.ReadAll(rec.Body)
 	assert.NoError(t, err)
 	assert.NotEqual(t, []byte(`{"Code":401,"Message":"Unauthorized"}`), body)
 }
 
 func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
-	layout, _, _ := setup()
+	layout, gormDB, _ := setup()
 	defer cleanup(layout)
 	// enforce ExpiresIn and RefreshesIn in a clear and wanted context
 	layout.AccessTokenFactory.ExpiresIn = 3 * time.Second
@@ -65,15 +66,10 @@ func TestJsonAPICanNotChangeLoginOnIncorrectPassword(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/user/login", layout.Put(user.EditLogin))
 
-	// login := "TestJsonAPICanNotChangeLoginOnIncorrectPassword@test.com"
-	// create the user
+	login := "TestJsonAPICanNotChangeLoginOnIncorrectPassword@test.com"
+	newLoginUser(t, gormDB, login)
 	rec := httptest.NewRecorder()
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   1,
-		Realm: "fake-realm",
-	})
-	assert.NoError(t, err)
+	jwt := loginAccessJWT(t, layout, login, "test")
 	newLogin := "testtest@test.com"
 	body, err := json.Marshal(entities.EditUserPayload{
 		Password: "fake_pwd",
@@ -129,12 +125,8 @@ func TestJsonAPICanChangeAnUserLogin(t *testing.T) {
 	assert.Nil(t, gormDB.Create(&user).Error)
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   user.ID,
-		Realm: realm.Name,
-	})
-	assert.NoError(t, err)
+	// the access token of an active session
+	jwt := loginAccessJWT(t, layout, login, passwd)
 	body, err := json.Marshal(entities.EditUserPayload{
 		NewLogin: &newLogin,
 		Password: passwd,

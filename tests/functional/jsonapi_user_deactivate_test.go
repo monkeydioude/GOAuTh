@@ -104,12 +104,8 @@ func TestJsonAPICanDeactivateAnUserByID(t *testing.T) {
 	assert.Nil(t, gormDB.Create(&user).Error)
 	rec := httptest.NewRecorder()
 
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   user.ID,
-		Realm: realm.Name,
-	})
-	assert.NoError(t, err)
+	// the access token of an active session
+	jwt := loginAccessJWT(t, layout, login, passwd)
 	req, err := http.NewRequest("DELETE", "/user/deactivate", nil)
 	assert.NoError(t, err)
 	req.AddCookie(&http.Cookie{

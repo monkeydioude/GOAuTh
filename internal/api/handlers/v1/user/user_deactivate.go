@@ -24,14 +24,11 @@ func Deactivate(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jwt, err := h.AccessTokenFactory.DecodeCookieToken(cookie)
+	// only an active session may deactivate the account
+	jwt, err := services.AuthenticateBearer(cookie.Value, *h.AccessTokenFactory)
 	if err != nil {
 		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
-		response.Unauthorized(err.Error(), w)
-		return
-	}
-	if !services.JWTClaimsValidation(jwt.Claims) {
-		response.Unauthorized(consts.ERR_INVALID_CREDENTIALS, w)
+		errors.HTTPError(err, w)
 		return
 	}
 	err = services.AuthDeactivate(jwt.Claims.UID, h.DB, h.AccessTokenFactory.TimeFn())

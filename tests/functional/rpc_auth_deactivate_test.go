@@ -95,20 +95,16 @@ func TestRPCCanDeactivateAnUserByID(t *testing.T) {
 		gormDB.Unscoped().Delete(&realm)
 		conn.Close()
 	})
-	// create the user
-	assert.Nil(t, gormDB.Save(&user).Error)
+	// create the user: Save would hash its password twice (update, then insert)
+	assert.Nil(t, gormDB.Create(&user).Error)
 
 	client := v1.NewUserClient(conn)
 	ctx := context.Background()
 
 	var headerMD metadata.MD
 	// enforcing AccessTokenFactory time creation date forward in time
-	jwt, err := layout.AccessTokenFactory.GenerateToken(crypt.JWTDefaultClaims{
-		// Name: login,
-		UID:   1,
-		Realm: realm.Name,
-	})
-	assert.NoError(t, err)
+	// the access token of an active session
+	jwt := loginAccessJWT(t, layout, login, passwd)
 	ctx = metadata.NewOutgoingContext(ctx, rpc.SetCookie(http.Cookie{
 		Name:  consts.AuthorizationCookie,
 		Value: "Bearer " + jwt.Token,

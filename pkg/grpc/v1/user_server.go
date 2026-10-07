@@ -32,16 +32,10 @@ func (h *UserRPCHandler) Deactivate(ctx context.Context, _ *Empty) (*Response, e
 		return BadRequest("could not find token metadata"), nil
 	}
 
-	jwt, err := h.JWTFactory.DecodeCookieToken(&cookie)
+	// only an active session may deactivate the account
+	jwt, err := services.AuthenticateBearer(cookie.Value, *h.JWTFactory)
 	if err != nil {
-		return InternalServerError("could not decode cookie"), nil
-	}
-	if !services.JWTClaimsValidation(jwt.Claims) {
-		return Unauthorized(consts.ERR_INVALID_CREDENTIALS), nil
-	}
-	if jwt.Claims.UID == 0 {
-		return BadRequest("no uid in the JWT"), nil
-
+		return FromErrToResponse(err), nil
 	}
 	err = services.AuthDeactivate(jwt.Claims.UID, h.DB, h.JWTFactory.TimeFn())
 	if err != nil {
@@ -74,7 +68,7 @@ func (h *UserRPCHandler) EditUser(ctx context.Context, payload *EditUserRequest)
 		return InternalServerError("could not call any user function"), nil
 	}
 	if err != nil {
-		return InternalServerError("could not deactivate user"), nil
+		return FromErrToResponse(err), nil
 	}
 	return Ok(), nil
 }
