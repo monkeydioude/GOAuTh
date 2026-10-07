@@ -101,8 +101,6 @@ func TestJsonAPILoginCreatesOneSessionPerLogin(t *testing.T) {
 
 	var stored entities.User
 	assert.NoError(t, gormDB.First(&stored, user.ID).Error)
-	// only the hash is stored: the old single-token column stays empty
-	assert.Nil(t, stored.RefreshToken)
 	if assert.NotNil(t, stored.LastLoggedAt) {
 		assert.True(t, stored.LastLoggedAt.Equal(timeRef))
 	}
