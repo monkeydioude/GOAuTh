@@ -110,15 +110,21 @@ func AuthLogin(
 		}, nil
 }
 
+// AuthDeactivate soft-deletes the user and revokes all their sessions.
 func AuthDeactivate(
 	uid uint,
 	db *gorm.DB,
+	now time.Time,
 ) error {
 	if db == nil {
 		return go_errors.New("nil pointer(s) in AuthDeactivate param")
 	}
-
-	return db.Delete(&entities.User{}, uid).Error
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&entities.User{}, uid).Error; err != nil {
+			return err
+		}
+		return revokeUserSessions(tx, uid, "", entities.SessionRevokedAccountDeactivated, now)
+	})
 }
 
 // AuthLogout ends every session of the user of realm, as logout did when a

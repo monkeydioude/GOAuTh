@@ -236,6 +236,8 @@ No JSON body. Status reads the `Authorization` cookie (HTTP) or `set-cookie` met
 
 Each refresh rotates the session's refresh token: store the new one, the old one stops working. If two refreshes race with the same token, the second gets a new access token but no refresh token (`RefreshOut.refreshToken` empty, no `Refresh` cookie), so keep the one the first returned. Presenting an older refresh token after `SESSION_REUSE_GRACE_SECONDS` revokes the session (`TokenReused`). A refresh only touches the session its token belongs to.
 
+Account events revoke sessions too: a password change revokes every session but the one that made it (`password_changed`), a password reset every session (`password_reset`), and deactivation or deletion every session (`account_deactivated`).
+
 ### User Actions
 
 ```protobuf

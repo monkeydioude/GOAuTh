@@ -67,7 +67,13 @@ func UserEditPassword(
 
 	user.Password = *editEntity.NewPassword
 
-	return db.Save(user).Error
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(user).Error; err != nil {
+			return err
+		}
+		// the session of the access token that authorized the change goes on
+		return revokeUserSessions(tx, user.ID, jwt.Claims.SID, entities.SessionRevokedPasswordChanged, factory.TimeFn())
+	})
 }
 
 func UserEditLogin(
