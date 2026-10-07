@@ -85,6 +85,7 @@ Environment variables can be provided through a `.env` file in GOAuTh's working 
 | `SESSION_TTL_DAYS`       | `30`      | Days a session lives without a refresh; each refresh resets it |
 | `SESSION_MAX_ACTIVE`     | `10`      | Active sessions per user; a login beyond it revokes the least recently used one |
 | `SESSION_REUSE_GRACE_SECONDS` | `30` | After a refresh, how long the previous refresh token still gets an access token, for refreshes racing each other. A gRPC consumer that doesn't store rotated tokens needs it as long as a session until it does |
+| `SESSION_RETENTION_DAYS` | `90` | Days revoked and expired sessions stay listed before `job-session-purge` deletes them |
 
 > **Security note:** `JWT_SECRET` and `PASSWD_SALT` should be provided via system environment variables or a secrets manager in production. The `.env` file is only suitable for development.
 
@@ -358,4 +359,5 @@ Additional utility binaries live in `bin/`. Each has its own README:
 
 - [`bin/client/`](./bin/client/) — CLI client for interacting with GOAuTh via API or gRPC
 - [`bin/min-grpc-server/`](./bin/min-grpc-server/) — Minimal gRPC-only server (no HTTP)
+- [`bin/job-session-purge/`](./bin/job-session-purge/) — Daily job deleting sessions ended more than `SESSION_RETENTION_DAYS` ago
 - [`bin/spy-token/`](./bin/spy-token/) — JWT token generator for development/debugging
