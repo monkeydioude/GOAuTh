@@ -124,7 +124,7 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 | `Signup(UserRequest) → Response`   | Create a new user     |
 | `Login(UserRequest) → Response`    | Authenticate a user   |
 | `Delete(AuthIdRequest) → Response` | Delete a user by ID   |
-| `Logout(LogoutRequest) → Response` | End all of the user's sessions |
+| `Logout(LogoutRequest) → Response` | End the calling session, named by the access token in the `Authorization` metadata or by `refresh_token`; an expired or revoked one is a no-op. Without either, ends all of `uid`'s sessions in `realm` (deprecated) |
 
 ### JWT Service
 
@@ -147,6 +147,16 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 | `Create(UserActionRequest) → Response`                | Create a user action         |
 | `Validate(UserActionValidation) → Response`           | Validate a user action       |
 | `Status(UserActionRequest) → UserActionStatusResponse` | Get user action status      |
+
+### Session Service
+
+Acts on the sessions of the user whose access token is in the `Authorization` metadata. A session is one login on a device.
+
+| RPC                                                   | Description                  |
+|-------------------------------------------------------|------------------------------|
+| `List(ListSessionsRequest) → ListSessionsResponse`    | The user's active sessions, most recently used first, with device, IPs, dates and `current` for the calling one. `include_revoked` adds revoked and expired sessions, with when and why they were revoked |
+| `Revoke(RevokeSessionRequest) → Response`             | End one of the user's sessions; `404` when the user has no such active session |
+| `RevokeAll(RevokeAllSessionsRequest) → Response`      | End all of the user's sessions, except the calling one with `keep_current` |
 
 JWT is passed via a `set-cookie` gRPC metadata entry containing `Authorization=Bearer {JWT}`.
 

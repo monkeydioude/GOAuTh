@@ -21,9 +21,12 @@ message AuthIdRequest {
     string reason = 2;
 }
 
+// Logout ends the session of the access token in the Authorization metadata, or
+// of refresh_token. Without either, it ends all of uid's sessions in realm (deprecated).
 message LogoutRequest {
     int32 uid = 1;
     string realm = 2;
+    string refresh_token = 3;
 }
 
 service Auth {
@@ -125,4 +128,48 @@ message Empty {}
 message ClientInfo {
     string ip = 1;
     string user_agent = 2;
+}
+
+// SessionInfo is one session of the user: a login on a device, kept alive by refreshes.
+message SessionInfo {
+    string id = 1;
+    string user_agent = 2;
+    string login_ip = 3;
+    string last_ip = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp last_connection = 6;
+    google.protobuf.Timestamp expires_at = 7;
+    // unset while the session is not revoked
+    google.protobuf.Timestamp revoked_at = 8;
+    string revoked_reason = 9;
+    // the session of the access token the call was made with
+    bool current = 10;
+}
+
+message ListSessionsRequest {
+    // also list revoked and expired sessions
+    bool include_revoked = 1;
+}
+
+message ListSessionsResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated SessionInfo sessions = 3;
+}
+
+message RevokeSessionRequest {
+    string session_id = 1;
+}
+
+message RevokeAllSessionsRequest {
+    // keep the session of the access token the call was made with
+    bool keep_current = 1;
+}
+
+// Session calls act on the sessions of the user whose access token is in the
+// Authorization metadata.
+service Session {
+    rpc List(ListSessionsRequest) returns (ListSessionsResponse) {}
+    rpc Revoke(RevokeSessionRequest) returns (Response) {}
+    rpc RevokeAll(RevokeAllSessionsRequest) returns (Response) {}
 }

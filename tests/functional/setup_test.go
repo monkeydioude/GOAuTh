@@ -60,6 +60,7 @@ func setupRPC(t *testing.T, layout *handlers.Layout) *grpc.ClientConn {
 	v1.RegisterJWTServer(server, v1.NewJWTRPCHandler(layout))
 	v1.RegisterAuthServer(server, v1.NewAuthRPCHandler(layout))
 	v1.RegisterUserServer(server, v1.NewUserRPCHandler(layout))
+	v1.RegisterSessionServer(server, v1.NewSessionRPCHandler(layout))
 
 	lis := bufconn.Listen(1024 * 1024)
 	go func() {
