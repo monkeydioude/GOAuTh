@@ -104,11 +104,15 @@ All routes are prefixed with `/identity/v1`.
 |----------|--------------------------------|------------------------|
 | `POST`   | `/identity/v1/auth/signup`     | Create a new user      |
 | `PUT`    | `/identity/v1/auth/login`      | Authenticate a user    |
+| `PUT`    | `/identity/v1/auth/logout`     | End the caller's session, named by the `Refresh` cookie or else the access token (even expired), and clear both cookies |
 | `GET`    | `/identity/v1/jwt/status`      | Check JWT validity     |
 | `PUT`    | `/identity/v1/jwt/refresh`     | Rotate the refresh token, get a new access token |
 | `PUT`    | `/identity/v1/user/password`   | Change password        |
 | `PUT`    | `/identity/v1/user/login`      | Change login (email)   |
 | `DELETE` | `/identity/v1/user/deactivate` | Soft-delete a user     |
+| `GET`    | `/identity/v1/sessions`        | The caller's active sessions, most recently used first, with device, IPs, dates and `current` for the calling one; `?include_revoked=true` adds revoked and expired ones |
+| `DELETE` | `/identity/v1/sessions/{id}`   | End one of the caller's sessions; `404` when the caller has no such active session |
+| `DELETE` | `/identity/v1/sessions`        | End all of the caller's sessions; `?keep_current=true` keeps the calling one |
 | `GET`    | `/identity/healthcheck`        | Health check           |
 
 All requests are tagged with an `X-Request-ID` header (generated if missing). Authenticated endpoints expect an `Authorization` cookie containing `Bearer {JWT}`.
