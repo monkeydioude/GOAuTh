@@ -29,7 +29,7 @@ func setup() (*handlers.Layout, *gorm.DB, time.Time) {
 	}
 	os.Setenv("JWT_SECRET", "test")
 	// init layout
-	res := boot.LayoutBoot([]any{entities.User{}, entities.Realm{}, entities.UserAction{}, entities.Session{}}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
+	res := boot.LayoutBoot([]any{entities.User{}, entities.Realm{}, entities.UserAction{}, entities.Session{}, entities.AccessKey{}}, []constraints.LoginConstraint{constraints.EmailConstraint}, []constraints.PasswordConstraint{})
 	if res.IsErr() {
 		log.Fatalf("Could not boot layout: %s", res.Error.Error())
 	}
@@ -63,6 +63,7 @@ func setupRPC(t *testing.T, layout *handlers.Layout) *grpc.ClientConn {
 	v1.RegisterUserActionServer(server, v1.NewUserActionRPCHandler(layout))
 	v1.RegisterSessionServer(server, v1.NewSessionRPCHandler(layout))
 	v1.RegisterAccountServer(server, v1.NewAccountRPCHandler(layout))
+	v1.RegisterAccessKeyServer(server, v1.NewAccessKeyRPCHandler(layout))
 
 	lis := bufconn.Listen(1024 * 1024)
 	go func() {

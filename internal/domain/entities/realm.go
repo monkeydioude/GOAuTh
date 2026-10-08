@@ -7,15 +7,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// Realm is a namespace of accounts, of one Kind. AccessKeyMaxActive caps the
+// live access keys an account may hold; nil inherits ACCESS_KEY_MAX_ACTIVE,
+// which caps it anyway.
 type Realm struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primaryKey"`
-	Name         string         `gorm:"unique;not null" json:"name"`
-	Description  string         `gorm:"not null;default:''" json:"description,omitempty"`
-	AllowNewUser bool           `gorm:";not null" json:"allow_new_user"`
-	Kind         string         `gorm:"not null;default:'human';check:kind IN ('human','service')" json:"kind"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                 uuid.UUID      `gorm:"type:uuid;primaryKey"`
+	Name               string         `gorm:"unique;not null" json:"name"`
+	Description        string         `gorm:"not null;default:''" json:"description,omitempty"`
+	AllowNewUser       bool           `gorm:";not null" json:"allow_new_user"`
+	Kind               string         `gorm:"not null;default:'human';check:kind IN ('human','service')" json:"kind"`
+	AccessKeyMaxActive *int           `gorm:"check:access_key_max_active > 0" json:"access_key_max_active,omitempty"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func (Realm) TableName() string {

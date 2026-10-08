@@ -202,3 +202,75 @@ service Account {
     // for a login the realm already has.
     rpc Create(CreateAccountRequest) returns (CreateAccountResponse) {}
 }
+
+// AccessKeyInfo is one access key of an account, without the key itself: it
+// is shown once, when created.
+message AccessKeyInfo {
+    string key_id = 1;
+    string name = 2;
+    // the key's first characters after gak_, to tell keys apart
+    string prefix = 3;
+    google.protobuf.Timestamp created_at = 4;
+    string created_by = 5;
+    // unset when the key never expires
+    google.protobuf.Timestamp expires_at = 6;
+    // unset until the key is first verified
+    google.protobuf.Timestamp last_used_at = 7;
+    // unset while the key is not revoked
+    google.protobuf.Timestamp revoked_at = 8;
+    string revoked_by = 9;
+    string revoked_reason = 10;
+}
+
+message CreateAccessKeyRequest {
+    int32 account_id = 1;
+    string realm = 2;
+    // 1 to 100 characters, not unique
+    string name = 3;
+    // unset never expires
+    google.protobuf.Timestamp expires_at = 4;
+    // who asked for it, as the consumer names them; required
+    string actor = 5;
+}
+
+message CreateAccessKeyResponse {
+    int32 code = 1;
+    string message = 2;
+    // the key, the only time it is ever returned
+    string key = 3;
+    AccessKeyInfo info = 4;
+}
+
+message ListAccessKeysRequest {
+    int32 account_id = 1;
+    string realm = 2;
+    // also list revoked and expired keys
+    bool include_revoked = 3;
+}
+
+message ListAccessKeysResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated AccessKeyInfo keys = 3;
+}
+
+message RevokeAccessKeyRequest {
+    int32 account_id = 1;
+    string realm = 2;
+    string key_id = 3;
+    // who asked for it, as the consumer names them; required
+    string actor = 4;
+}
+
+// AccessKey calls act on the keys of account_id, which must belong to realm:
+// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+service AccessKey {
+    // Create mints a key, shown once: 201, or 422 for a bad name, actor or an
+    // expiry in the past, 409 when the account holds as many live keys as its
+    // realm or ACCESS_KEY_MAX_ACTIVE allows.
+    rpc Create(CreateAccessKeyRequest) returns (CreateAccessKeyResponse) {}
+    // List is the live keys, newest first; include_revoked adds the rest.
+    rpc List(ListAccessKeysRequest) returns (ListAccessKeysResponse) {}
+    // Revoke ends one key for good: 404 when the account has no such live key.
+    rpc Revoke(RevokeAccessKeyRequest) returns (Response) {}
+}

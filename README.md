@@ -86,6 +86,7 @@ Environment variables can be provided through a `.env` file in GOAuTh's working 
 | `SESSION_MAX_ACTIVE`     | `10`      | Active sessions per user; a login beyond it revokes the least recently used one |
 | `SESSION_REUSE_GRACE_SECONDS` | `30` | After a refresh, how long the previous refresh token still gets an access token, for refreshes racing each other. A gRPC consumer that doesn't store rotated tokens needs it as long as a session until it does |
 | `SESSION_RETENTION_DAYS` | `90` | Days revoked and expired sessions stay listed before `job-session-purge` deletes them |
+| `ACCESS_KEY_MAX_ACTIVE` | `20` | Live access keys an account may hold. A realm's `access_key_max_active` may cap lower, never higher |
 
 > **Security note:** `JWT_SECRET` and `PASSWD_SALT` should be provided via system environment variables or a secrets manager in production. The `.env` file is only suitable for development.
 
@@ -172,6 +173,18 @@ The accounts a trusted backend manages: those of a `service` realm. People sign 
 | RPC                                                   | Description                  |
 |-------------------------------------------------------|------------------------------|
 | `Create(CreateAccountRequest) → CreateAccountResponse` | Make an account in `realm` for `login` (a slug: lowercase letters, digits and `:._-`, never an email) on behalf of `actor` (required, free-form, at most 255 characters, stored as `created_by`). The account has no password and cannot log in. `201` with `account_id`, `login`, `realm`, `realm_kind` and `created_at`; `404` unknown realm, `403` a realm whose kind has no such accounts, `422` bad login or actor, `409` login taken in the realm |
+
+### AccessKey Service
+
+Long-lived secrets of the accounts a trusted backend manages. A key is `gak_` followed by 256 random bits (47 characters), shown once at creation and kept only as a SHA-256 hash; a `prefix` of its first characters tells keys apart. Only accounts of a `service` realm hold keys. Every call names the account by `account_id` and `realm`: `404` when the account is not in that realm, `403` when its realm's kind holds no keys, `422` when `actor` (required, at most 255 characters) is missing. Revoked keys are kept forever, with who revoked them and why (`manual`, `account_deleted`).
+
+| RPC                                                   | Description                  |
+|-------------------------------------------------------|------------------------------|
+| `Create(CreateAccessKeyRequest) → CreateAccessKeyResponse` | Mint a key named `name` (1 to 100 characters, not unique), with an optional `expires_at` (`422` in the past). `201` with `key`, the only time it is returned, and its `info`. `409` when the account holds as many live keys as its realm's `access_key_max_active` or `ACCESS_KEY_MAX_ACTIVE` allows, whichever is lower |
+| `List(ListAccessKeysRequest) → ListAccessKeysResponse` | The account's live keys, newest first, never the hash. `include_revoked` adds revoked and expired keys, with when, who and why |
+| `Revoke(RevokeAccessKeyRequest) → Response`           | End one key for good, recording `actor`; an expired key can still be revoked. `404` when the account has no such live key |
+
+`Auth.Delete` on a service account revokes its keys in the same transaction (`account_deleted`, by the request's `actor`).
 
 ## Payloads
 
@@ -292,7 +305,7 @@ proto/               → Protocol Buffer definitions
 
 - **DDD-ish / Clean Architecture**: domain entities and services are separated from transport (HTTP/gRPC) handlers.
 - **Realm-based namespacing**: users belong to realms, allowing multi-tenant setups. A login is unique within its realm, so the same email can sign up in two realms.
-- **Realm kinds**: a realm is of kind `human` (the default) or `service`. A service realm holds accounts that are not people, so it refuses signup, password and login changes and user actions with `403 ForbiddenByRealmKind`, and login with `401 InvalidCredentials`. The kind is set by `bin/client realm create -kind=…` and never changes. Its accounts are made by the `Account` gRPC service and closed by `Auth.Delete`, both naming who asked.
+- **Realm kinds**: a realm is of kind `human` (the default) or `service`. A service realm holds accounts that are not people, so it refuses signup, password and login changes and user actions with `403 ForbiddenByRealmKind`, and login with `401 InvalidCredentials`. The kind is set by `bin/client realm create -kind=…` and never changes. Its accounts are made by the `Account` gRPC service and closed by `Auth.Delete`, both naming who asked, and they alone hold access keys (`AccessKey` service).
 - **Dual transport**: the same service layer is exposed over both HTTP and gRPC.
 - **Plugin system**: event hooks (`OnUserCreation`, etc.) with configurable timeouts for extensibility.
 - **Graceful shutdown**: `oklog/run` coordinates concurrent servers and OS signal handling.

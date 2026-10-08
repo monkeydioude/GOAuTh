@@ -983,3 +983,197 @@ var Account_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "rpc_v1.proto",
 }
+
+const (
+	AccessKey_Create_FullMethodName = "/v1.AccessKey/Create"
+	AccessKey_List_FullMethodName   = "/v1.AccessKey/List"
+	AccessKey_Revoke_FullMethodName = "/v1.AccessKey/Revoke"
+)
+
+// AccessKeyClient is the client API for AccessKey service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// AccessKey calls act on the keys of account_id, which must belong to realm:
+// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+type AccessKeyClient interface {
+	// Create mints a key, shown once: 201, or 422 for a bad name, actor or an
+	// expiry in the past, 409 when the account holds as many live keys as its
+	// realm or ACCESS_KEY_MAX_ACTIVE allows.
+	Create(ctx context.Context, in *CreateAccessKeyRequest, opts ...grpc.CallOption) (*CreateAccessKeyResponse, error)
+	// List is the live keys, newest first; include_revoked adds the rest.
+	List(ctx context.Context, in *ListAccessKeysRequest, opts ...grpc.CallOption) (*ListAccessKeysResponse, error)
+	// Revoke ends one key for good: 404 when the account has no such live key.
+	Revoke(ctx context.Context, in *RevokeAccessKeyRequest, opts ...grpc.CallOption) (*Response, error)
+}
+
+type accessKeyClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAccessKeyClient(cc grpc.ClientConnInterface) AccessKeyClient {
+	return &accessKeyClient{cc}
+}
+
+func (c *accessKeyClient) Create(ctx context.Context, in *CreateAccessKeyRequest, opts ...grpc.CallOption) (*CreateAccessKeyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateAccessKeyResponse)
+	err := c.cc.Invoke(ctx, AccessKey_Create_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accessKeyClient) List(ctx context.Context, in *ListAccessKeysRequest, opts ...grpc.CallOption) (*ListAccessKeysResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAccessKeysResponse)
+	err := c.cc.Invoke(ctx, AccessKey_List_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accessKeyClient) Revoke(ctx context.Context, in *RevokeAccessKeyRequest, opts ...grpc.CallOption) (*Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Response)
+	err := c.cc.Invoke(ctx, AccessKey_Revoke_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AccessKeyServer is the server API for AccessKey service.
+// All implementations must embed UnimplementedAccessKeyServer
+// for forward compatibility.
+//
+// AccessKey calls act on the keys of account_id, which must belong to realm:
+// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+type AccessKeyServer interface {
+	// Create mints a key, shown once: 201, or 422 for a bad name, actor or an
+	// expiry in the past, 409 when the account holds as many live keys as its
+	// realm or ACCESS_KEY_MAX_ACTIVE allows.
+	Create(context.Context, *CreateAccessKeyRequest) (*CreateAccessKeyResponse, error)
+	// List is the live keys, newest first; include_revoked adds the rest.
+	List(context.Context, *ListAccessKeysRequest) (*ListAccessKeysResponse, error)
+	// Revoke ends one key for good: 404 when the account has no such live key.
+	Revoke(context.Context, *RevokeAccessKeyRequest) (*Response, error)
+	mustEmbedUnimplementedAccessKeyServer()
+}
+
+// UnimplementedAccessKeyServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAccessKeyServer struct{}
+
+func (UnimplementedAccessKeyServer) Create(context.Context, *CreateAccessKeyRequest) (*CreateAccessKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedAccessKeyServer) List(context.Context, *ListAccessKeysRequest) (*ListAccessKeysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedAccessKeyServer) Revoke(context.Context, *RevokeAccessKeyRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Revoke not implemented")
+}
+func (UnimplementedAccessKeyServer) mustEmbedUnimplementedAccessKeyServer() {}
+func (UnimplementedAccessKeyServer) testEmbeddedByValue()                   {}
+
+// UnsafeAccessKeyServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AccessKeyServer will
+// result in compilation errors.
+type UnsafeAccessKeyServer interface {
+	mustEmbedUnimplementedAccessKeyServer()
+}
+
+func RegisterAccessKeyServer(s grpc.ServiceRegistrar, srv AccessKeyServer) {
+	// If the following call pancis, it indicates UnimplementedAccessKeyServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AccessKey_ServiceDesc, srv)
+}
+
+func _AccessKey_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAccessKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessKeyServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessKey_Create_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessKeyServer).Create(ctx, req.(*CreateAccessKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccessKey_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAccessKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessKeyServer).List(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessKey_List_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessKeyServer).List(ctx, req.(*ListAccessKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccessKey_Revoke_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeAccessKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessKeyServer).Revoke(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessKey_Revoke_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessKeyServer).Revoke(ctx, req.(*RevokeAccessKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AccessKey_ServiceDesc is the grpc.ServiceDesc for AccessKey service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AccessKey_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "v1.AccessKey",
+	HandlerType: (*AccessKeyServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _AccessKey_Create_Handler,
+		},
+		{
+			MethodName: "List",
+			Handler:    _AccessKey_List_Handler,
+		},
+		{
+			MethodName: "Revoke",
+			Handler:    _AccessKey_Revoke_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "rpc_v1.proto",
+}

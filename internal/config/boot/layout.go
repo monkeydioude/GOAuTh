@@ -26,6 +26,10 @@ func LayoutBoot(
 	if err != nil {
 		return result.Error[handlers.Layout](err)
 	}
+	accessKeyEnv, err := AccessKeyBoot()
+	if err != nil {
+		return result.Error[handlers.Layout](err)
+	}
 	dbRes := PostgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
@@ -49,5 +53,6 @@ func LayoutBoot(
 		TrustedProxies:      trustedProxies,
 		MaxActiveSessions:   sessionEnv.MaxActive,
 		SessionReuseGrace:   sessionEnv.ReuseGrace(),
+		AccessKeyMaxActive:  accessKeyEnv.MaxActive,
 	})
 }
