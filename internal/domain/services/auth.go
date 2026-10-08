@@ -25,6 +25,10 @@ func AuthSignup(
 	if db == nil {
 		return errors.InternalServerError(fmt.Errorf("nil db object"))
 	}
+	// a person signs up with a password, whatever the configured constraints
+	if user.Password == "" {
+		return errors.UnprocessableEntity(go_errors.New(consts.ERR_INVALID_INPUT_PASSWORD))
+	}
 	if err := userParams.AssertAllConstraints(user.Login, nil, user.Password, nil); err != nil {
 		return errors.UnprocessableEntity(err)
 	}
@@ -33,7 +37,7 @@ func AuthSignup(
 		slog.Error(err.Error(), "realm_name", user.RealmName)
 		return errors.BadRequest(err)
 	}
-	if err := realm.Strategy().AssertPasswordFlows(); err != nil {
+	if err := KindOf(realm).AssertPasswordFlows(); err != nil {
 		return err
 	}
 	// a login is unique within its realm only
@@ -72,7 +76,7 @@ func AuthLogin(
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
 	}
 	// a realm without password flows never logs in, whatever password is stored
-	if user.Realm == nil || user.Realm.Strategy().AssertPasswordFlows() != nil {
+	if user.Realm == nil || KindOf(*user.Realm).AssertPasswordFlows() != nil {
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
 	}
 	sid := uuid.New()
@@ -117,20 +121,32 @@ func AuthLogin(
 		}, nil
 }
 
-// AuthDeactivate soft-deletes the user and revokes all their sessions.
+// AuthDeactivate closes the account the way its realm's kind says: soft-deleted,
+// its sessions revoked. An account already gone is a no-op. actor is who asked,
+// as the consumer names them; a service account requires one.
 func AuthDeactivate(
 	uid uint,
+	actor string,
 	db *gorm.DB,
 	now time.Time,
 ) error {
 	if db == nil {
 		return go_errors.New("nil pointer(s) in AuthDeactivate param")
 	}
-	return db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Delete(&entities.User{}, uid).Error; err != nil {
-			return err
+	var user entities.User
+	if err := db.First(&user, uid).Error; err != nil {
+		if go_errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
 		}
-		return revokeUserSessions(tx, uid, "", entities.SessionRevokedAccountDeactivated, now)
+		return errors.DBError(err)
+	}
+	// a realm gone leaves its accounts as they were made: human
+	var realm entities.Realm
+	if err := db.First(&realm, "id = ?", user.RealmID).Error; err != nil && !go_errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.DBError(err)
+	}
+	return db.Transaction(func(tx *gorm.DB) error {
+		return KindOf(realm).Delete(tx, &user, actor, now)
 	})
 }
 

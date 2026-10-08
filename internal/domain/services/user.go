@@ -38,7 +38,7 @@ func assertPasswordFlows(db *gorm.DB, user *entities.User) error {
 		}
 		return errors.DBError(err)
 	}
-	return realm.Strategy().AssertPasswordFlows()
+	return KindOf(realm).AssertPasswordFlows()
 }
 
 func UserEditPassword(

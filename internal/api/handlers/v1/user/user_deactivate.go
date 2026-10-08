@@ -31,7 +31,7 @@ func Deactivate(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		errors.HTTPError(err, w)
 		return
 	}
-	err = services.AuthDeactivate(jwt.Claims.UID, h.DB, h.AccessTokenFactory.TimeFn())
+	err = services.AuthDeactivate(jwt.Claims.UID, "", h.DB, h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
 		errors.HTTPError(err, w)

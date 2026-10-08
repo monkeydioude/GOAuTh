@@ -20,6 +20,7 @@ func grpcHandlers(server *grpc.Server, layout *handlers.Layout) {
 	v1.RegisterAuthServer(server, v1.NewAuthRPCHandler(layout))
 	v1.RegisterUserServer(server, v1.NewUserRPCHandler(layout))
 	v1.RegisterSessionServer(server, v1.NewSessionRPCHandler(layout))
+	v1.RegisterAccountServer(server, v1.NewAccountRPCHandler(layout))
 }
 
 func setupGRPCServer(settings *boot.Settings) (*grpc.Server, net.Listener) {

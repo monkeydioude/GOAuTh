@@ -13,7 +13,9 @@ import (
 )
 
 // User is an account of a realm. A login is unique within its realm, among
-// users not deleted (idx_realm_login_active).
+// users not deleted (idx_realm_login_active). CreatedBy is who asked for the
+// account, as the consumer names them (Account.Create); nil for a person who
+// signed up.
 type User struct {
 	ID           uint           `gorm:"primaryKey;autoIncrement" json:"id"`
 	Login        string         `gorm:"not null;uniqueIndex:idx_realm_login_active,priority:2,where:deleted_at IS NULL" json:"login"`
@@ -24,6 +26,7 @@ type User struct {
 	UpdatedAt    time.Time      `json:"updated_at"`
 	LastLoggedAt *time.Time     `json:"last_logged_at"`
 	RevokedAt    *time.Time     `json:"revoked_at"`
+	CreatedBy    *string        `json:"created_by,omitempty"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// payload only
@@ -36,9 +39,10 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 		slog.Error("nil *gorm.DB")
 		return errors.New("nil *gorm.DB")
 	}
-	if u.Login == "" || u.Password == "" || u.RealmName == "" {
-		slog.Error("login, password or realm_name cannot be empty")
-		return errors.New("login, password or realm_name cannot be empty")
+	// a password is the business of the realm's kind: a service account has none
+	if u.Login == "" || u.RealmName == "" {
+		slog.Error("login or realm_name cannot be empty")
+		return errors.New("login or realm_name cannot be empty")
 	}
 
 	u.CreatedAt = time.Now()

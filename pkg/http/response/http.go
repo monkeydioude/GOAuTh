@@ -15,6 +15,7 @@ const (
 	BadRequestCode          int = 400
 	UnauthorizedCode        int = 401
 	ForbiddenCode           int = 403
+	ConflictCode            int = 409
 	UnprocessableEntityCode int = 422
 	InternalServerErrorCode int = 500
 )
@@ -66,6 +67,20 @@ func Forbidden(msg string, w http.ResponseWriter) {
 	w.WriteHeader(ForbiddenCode)
 	res, err := json.Marshal(HTTPResponse{
 		Code:    ForbiddenCode,
+		Message: msg,
+	})
+	if err != nil {
+		w.Write([]byte("Could not marshal matters"))
+		return
+	}
+	w.Write(res)
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func Conflict(msg string, w http.ResponseWriter) {
+	w.WriteHeader(ConflictCode)
+	res, err := json.Marshal(HTTPResponse{
+		Code:    ConflictCode,
 		Message: msg,
 	})
 	if err != nil {

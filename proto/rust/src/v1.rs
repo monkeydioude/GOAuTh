@@ -22,6 +22,9 @@ pub struct AuthIdRequest {
     pub uid: i32,
     #[prost(string, tag = "2")]
     pub reason: ::prost::alloc::string::String,
+    /// who asked for it, as the consumer names them; required for a service account
+    #[prost(string, optional, tag = "3")]
+    pub actor: ::core::option::Option<::prost::alloc::string::String>,
 }
 /// Logout ends the session of the access token in the Authorization metadata, or
 /// of refresh_token. Without either, it ends all of uid's sessions in realm (deprecated).
@@ -203,6 +206,36 @@ pub struct RevokeAllSessionsRequest {
     /// keep the session of the access token the call was made with
     #[prost(bool, tag = "1")]
     pub keep_current: bool,
+}
+/// Account is what a trusted backend manages in a service realm. People sign up
+/// through Auth instead.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateAccountRequest {
+    #[prost(string, tag = "1")]
+    pub realm: ::prost::alloc::string::String,
+    /// a slug: lowercase letters, digits and :._- (1 to 128 characters), never an email
+    #[prost(string, tag = "2")]
+    pub login: ::prost::alloc::string::String,
+    /// who asked for it, as the consumer names them; required
+    #[prost(string, tag = "3")]
+    pub actor: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateAccountResponse {
+    #[prost(int32, tag = "1")]
+    pub code: i32,
+    #[prost(string, tag = "2")]
+    pub message: ::prost::alloc::string::String,
+    #[prost(int32, tag = "3")]
+    pub account_id: i32,
+    #[prost(string, tag = "4")]
+    pub login: ::prost::alloc::string::String,
+    #[prost(string, tag = "5")]
+    pub realm: ::prost::alloc::string::String,
+    #[prost(string, tag = "6")]
+    pub realm_kind: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "7")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
 }
 /// Generated client implementations.
 pub mod auth_client {
@@ -925,6 +958,123 @@ pub mod session_client {
             let path = http::uri::PathAndQuery::from_static("/v1.Session/RevokeAll");
             let mut req = request.into_request();
             req.extensions_mut().insert(GrpcMethod::new("v1.Session", "RevokeAll"));
+            self.inner.unary(req, path, codec).await
+        }
+    }
+}
+/// Generated client implementations.
+pub mod account_client {
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
+    use tonic::codegen::*;
+    use tonic::codegen::http::Uri;
+    #[derive(Debug, Clone)]
+    pub struct AccountClient<T> {
+        inner: tonic::client::Grpc<T>,
+    }
+    impl AccountClient<tonic::transport::Channel> {
+        /// Attempt to create a new client by connecting to a given endpoint.
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
+        where
+            D: TryInto<tonic::transport::Endpoint>,
+            D::Error: Into<StdError>,
+        {
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
+            Ok(Self::new(conn))
+        }
+    }
+    impl<T> AccountClient<T>
+    where
+        T: tonic::client::GrpcService<tonic::body::BoxBody>,
+        T::Error: Into<StdError>,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
+    {
+        pub fn new(inner: T) -> Self {
+            let inner = tonic::client::Grpc::new(inner);
+            Self { inner }
+        }
+        pub fn with_origin(inner: T, origin: Uri) -> Self {
+            let inner = tonic::client::Grpc::with_origin(inner, origin);
+            Self { inner }
+        }
+        pub fn with_interceptor<F>(
+            inner: T,
+            interceptor: F,
+        ) -> AccountClient<InterceptedService<T, F>>
+        where
+            F: tonic::service::Interceptor,
+            T::ResponseBody: Default,
+            T: tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+                Response = http::Response<
+                    <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
+                >,
+            >,
+            <T as tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+        {
+            AccountClient::new(InterceptedService::new(inner, interceptor))
+        }
+        /// Compress requests with the given encoding.
+        ///
+        /// This requires the server to support it otherwise it might respond with an
+        /// error.
+        #[must_use]
+        pub fn send_compressed(mut self, encoding: CompressionEncoding) -> Self {
+            self.inner = self.inner.send_compressed(encoding);
+            self
+        }
+        /// Enable decompressing responses.
+        #[must_use]
+        pub fn accept_compressed(mut self, encoding: CompressionEncoding) -> Self {
+            self.inner = self.inner.accept_compressed(encoding);
+            self
+        }
+        /// Limits the maximum size of a decoded message.
+        ///
+        /// Default: `4MB`
+        #[must_use]
+        pub fn max_decoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_decoding_message_size(limit);
+            self
+        }
+        /// Limits the maximum size of an encoded message.
+        ///
+        /// Default: `usize::MAX`
+        #[must_use]
+        pub fn max_encoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_encoding_message_size(limit);
+            self
+        }
+        /// Create makes an account in realm: 201, or 404 for an unknown realm, 403 for
+        /// a realm whose kind has no such accounts, 422 for a bad login or actor, 409
+        /// for a login the realm already has.
+        pub async fn create(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CreateAccountRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::CreateAccountResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.Account/Create");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.Account", "Create"));
             self.inner.unary(req, path, codec).await
         }
     }

@@ -128,7 +128,7 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 |------------------------------------|-----------------------|
 | `Signup(UserRequest) → Response`   | Create a new user     |
 | `Login(UserRequest) → Response`    | Authenticate a user   |
-| `Delete(AuthIdRequest) → Response` | Delete a user by ID   |
+| `Delete(AuthIdRequest) → Response` | Close `uid`'s account the way its realm's kind says: soft-deleted, sessions revoked; already gone is a no-op. A service account requires `actor`, who asked as the consumer names them (`422` without) |
 | `Logout(LogoutRequest) → Response` | End the calling session, named by the access token in the `Authorization` metadata or by `refresh_token`; an expired or revoked one is a no-op. Without either, ends all of `uid`'s sessions in `realm` (deprecated) |
 
 ### JWT Service
@@ -164,6 +164,14 @@ Acts on the sessions of the user whose access token is in the `Authorization` me
 | `RevokeAll(RevokeAllSessionsRequest) → Response`      | End all of the user's sessions, except the calling one with `keep_current` |
 
 JWT is passed via a `set-cookie` gRPC metadata entry containing `Authorization=Bearer {JWT}`.
+
+### Account Service
+
+The accounts a trusted backend manages: those of a `service` realm. People sign up through `Auth` instead. No HTTP route.
+
+| RPC                                                   | Description                  |
+|-------------------------------------------------------|------------------------------|
+| `Create(CreateAccountRequest) → CreateAccountResponse` | Make an account in `realm` for `login` (a slug: lowercase letters, digits and `:._-`, never an email) on behalf of `actor` (required, free-form, at most 255 characters, stored as `created_by`). The account has no password and cannot log in. `201` with `account_id`, `login`, `realm`, `realm_kind` and `created_at`; `404` unknown realm, `403` a realm whose kind has no such accounts, `422` bad login or actor, `409` login taken in the realm |
 
 ## Payloads
 
@@ -284,7 +292,7 @@ proto/               → Protocol Buffer definitions
 
 - **DDD-ish / Clean Architecture**: domain entities and services are separated from transport (HTTP/gRPC) handlers.
 - **Realm-based namespacing**: users belong to realms, allowing multi-tenant setups. A login is unique within its realm, so the same email can sign up in two realms.
-- **Realm kinds**: a realm is of kind `human` (the default) or `service`. A service realm holds accounts that are not people, so it refuses signup, password and login changes and user actions with `403 ForbiddenByRealmKind`, and login with `401 InvalidCredentials`. The kind is set by `bin/client realm create -kind=…` and never changes.
+- **Realm kinds**: a realm is of kind `human` (the default) or `service`. A service realm holds accounts that are not people, so it refuses signup, password and login changes and user actions with `403 ForbiddenByRealmKind`, and login with `401 InvalidCredentials`. The kind is set by `bin/client realm create -kind=…` and never changes. Its accounts are made by the `Account` gRPC service and closed by `Auth.Delete`, both naming who asked.
 - **Dual transport**: the same service layer is exposed over both HTTP and gRPC.
 - **Plugin system**: event hooks (`OnUserCreation`, etc.) with configurable timeouts for extensibility.
 - **Graceful shutdown**: `oklog/run` coordinates concurrent servers and OS signal handling.

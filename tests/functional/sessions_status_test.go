@@ -82,7 +82,7 @@ func TestStatusRefusesADeactivatedUser(t *testing.T) {
 	user := newLoginUser(t, gormDB, login)
 	accessToken, _ := loginAccessToken(t, layout, login)
 
-	assert.NoError(t, services.AuthDeactivate(user.ID, gormDB, layout.RefreshTokenFactory.TimeFn()))
+	assert.NoError(t, services.AuthDeactivate(user.ID, "", gormDB, layout.RefreshTokenFactory.TimeFn()))
 
 	rec := statusOverHTTP(t, layout, accessToken)
 	assert.Equal(t, 401, rec.Code)
