@@ -27,7 +27,7 @@ Args & flags:
     ./client "user" "password"|"deactivate"
     ./client "action" "create"|"validate" (grpc only)
     ./client "jwt" "status"|"refresh"
-    ./client "realm" "create"|"view" <if create:"name of the realm">
+    ./client [-kind=human|service] "realm" "create"|"view" <if create: <allow_new_user=0|1> <name> [description]>
 
 For auth login/signup, login and password should be passed as env vars CLIENT_LOGIN & CLIENT_PASSWORD.
 For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)

@@ -28,6 +28,19 @@ func iCanDoUserEditLogin(
 	return factory != nil && db != nil && editEntity != nil && editEntity.NewLogin != nil && editEntity.Password != ""
 }
 
+// assertPasswordFlows refuses the password flows of a user whose realm has none.
+func assertPasswordFlows(db *gorm.DB, user *entities.User) error {
+	var realm entities.Realm
+	if err := db.First(&realm, "id = ?", user.RealmID).Error; err != nil {
+		if stdErr.Is(err, gorm.ErrRecordNotFound) {
+			// no realm, no flows
+			return errors.Forbidden(stdErr.New(consts.ERR_FORBIDDEN_BY_REALM_KIND))
+		}
+		return errors.DBError(err)
+	}
+	return realm.Strategy().AssertPasswordFlows()
+}
+
 func UserEditPassword(
 	tokenWithBearer string,
 	factory *JWTFactory,
@@ -60,6 +73,9 @@ func UserEditPassword(
 	}
 	if user.ID == 0 {
 		return errors.BadRequest(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
+	}
+	if err := assertPasswordFlows(db, user); err != nil {
+		return err
 	}
 
 	user.Password = *editEntity.NewPassword
@@ -104,6 +120,9 @@ func UserEditLogin(
 	}
 	if user.ID == 0 {
 		return errors.BadRequest(stdErr.New(consts.ERR_INVALID_CREDENTIALS))
+	}
+	if err := assertPasswordFlows(db, user); err != nil {
+		return err
 	}
 	err = editEntity.UserParams.AssertLogin(*editEntity.NewLogin, &user.Login)
 	if err != nil {

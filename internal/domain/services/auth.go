@@ -33,6 +33,9 @@ func AuthSignup(
 		slog.Error(err.Error(), "realm_name", user.RealmName)
 		return errors.BadRequest(err)
 	}
+	if err := realm.Strategy().AssertPasswordFlows(); err != nil {
+		return err
+	}
 	// a login is unique within its realm only
 	tmp_u := &entities.User{}
 	res := db.First(tmp_u, "login = ? AND realm_id = ?", user.Login, realm.ID)
@@ -66,6 +69,10 @@ func AuthLogin(
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("user's access was revoked"))
 	}
 	if err := user.AssertAuth(db, usersParams); err != nil {
+		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
+	}
+	// a realm without password flows never logs in, whatever password is stored
+	if user.Realm == nil || user.Realm.Strategy().AssertPasswordFlows() != nil {
 		return http.Cookie{}, http.Cookie{}, errors.Unauthorized(go_errors.New("InvalidCredentials"))
 	}
 	sid := uuid.New()

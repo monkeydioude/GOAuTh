@@ -61,14 +61,16 @@ func (u *User) AssertAuth(db *gorm.DB, userParams *models.UsersParams) error {
 	if db == nil || userParams == nil {
 		return errors.New("nil *gorm.DB or *models.UsersParams")
 	}
-	passwd := ""
-	if u.Password != "" {
-		passwd = crypt.HashPassword(
-			u.Password,
-			userParams.GetArgon2Params(),
-			userParams.GetPasswordSalt(),
-		)
+	// no account authenticates with an empty password: a service account
+	// stores '' and must never match
+	if u.Password == "" {
+		return errors.New("empty password")
 	}
+	passwd := crypt.HashPassword(
+		u.Password,
+		userParams.GetArgon2Params(),
+		userParams.GetPasswordSalt(),
+	)
 	return db.
 		Joins("JOIN realms ON realms.id = users.realm_id").
 		Preload("Realm").

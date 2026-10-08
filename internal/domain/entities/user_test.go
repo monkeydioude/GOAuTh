@@ -3,7 +3,19 @@ package entities
 import (
 	"testing"
 	"time"
+
+	"github.com/monkeydioude/goauth/v2/internal/domain/models"
+
+	"gorm.io/gorm"
 )
+
+func TestAssertAuthRefusesAnEmptyPasswordBeforeQuerying(t *testing.T) {
+	user := NewUser("empty@test.com", "", "test")
+	// a query on this db would panic: the refusal comes first
+	if user.AssertAuth(&gorm.DB{}, &models.UsersParams{}) == nil {
+		t.Fail()
+	}
+}
 
 func TestIsRevoked(t *testing.T) {
 	trial := NewEmptyUser()

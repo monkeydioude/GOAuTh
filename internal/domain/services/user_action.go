@@ -34,6 +34,9 @@ func UserActionCreate(
 		slog.Error(err.Error(), "realm_name", in.Realm)
 		return UserActionCreateOut{}, errors.BadRequest(err)
 	}
+	if err := realm.Strategy().AssertPasswordFlows(); err != nil {
+		return UserActionCreateOut{}, err
+	}
 	user := entities.User{}
 	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
 		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
@@ -113,6 +116,9 @@ func UserActionValidate(
 		slog.Error(err.Error(), "realm_name", in.Realm)
 		return "", errors.BadRequest(err)
 	}
+	if err := realm.Strategy().AssertPasswordFlows(); err != nil {
+		return "", err
+	}
 	user, action, err := getUserAndAction(db, realm, in)
 	if err != nil {
 		return "", err
@@ -180,6 +186,9 @@ func UserActionStatus(
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
 		slog.Error(err.Error(), "realm_name", in.Realm)
 		return []UserActionStatusOut{}, errors.BadRequest(err)
+	}
+	if err := realm.Strategy().AssertPasswordFlows(); err != nil {
+		return []UserActionStatusOut{}, err
 	}
 	user := entities.User{}
 	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
