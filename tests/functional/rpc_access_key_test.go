@@ -44,6 +44,11 @@ func revokeKey(t *testing.T, conn *grpc.ClientConn, accountID int32, realm strin
 	return res
 }
 
+// newUnknownKey is a key that has the right shape and was never created.
+func newUnknownKey() (string, error) {
+	return crypt.NewAccessKey()
+}
+
 func storedKey(t *testing.T, gormDB *gorm.DB, keyID string) entities.AccessKey {
 	var key entities.AccessKey
 	assert.NoError(t, gormDB.Unscoped().First(&key, "id = ?", keyID).Error)

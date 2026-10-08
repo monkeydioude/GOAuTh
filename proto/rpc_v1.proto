@@ -262,8 +262,27 @@ message RevokeAccessKeyRequest {
     string actor = 4;
 }
 
-// AccessKey calls act on the keys of account_id, which must belong to realm:
-// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+message VerifyAccessKeyRequest {
+    string key = 1;
+}
+
+// VerifyAccessKeyResponse is whose a live key is. Without code 200 only code
+// and message are set.
+message VerifyAccessKeyResponse {
+    int32 code = 1;
+    string message = 2;
+    string key_id = 3;
+    int32 account_id = 4;
+    string login = 5;
+    string realm = 6;
+    string realm_kind = 7;
+    // unset when the key never expires
+    google.protobuf.Timestamp expires_at = 8;
+}
+
+// Create, List and Revoke act on the keys of account_id, which must belong to
+// realm: 404 otherwise. Only accounts whose realm kind allows it hold keys: 403
+// otherwise. Verify names a key by itself.
 service AccessKey {
     // Create mints a key, shown once: 201, or 422 for a bad name, actor or an
     // expiry in the past, 409 when the account holds as many live keys as its
@@ -273,4 +292,8 @@ service AccessKey {
     rpc List(ListAccessKeysRequest) returns (ListAccessKeysResponse) {}
     // Revoke ends one key for good: 404 when the account has no such live key.
     rpc Revoke(RevokeAccessKeyRequest) returns (Response) {}
+    // Verify says whose a key is: 200, or 401 InvalidKey for a key that is
+    // malformed, unknown, revoked, expired or whose account is gone, without
+    // telling which. It notes the key as used, at most once a minute.
+    rpc Verify(VerifyAccessKeyRequest) returns (VerifyAccessKeyResponse) {}
 }
