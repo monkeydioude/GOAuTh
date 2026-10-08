@@ -35,8 +35,8 @@ func UserActionCreate(
 		return UserActionCreateOut{}, errors.BadRequest(err)
 	}
 	user := entities.User{}
-	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login)
+	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
+		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
 		return UserActionCreateOut{}, errors.BadRequest(err)
 	}
 	action := entities.UserAction{}
@@ -91,8 +91,8 @@ func getUserAndAction(
 		return &user, &action, nil
 	}
 	user := entities.User{}
-	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login)
+	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
+		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
 		return nil, nil, errors.BadRequest(err)
 	}
 	action := entities.UserAction{}
@@ -182,8 +182,8 @@ func UserActionStatus(
 		return []UserActionStatusOut{}, errors.BadRequest(err)
 	}
 	user := entities.User{}
-	if err := db.First(&user, "login = ?", in.Login).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login)
+	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
+		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
 		return []UserActionStatusOut{}, errors.BadRequest(err)
 	}
 	actions := []entities.UserAction{}

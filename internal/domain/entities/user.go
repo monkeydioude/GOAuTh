@@ -12,11 +12,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// User is an account of a realm. A login is unique within its realm, among
+// users not deleted (idx_realm_login_active).
 type User struct {
 	ID           uint           `gorm:"primaryKey;autoIncrement" json:"id"`
-	Login        string         `gorm:"not null;uniqueIndex:idx_login_active,where:deleted_at IS NULL" json:"login"`
+	Login        string         `gorm:"not null;uniqueIndex:idx_realm_login_active,priority:2,where:deleted_at IS NULL" json:"login"`
 	Password     string         `gorm:"not null" json:"password,omitempty"`
-	RealmID      uuid.UUID      `gorm:"index"`
+	RealmID      uuid.UUID      `gorm:"index;uniqueIndex:idx_realm_login_active,priority:1"`
 	Realm        *Realm         `gorm:"foreignKey:RealmID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`

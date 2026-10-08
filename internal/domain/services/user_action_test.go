@@ -39,8 +39,8 @@ func Test_I_an_Request_Password_Reset(t *testing.T) {
 			sqlmock.NewRows([]string{"id", "name"}).
 				AddRow(realmIdMock, "realm_1"),
 		)
-	mock.ExpectQuery(`SELECT \* FROM "users" WHERE login = \$1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$2`).
-		WithArgs("test_login_1", 1).
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE \(login = \$1 AND realm_id = \$2\) AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$3`).
+		WithArgs("test_login_1", realmIdMock, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id"}).AddRow(1),
 		)
@@ -92,8 +92,8 @@ func Test_I_Can_Validate_Password_Reset_Request(t *testing.T) {
 			sqlmock.NewRows([]string{"id", "name"}).
 				AddRow(realmIdMock, "realm_1"),
 		)
-	mock.ExpectQuery(`SELECT \* FROM "users" WHERE login = \$1 AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$2`).
-		WithArgs("test_login_1", 1).
+	mock.ExpectQuery(`SELECT \* FROM "users" WHERE \(login = \$1 AND realm_id = \$2\) AND "users"."deleted_at" IS NULL ORDER BY "users"."id" LIMIT \$3`).
+		WithArgs("test_login_1", realmIdMock, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "test_login_1"),
 		)

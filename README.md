@@ -283,7 +283,7 @@ proto/               → Protocol Buffer definitions
 ### Key Design Decisions
 
 - **DDD-ish / Clean Architecture**: domain entities and services are separated from transport (HTTP/gRPC) handlers.
-- **Realm-based namespacing**: users belong to realms, allowing multi-tenant setups.
+- **Realm-based namespacing**: users belong to realms, allowing multi-tenant setups. A login is unique within its realm, so the same email can sign up in two realms.
 - **Dual transport**: the same service layer is exposed over both HTTP and gRPC.
 - **Plugin system**: event hooks (`OnUserCreation`, etc.) with configurable timeouts for extensibility.
 - **Graceful shutdown**: `oklog/run` coordinates concurrent servers and OS signal handling.
