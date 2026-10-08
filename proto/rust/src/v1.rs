@@ -325,6 +325,33 @@ pub struct RevokeAccessKeyRequest {
     #[prost(string, tag = "4")]
     pub actor: ::prost::alloc::string::String,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VerifyAccessKeyRequest {
+    #[prost(string, tag = "1")]
+    pub key: ::prost::alloc::string::String,
+}
+/// VerifyAccessKeyResponse is whose a live key is. Without code 200 only code
+/// and message are set.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct VerifyAccessKeyResponse {
+    #[prost(int32, tag = "1")]
+    pub code: i32,
+    #[prost(string, tag = "2")]
+    pub message: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub key_id: ::prost::alloc::string::String,
+    #[prost(int32, tag = "4")]
+    pub account_id: i32,
+    #[prost(string, tag = "5")]
+    pub login: ::prost::alloc::string::String,
+    #[prost(string, tag = "6")]
+    pub realm: ::prost::alloc::string::String,
+    #[prost(string, tag = "7")]
+    pub realm_kind: ::prost::alloc::string::String,
+    /// unset when the key never expires
+    #[prost(message, optional, tag = "8")]
+    pub expires_at: ::core::option::Option<::prost_types::Timestamp>,
+}
 /// Generated client implementations.
 pub mod auth_client {
     #![allow(
@@ -1178,8 +1205,9 @@ pub mod access_key_client {
     )]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
-    /// AccessKey calls act on the keys of account_id, which must belong to realm:
-    /// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+    /// Create, List and Revoke act on the keys of account_id, which must belong to
+    /// realm: 404 otherwise. Only accounts whose realm kind allows it hold keys: 403
+    /// otherwise. Verify names a key by itself.
     #[derive(Debug, Clone)]
     pub struct AccessKeyClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -1323,6 +1351,30 @@ pub mod access_key_client {
             let path = http::uri::PathAndQuery::from_static("/v1.AccessKey/Revoke");
             let mut req = request.into_request();
             req.extensions_mut().insert(GrpcMethod::new("v1.AccessKey", "Revoke"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Verify says whose a key is: 200, or 401 InvalidKey for a key that is
+        /// malformed, unknown, revoked, expired or whose account is gone, without
+        /// telling which. It notes the key as used, at most once a minute.
+        pub async fn verify(
+            &mut self,
+            request: impl tonic::IntoRequest<super::VerifyAccessKeyRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::VerifyAccessKeyResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.AccessKey/Verify");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.AccessKey", "Verify"));
             self.inner.unary(req, path, codec).await
         }
     }

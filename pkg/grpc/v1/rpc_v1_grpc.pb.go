@@ -988,14 +988,16 @@ const (
 	AccessKey_Create_FullMethodName = "/v1.AccessKey/Create"
 	AccessKey_List_FullMethodName   = "/v1.AccessKey/List"
 	AccessKey_Revoke_FullMethodName = "/v1.AccessKey/Revoke"
+	AccessKey_Verify_FullMethodName = "/v1.AccessKey/Verify"
 )
 
 // AccessKeyClient is the client API for AccessKey service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// AccessKey calls act on the keys of account_id, which must belong to realm:
-// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+// Create, List and Revoke act on the keys of account_id, which must belong to
+// realm: 404 otherwise. Only accounts whose realm kind allows it hold keys: 403
+// otherwise. Verify names a key by itself.
 type AccessKeyClient interface {
 	// Create mints a key, shown once: 201, or 422 for a bad name, actor or an
 	// expiry in the past, 409 when the account holds as many live keys as its
@@ -1005,6 +1007,10 @@ type AccessKeyClient interface {
 	List(ctx context.Context, in *ListAccessKeysRequest, opts ...grpc.CallOption) (*ListAccessKeysResponse, error)
 	// Revoke ends one key for good: 404 when the account has no such live key.
 	Revoke(ctx context.Context, in *RevokeAccessKeyRequest, opts ...grpc.CallOption) (*Response, error)
+	// Verify says whose a key is: 200, or 401 InvalidKey for a key that is
+	// malformed, unknown, revoked, expired or whose account is gone, without
+	// telling which. It notes the key as used, at most once a minute.
+	Verify(ctx context.Context, in *VerifyAccessKeyRequest, opts ...grpc.CallOption) (*VerifyAccessKeyResponse, error)
 }
 
 type accessKeyClient struct {
@@ -1045,12 +1051,23 @@ func (c *accessKeyClient) Revoke(ctx context.Context, in *RevokeAccessKeyRequest
 	return out, nil
 }
 
+func (c *accessKeyClient) Verify(ctx context.Context, in *VerifyAccessKeyRequest, opts ...grpc.CallOption) (*VerifyAccessKeyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyAccessKeyResponse)
+	err := c.cc.Invoke(ctx, AccessKey_Verify_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccessKeyServer is the server API for AccessKey service.
 // All implementations must embed UnimplementedAccessKeyServer
 // for forward compatibility.
 //
-// AccessKey calls act on the keys of account_id, which must belong to realm:
-// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+// Create, List and Revoke act on the keys of account_id, which must belong to
+// realm: 404 otherwise. Only accounts whose realm kind allows it hold keys: 403
+// otherwise. Verify names a key by itself.
 type AccessKeyServer interface {
 	// Create mints a key, shown once: 201, or 422 for a bad name, actor or an
 	// expiry in the past, 409 when the account holds as many live keys as its
@@ -1060,6 +1077,10 @@ type AccessKeyServer interface {
 	List(context.Context, *ListAccessKeysRequest) (*ListAccessKeysResponse, error)
 	// Revoke ends one key for good: 404 when the account has no such live key.
 	Revoke(context.Context, *RevokeAccessKeyRequest) (*Response, error)
+	// Verify says whose a key is: 200, or 401 InvalidKey for a key that is
+	// malformed, unknown, revoked, expired or whose account is gone, without
+	// telling which. It notes the key as used, at most once a minute.
+	Verify(context.Context, *VerifyAccessKeyRequest) (*VerifyAccessKeyResponse, error)
 	mustEmbedUnimplementedAccessKeyServer()
 }
 
@@ -1078,6 +1099,9 @@ func (UnimplementedAccessKeyServer) List(context.Context, *ListAccessKeysRequest
 }
 func (UnimplementedAccessKeyServer) Revoke(context.Context, *RevokeAccessKeyRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Revoke not implemented")
+}
+func (UnimplementedAccessKeyServer) Verify(context.Context, *VerifyAccessKeyRequest) (*VerifyAccessKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 func (UnimplementedAccessKeyServer) mustEmbedUnimplementedAccessKeyServer() {}
 func (UnimplementedAccessKeyServer) testEmbeddedByValue()                   {}
@@ -1154,6 +1178,24 @@ func _AccessKey_Revoke_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccessKey_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyAccessKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessKeyServer).Verify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessKey_Verify_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessKeyServer).Verify(ctx, req.(*VerifyAccessKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccessKey_ServiceDesc is the grpc.ServiceDesc for AccessKey service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1172,6 +1214,10 @@ var AccessKey_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Revoke",
 			Handler:    _AccessKey_Revoke_Handler,
+		},
+		{
+			MethodName: "Verify",
+			Handler:    _AccessKey_Verify_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

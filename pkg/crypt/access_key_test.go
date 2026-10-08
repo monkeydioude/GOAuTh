@@ -2,6 +2,7 @@ package crypt
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,15 @@ func TestNewAccessKeyFormat(t *testing.T) {
 	other, err := NewAccessKey()
 	assert.NoError(t, err)
 	assert.NotEqual(t, key, other)
+}
+
+func TestIsAccessKey(t *testing.T) {
+	key, err := NewAccessKey()
+	assert.NoError(t, err)
+	assert.True(t, IsAccessKey(key))
+	for _, trial := range []string{"", "gak_", key[:46], key + "a", "gck_" + key[4:], "gak_" + strings.Repeat("!", 43), " " + key} {
+		assert.False(t, IsAccessKey(trial), trial)
+	}
 }
 
 func TestAccessKeyPrefixOfAShortString(t *testing.T) {

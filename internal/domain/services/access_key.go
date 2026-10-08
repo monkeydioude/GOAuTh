@@ -2,6 +2,7 @@ package services
 
 import (
 	stdErr "errors"
+	"log/slog"
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
@@ -163,6 +164,62 @@ func AccessKeyRevoke(db *gorm.DB, accountID uint, realmName string, keyID string
 		return errors.NotFound(stdErr.New(consts.ERR_ACCESS_KEY_NOT_FOUND))
 	}
 	return nil
+}
+
+// accessKeyUsedWindow is how long a key's last_used_at is left alone: it says
+// "in use lately", not when exactly, and that spares a write per verification.
+const accessKeyUsedWindow = time.Minute
+
+// VerifiedAccessKey is whose a live key is.
+type VerifiedAccessKey struct {
+	KeyID     uuid.UUID
+	ExpiresAt *time.Time
+	AccountID uint
+	Login     string
+	Realm     string
+	RealmKind string
+}
+
+// AccessKeyVerify tells whose key is. It is valid while it is not revoked or
+// expired and its account, which belongs to a realm still there, is not deleted
+// or revoked: one query, and every other case is the same errors.Unauthorized
+// InvalidKey, so a dead key learns nothing about why. A DB failure is not the
+// key's fault, and says so. There is no cache: a revocation shows at once.
+func AccessKeyVerify(db *gorm.DB, key string, now time.Time) (*VerifiedAccessKey, error) {
+	if db == nil {
+		return nil, errors.InternalServerError(stdErr.New("nil db object"))
+	}
+	if !crypt.IsAccessKey(key) {
+		return nil, errors.Unauthorized(stdErr.New(consts.ERR_INVALID_KEY))
+	}
+	var verified VerifiedAccessKey
+	// the soft-delete scope leaves out the revoked keys
+	res := db.Model(&entities.AccessKey{}).
+		Select("access_keys.id AS key_id, access_keys.expires_at, users.id AS account_id, users.login, realms.name AS realm, realms.kind AS realm_kind").
+		Joins("JOIN users ON users.id = access_keys.account_id AND users.deleted_at IS NULL AND (users.revoked_at IS NULL OR users.revoked_at > ?)", now).
+		Joins("JOIN realms ON realms.id = users.realm_id AND realms.deleted_at IS NULL").
+		Where("access_keys.key_hash = ? AND (access_keys.expires_at IS NULL OR access_keys.expires_at > ?)", crypt.HashToken(key), now).
+		Limit(1).
+		Scan(&verified)
+	if res.Error != nil {
+		return nil, errors.DBError(res.Error)
+	}
+	if res.RowsAffected == 0 {
+		return nil, errors.Unauthorized(stdErr.New(consts.ERR_INVALID_KEY))
+	}
+	touchAccessKey(db, verified.KeyID, now)
+	return &verified, nil
+}
+
+// touchAccessKey writes last_used_at, at most once per accessKeyUsedWindow. A
+// failed write is logged and nothing more: the key was verified.
+func touchAccessKey(db *gorm.DB, keyID uuid.UUID, now time.Time) {
+	err := db.Model(&entities.AccessKey{}).
+		Where("id = ? AND (last_used_at IS NULL OR last_used_at < ?)", keyID, now.Add(-accessKeyUsedWindow)).
+		Update("last_used_at", now).Error
+	if err != nil {
+		slog.Warn("could not write the access key's last use", "key_id", keyID, "error", err.Error())
+	}
 }
 
 // revokeAccessKeys revokes the live keys the query matches: the soft-delete

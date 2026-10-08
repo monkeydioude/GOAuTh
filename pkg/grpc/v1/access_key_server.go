@@ -85,6 +85,31 @@ func (h *AccessKeyRPCHandler) Revoke(ctx context.Context, req *RevokeAccessKeyRe
 	return Ok(), nil
 }
 
+// Verify says whose a key is. The key never goes to the logs.
+func (h *AccessKeyRPCHandler) Verify(ctx context.Context, req *VerifyAccessKeyRequest) (*VerifyAccessKeyResponse, error) {
+	if req == nil {
+		return &VerifyAccessKeyResponse{Code: http.StatusInternalServerError, Message: "no req pointer"}, nil
+	}
+	verified, err := services.AccessKeyVerify(h.DB, req.GetKey(), h.AccessTokenFactory.TimeFn())
+	if err != nil {
+		res := FromErrToResponse(err)
+		return &VerifyAccessKeyResponse{Code: res.Code, Message: res.Message}, nil
+	}
+	res := &VerifyAccessKeyResponse{
+		Code:      http.StatusOK,
+		Message:   "Ok",
+		KeyId:     verified.KeyID.String(),
+		AccountId: int32(verified.AccountID),
+		Login:     verified.Login,
+		Realm:     verified.Realm,
+		RealmKind: verified.RealmKind,
+	}
+	if verified.ExpiresAt != nil {
+		res.ExpiresAt = timestamppb.New(verified.ExpiresAt.UTC())
+	}
+	return res, nil
+}
+
 // intoAccessKeyInfo shapes a key for a consumer: everything but the hash.
 func intoAccessKeyInfo(key entities.AccessKey) *AccessKeyInfo {
 	info := &AccessKeyInfo{

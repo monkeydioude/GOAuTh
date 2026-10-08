@@ -176,13 +176,14 @@ The accounts a trusted backend manages: those of a `service` realm. People sign 
 
 ### AccessKey Service
 
-Long-lived secrets of the accounts a trusted backend manages. A key is `gak_` followed by 256 random bits (47 characters), shown once at creation and kept only as a SHA-256 hash; a `prefix` of its first characters tells keys apart. Only accounts of a `service` realm hold keys. Every call names the account by `account_id` and `realm`: `404` when the account is not in that realm, `403` when its realm's kind holds no keys, `422` when `actor` (required, at most 255 characters) is missing. Revoked keys are kept forever, with who revoked them and why (`manual`, `account_deleted`).
+Long-lived secrets of the accounts a trusted backend manages. A key is `gak_` followed by 256 random bits (47 characters), shown once at creation and kept only as a SHA-256 hash; a `prefix` of its first characters tells keys apart. Only accounts of a `service` realm hold keys. Every call but `Verify` names the account by `account_id` and `realm`: `404` when the account is not in that realm, `403` when its realm's kind holds no keys, `422` when `actor` (required, at most 255 characters) is missing. Revoked keys are kept forever, with who revoked them and why (`manual`, `account_deleted`).
 
 | RPC                                                   | Description                  |
 |-------------------------------------------------------|------------------------------|
 | `Create(CreateAccessKeyRequest) → CreateAccessKeyResponse` | Mint a key named `name` (1 to 100 characters, not unique), with an optional `expires_at` (`422` in the past). `201` with `key`, the only time it is returned, and its `info`. `409` when the account holds as many live keys as its realm's `access_key_max_active` or `ACCESS_KEY_MAX_ACTIVE` allows, whichever is lower |
 | `List(ListAccessKeysRequest) → ListAccessKeysResponse` | The account's live keys, newest first, never the hash. `include_revoked` adds revoked and expired keys, with when, who and why |
 | `Revoke(RevokeAccessKeyRequest) → Response`           | End one key for good, recording `actor`; an expired key can still be revoked. `404` when the account has no such live key |
+| `Verify(VerifyAccessKeyRequest) → VerifyAccessKeyResponse` | Say whose `key` is: `200` with `key_id`, `account_id`, `login`, `realm`, `realm_kind` and `expires_at` (unset when it never expires). `401 InvalidKey` for a key that is malformed, unknown, revoked or expired, or whose account is deleted or revoked or whose realm is gone, without telling which. Takes no `account_id`: the key names itself. Not cached, so a revocation shows at once. Notes the key as used (`last_used_at`), at most once a minute |
 
 `Auth.Delete` on a service account revokes its keys in the same transaction (`account_deleted`, by the request's `actor`).
 

@@ -3,6 +3,7 @@ package crypt
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"regexp"
 )
 
 const (
@@ -22,6 +23,14 @@ func NewAccessKey() (string, error) {
 		return "", err
 	}
 	return AccessKeyPrefix + base64.RawURLEncoding.EncodeToString(raw), nil
+}
+
+var accessKeyFormat = regexp.MustCompile(`^gak_[A-Za-z0-9_-]{43}$`)
+
+// IsAccessKey tells whether s has the shape of a key NewAccessKey makes, which
+// spares a lookup for anything that cannot be one.
+func IsAccessKey(s string) bool {
+	return accessKeyFormat.MatchString(s)
 }
 
 // AccessKeyPrefixOf is the part of a key kept in clear to tell keys apart: its
