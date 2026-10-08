@@ -284,6 +284,7 @@ proto/               → Protocol Buffer definitions
 
 - **DDD-ish / Clean Architecture**: domain entities and services are separated from transport (HTTP/gRPC) handlers.
 - **Realm-based namespacing**: users belong to realms, allowing multi-tenant setups. A login is unique within its realm, so the same email can sign up in two realms.
+- **Realm kinds**: a realm is of kind `human` (the default) or `service`. A service realm holds accounts that are not people, so it refuses signup, password and login changes and user actions with `403 ForbiddenByRealmKind`, and login with `401 InvalidCredentials`. The kind is set by `bin/client realm create -kind=…` and never changes.
 - **Dual transport**: the same service layer is exposed over both HTTP and gRPC.
 - **Plugin system**: event hooks (`OnUserCreation`, etc.) with configurable timeouts for extensibility.
 - **Graceful shutdown**: `oklog/run` coordinates concurrent servers and OS signal handling.

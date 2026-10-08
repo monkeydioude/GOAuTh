@@ -79,8 +79,10 @@ The gRPC client connects to `[::]:9100` by default.
 For `realm create`, extra positional args after the action are:
 
 ```
-./client -method=api realm create <allow_new_user=0|1> <name> [description]
+./client -method=api [-kind=human|service] realm create <allow_new_user=0|1> <name> [description]
 ```
+
+`-kind` defaults to `human`. A `service` realm holds accounts that are not people: it refuses signup, login, password and login changes and user actions. The kind cannot change once the realm exists.
 
 For `action create` and `action status` (rpc), extra positional args are:
 

@@ -44,6 +44,14 @@ func Unauthorized(err error) Err {
 	}
 }
 
+func Forbidden(err error) Err {
+	return Err{
+		code:         response.ForbiddenCode,
+		err:          err,
+		httpCallback: response.Forbidden,
+	}
+}
+
 func UnprocessableEntity(err error) Err {
 	return Err{
 		code:         response.UnprocessableEntityCode,
