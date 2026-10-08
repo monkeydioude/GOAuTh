@@ -37,7 +37,7 @@ func (h *UserRPCHandler) Deactivate(ctx context.Context, _ *Empty) (*Response, e
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	err = services.AuthDeactivate(jwt.Claims.UID, h.DB, h.JWTFactory.TimeFn())
+	err = services.AuthDeactivate(jwt.Claims.UID, "", h.DB, h.JWTFactory.TimeFn())
 	if err != nil {
 		return InternalServerError("could not deactivate user"), nil
 	}

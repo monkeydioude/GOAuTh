@@ -11,6 +11,10 @@ import (
 func signPassword(userParams *models.UsersParams) func(*gorm.DB) {
 	return func(tx *gorm.DB) {
 		if user, ok := tx.Statement.Dest.(*entities.User); ok {
+			// an account without a password stores '': nothing hashes to it
+			if user.Password == "" {
+				return
+			}
 			user.Password = crypt.HashPassword(
 				user.Password,
 				userParams.GetArgon2Params(),

@@ -62,6 +62,7 @@ func setupRPC(t *testing.T, layout *handlers.Layout) *grpc.ClientConn {
 	v1.RegisterUserServer(server, v1.NewUserRPCHandler(layout))
 	v1.RegisterUserActionServer(server, v1.NewUserActionRPCHandler(layout))
 	v1.RegisterSessionServer(server, v1.NewSessionRPCHandler(layout))
+	v1.RegisterAccountServer(server, v1.NewAccountRPCHandler(layout))
 
 	lis := bufconn.Listen(1024 * 1024)
 	go func() {

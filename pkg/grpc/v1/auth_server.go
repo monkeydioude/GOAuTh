@@ -68,8 +68,16 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 }
 
 // Delete soft-deletes the user and revokes all their sessions.
+// Delete closes uid's account the way its realm's kind says. A service account
+// needs actor: who asked for it, as the consumer names them.
 func (h *AuthRPCHandler) Delete(ctx context.Context, req *AuthIdRequest) (*Response, error) {
-	return Ok(), services.AuthDeactivate(uint(req.Uid), h.DB, h.RefreshTokenFactory.TimeFn())
+	if req == nil {
+		return InternalServerError("no req pointer"), errors.New("no req pointer")
+	}
+	if err := services.AuthDeactivate(uint(req.GetUid()), req.GetActor(), h.DB, h.RefreshTokenFactory.TimeFn()); err != nil {
+		return FromErrToResponse(err), nil
+	}
+	return Ok(), nil
 }
 
 func NewAuthRPCHandler(layout *handlers.Layout) *AuthRPCHandler {

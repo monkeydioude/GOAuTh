@@ -52,6 +52,14 @@ func Forbidden(err error) Err {
 	}
 }
 
+func Conflict(err error) Err {
+	return Err{
+		code:         response.ConflictCode,
+		err:          err,
+		httpCallback: response.Conflict,
+	}
+}
+
 func UnprocessableEntity(err error) Err {
 	return Err{
 		code:         response.UnprocessableEntityCode,

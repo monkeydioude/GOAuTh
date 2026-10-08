@@ -265,7 +265,7 @@ func TestJsonAPIRefreshRefusesADeactivatedUser(t *testing.T) {
 	user := newLoginUser(t, gormDB, login)
 	token, _ := loginSession(t, layout, login)
 
-	assert.NoError(t, services.AuthDeactivate(user.ID, gormDB, layout.RefreshTokenFactory.TimeFn()))
+	assert.NoError(t, services.AuthDeactivate(user.ID, "", gormDB, layout.RefreshTokenFactory.TimeFn()))
 
 	rec := refreshOverHTTP(t, layout, token)
 	assert.Equal(t, 401, rec.Code)

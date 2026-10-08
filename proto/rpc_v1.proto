@@ -19,6 +19,8 @@ message UserRequest {
 message AuthIdRequest {
     int32 uid = 1;
     string reason = 2;
+    // who asked for it, as the consumer names them; required for a service account
+    optional string actor = 3;
 }
 
 // Logout ends the session of the access token in the Authorization metadata, or
@@ -172,4 +174,31 @@ service Session {
     rpc List(ListSessionsRequest) returns (ListSessionsResponse) {}
     rpc Revoke(RevokeSessionRequest) returns (Response) {}
     rpc RevokeAll(RevokeAllSessionsRequest) returns (Response) {}
+}
+
+// Account is what a trusted backend manages in a service realm. People sign up
+// through Auth instead.
+message CreateAccountRequest {
+    string realm = 1;
+    // a slug: lowercase letters, digits and :._- (1 to 128 characters), never an email
+    string login = 2;
+    // who asked for it, as the consumer names them; required
+    string actor = 3;
+}
+
+message CreateAccountResponse {
+    int32 code = 1;
+    string message = 2;
+    int32 account_id = 3;
+    string login = 4;
+    string realm = 5;
+    string realm_kind = 6;
+    google.protobuf.Timestamp created_at = 7;
+}
+
+service Account {
+    // Create makes an account in realm: 201, or 404 for an unknown realm, 403 for
+    // a realm whose kind has no such accounts, 422 for a bad login or actor, 409
+    // for a login the realm already has.
+    rpc Create(CreateAccountRequest) returns (CreateAccountResponse) {}
 }
