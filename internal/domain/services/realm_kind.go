@@ -27,6 +27,8 @@ type RealmKind interface {
 	// Delete closes the account in tx: soft-deleted, what it holds ended.
 	// actor is who asked, as the consumer names them.
 	Delete(tx *gorm.DB, user *entities.User, actor string, now time.Time) error
+	// AssertAccessKeys refuses holding access keys.
+	AssertAccessKeys() error
 }
 
 // KindOf is the strategy of the realm's kind. An empty kind is human: the
@@ -52,8 +54,13 @@ func (HumanKind) NewAccount(entities.Realm, string, string) (*entities.User, err
 	return nil, errors.Forbidden(stdErr.New(consts.ERR_FORBIDDEN_BY_REALM_KIND))
 }
 
-func (HumanKind) Delete(tx *gorm.DB, user *entities.User, _ string, now time.Time) error {
-	return closeAccount(tx, user, now)
+func (HumanKind) Delete(tx *gorm.DB, user *entities.User, actor string, now time.Time) error {
+	return closeAccount(tx, user, actor, now)
+}
+
+// AssertAccessKeys refuses: a person logs in instead.
+func (HumanKind) AssertAccessKeys() error {
+	return errors.Forbidden(stdErr.New(consts.ERR_FORBIDDEN_BY_REALM_KIND))
 }
 
 // ServiceKind is the strategy of RealmKindService: accounts that are not
@@ -85,7 +92,11 @@ func (ServiceKind) Delete(tx *gorm.DB, user *entities.User, actor string, now ti
 	if err := assertActor(actor); err != nil {
 		return err
 	}
-	return closeAccount(tx, user, now)
+	return closeAccount(tx, user, actor, now)
+}
+
+func (ServiceKind) AssertAccessKeys() error {
+	return nil
 }
 
 // assertActor checks the free-form name of who acts, which a consumer must give.
@@ -96,10 +107,14 @@ func assertActor(actor string) error {
 	return nil
 }
 
-// closeAccount soft-deletes the account and revokes its sessions.
-func closeAccount(tx *gorm.DB, user *entities.User, now time.Time) error {
+// closeAccount soft-deletes the account and revokes its sessions and access
+// keys, whatever its kind: nothing it holds survives it.
+func closeAccount(tx *gorm.DB, user *entities.User, actor string, now time.Time) error {
 	if err := tx.Delete(&entities.User{}, user.ID).Error; err != nil {
 		return err
 	}
-	return revokeUserSessions(tx, user.ID, "", entities.SessionRevokedAccountDeactivated, now)
+	if err := revokeUserSessions(tx, user.ID, "", entities.SessionRevokedAccountDeactivated, now); err != nil {
+		return err
+	}
+	return revokeAccountKeys(tx, user.ID, actor, now)
 }

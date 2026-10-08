@@ -79,10 +79,13 @@ The gRPC client connects to `[::]:9100` by default.
 For `realm create`, extra positional args after the action are:
 
 ```
-./client -method=api [-kind=human|service] realm create <allow_new_user=0|1> <name> [description]
+./client -method=api [-kind=human|service] [-max-keys=N] realm create <allow_new_user=0|1> <name> [description]
+./client -method=api realm set-max-keys <name> <n|default>
 ```
 
 `-kind` defaults to `human`. A `service` realm holds accounts that are not people: it refuses signup, login, password and login changes and user actions. The kind cannot change once the realm exists.
+
+`-max-keys` and `set-max-keys` cap the live access keys an account of the realm may hold; `0` or `default` inherits `ACCESS_KEY_MAX_ACTIVE`, which wins whenever it is lower (the CLI warns when the value is above it). Lowering the cap revokes nothing.
 
 For `action create` and `action status` (rpc), extra positional args are:
 

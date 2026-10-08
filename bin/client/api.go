@@ -163,6 +163,8 @@ func (c apiCall) trigger() error {
 			return realmCreate()
 		case "view":
 			return realmsShow()
+		case "set-max-keys":
+			return realmSetMaxKeys()
 		}
 	case "auth":
 		switch c.action {

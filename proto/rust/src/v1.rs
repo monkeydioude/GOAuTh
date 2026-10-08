@@ -237,6 +237,94 @@ pub struct CreateAccountResponse {
     #[prost(message, optional, tag = "7")]
     pub created_at: ::core::option::Option<::prost_types::Timestamp>,
 }
+/// AccessKeyInfo is one access key of an account, without the key itself: it
+/// is shown once, when created.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct AccessKeyInfo {
+    #[prost(string, tag = "1")]
+    pub key_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    /// the key's first characters after gak_, to tell keys apart
+    #[prost(string, tag = "3")]
+    pub prefix: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "4")]
+    pub created_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(string, tag = "5")]
+    pub created_by: ::prost::alloc::string::String,
+    /// unset when the key never expires
+    #[prost(message, optional, tag = "6")]
+    pub expires_at: ::core::option::Option<::prost_types::Timestamp>,
+    /// unset until the key is first verified
+    #[prost(message, optional, tag = "7")]
+    pub last_used_at: ::core::option::Option<::prost_types::Timestamp>,
+    /// unset while the key is not revoked
+    #[prost(message, optional, tag = "8")]
+    pub revoked_at: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(string, tag = "9")]
+    pub revoked_by: ::prost::alloc::string::String,
+    #[prost(string, tag = "10")]
+    pub revoked_reason: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateAccessKeyRequest {
+    #[prost(int32, tag = "1")]
+    pub account_id: i32,
+    #[prost(string, tag = "2")]
+    pub realm: ::prost::alloc::string::String,
+    /// 1 to 100 characters, not unique
+    #[prost(string, tag = "3")]
+    pub name: ::prost::alloc::string::String,
+    /// unset never expires
+    #[prost(message, optional, tag = "4")]
+    pub expires_at: ::core::option::Option<::prost_types::Timestamp>,
+    /// who asked for it, as the consumer names them; required
+    #[prost(string, tag = "5")]
+    pub actor: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct CreateAccessKeyResponse {
+    #[prost(int32, tag = "1")]
+    pub code: i32,
+    #[prost(string, tag = "2")]
+    pub message: ::prost::alloc::string::String,
+    /// the key, the only time it is ever returned
+    #[prost(string, tag = "3")]
+    pub key: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "4")]
+    pub info: ::core::option::Option<AccessKeyInfo>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListAccessKeysRequest {
+    #[prost(int32, tag = "1")]
+    pub account_id: i32,
+    #[prost(string, tag = "2")]
+    pub realm: ::prost::alloc::string::String,
+    /// also list revoked and expired keys
+    #[prost(bool, tag = "3")]
+    pub include_revoked: bool,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ListAccessKeysResponse {
+    #[prost(int32, tag = "1")]
+    pub code: i32,
+    #[prost(string, tag = "2")]
+    pub message: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub keys: ::prost::alloc::vec::Vec<AccessKeyInfo>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct RevokeAccessKeyRequest {
+    #[prost(int32, tag = "1")]
+    pub account_id: i32,
+    #[prost(string, tag = "2")]
+    pub realm: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub key_id: ::prost::alloc::string::String,
+    /// who asked for it, as the consumer names them; required
+    #[prost(string, tag = "4")]
+    pub actor: ::prost::alloc::string::String,
+}
 /// Generated client implementations.
 pub mod auth_client {
     #![allow(
@@ -1075,6 +1163,166 @@ pub mod account_client {
             let path = http::uri::PathAndQuery::from_static("/v1.Account/Create");
             let mut req = request.into_request();
             req.extensions_mut().insert(GrpcMethod::new("v1.Account", "Create"));
+            self.inner.unary(req, path, codec).await
+        }
+    }
+}
+/// Generated client implementations.
+pub mod access_key_client {
+    #![allow(
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
+    )]
+    use tonic::codegen::*;
+    use tonic::codegen::http::Uri;
+    /// AccessKey calls act on the keys of account_id, which must belong to realm:
+    /// 404 otherwise. Only accounts whose realm kind allows it hold keys: 403 otherwise.
+    #[derive(Debug, Clone)]
+    pub struct AccessKeyClient<T> {
+        inner: tonic::client::Grpc<T>,
+    }
+    impl AccessKeyClient<tonic::transport::Channel> {
+        /// Attempt to create a new client by connecting to a given endpoint.
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
+        where
+            D: TryInto<tonic::transport::Endpoint>,
+            D::Error: Into<StdError>,
+        {
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
+            Ok(Self::new(conn))
+        }
+    }
+    impl<T> AccessKeyClient<T>
+    where
+        T: tonic::client::GrpcService<tonic::body::BoxBody>,
+        T::Error: Into<StdError>,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
+    {
+        pub fn new(inner: T) -> Self {
+            let inner = tonic::client::Grpc::new(inner);
+            Self { inner }
+        }
+        pub fn with_origin(inner: T, origin: Uri) -> Self {
+            let inner = tonic::client::Grpc::with_origin(inner, origin);
+            Self { inner }
+        }
+        pub fn with_interceptor<F>(
+            inner: T,
+            interceptor: F,
+        ) -> AccessKeyClient<InterceptedService<T, F>>
+        where
+            F: tonic::service::Interceptor,
+            T::ResponseBody: Default,
+            T: tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+                Response = http::Response<
+                    <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
+                >,
+            >,
+            <T as tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+        {
+            AccessKeyClient::new(InterceptedService::new(inner, interceptor))
+        }
+        /// Compress requests with the given encoding.
+        ///
+        /// This requires the server to support it otherwise it might respond with an
+        /// error.
+        #[must_use]
+        pub fn send_compressed(mut self, encoding: CompressionEncoding) -> Self {
+            self.inner = self.inner.send_compressed(encoding);
+            self
+        }
+        /// Enable decompressing responses.
+        #[must_use]
+        pub fn accept_compressed(mut self, encoding: CompressionEncoding) -> Self {
+            self.inner = self.inner.accept_compressed(encoding);
+            self
+        }
+        /// Limits the maximum size of a decoded message.
+        ///
+        /// Default: `4MB`
+        #[must_use]
+        pub fn max_decoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_decoding_message_size(limit);
+            self
+        }
+        /// Limits the maximum size of an encoded message.
+        ///
+        /// Default: `usize::MAX`
+        #[must_use]
+        pub fn max_encoding_message_size(mut self, limit: usize) -> Self {
+            self.inner = self.inner.max_encoding_message_size(limit);
+            self
+        }
+        /// Create mints a key, shown once: 201, or 422 for a bad name, actor or an
+        /// expiry in the past, 409 when the account holds as many live keys as its
+        /// realm or ACCESS_KEY_MAX_ACTIVE allows.
+        pub async fn create(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CreateAccessKeyRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::CreateAccessKeyResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.AccessKey/Create");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.AccessKey", "Create"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// List is the live keys, newest first; include_revoked adds the rest.
+        pub async fn list(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ListAccessKeysRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ListAccessKeysResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.AccessKey/List");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.AccessKey", "List"));
+            self.inner.unary(req, path, codec).await
+        }
+        /// Revoke ends one key for good: 404 when the account has no such live key.
+        pub async fn revoke(
+            &mut self,
+            request: impl tonic::IntoRequest<super::RevokeAccessKeyRequest>,
+        ) -> std::result::Result<tonic::Response<super::Response>, tonic::Status> {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::unknown(
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/v1.AccessKey/Revoke");
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new("v1.AccessKey", "Revoke"));
             self.inner.unary(req, path, codec).await
         }
     }

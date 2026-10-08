@@ -27,7 +27,8 @@ Args & flags:
     ./client "user" "password"|"deactivate"
     ./client "action" "create"|"validate" (grpc only)
     ./client "jwt" "status"|"refresh"
-    ./client [-kind=human|service] "realm" "create"|"view" <if create: <allow_new_user=0|1> <name> [description]>
+    ./client [-kind=human|service] [-max-keys=N] "realm" "create"|"view" <if create: <allow_new_user=0|1> <name> [description]>
+    ./client "realm" "set-max-keys" <name> <n|default>
 
 For auth login/signup, login and password should be passed as env vars CLIENT_LOGIN & CLIENT_PASSWORD.
 For jwt status/refresh, token should be passed as env var CLIENT_JWT.`)
@@ -40,7 +41,7 @@ var (
 		"auth":   {"login", "signup"},
 		"user":   {"password", "login", "deactivate", "change_user"},
 		"jwt":    {"status", "refresh"},
-		"realm":  {"create", "view"},
+		"realm":  {"create", "view", "set-max-keys"},
 		"action": {"create", "validate", "status"},
 	}
 )

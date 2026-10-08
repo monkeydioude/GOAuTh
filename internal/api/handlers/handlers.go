@@ -31,6 +31,8 @@ type Layout struct {
 	MaxActiveSessions int
 	// SessionReuseGrace lets a just-rotated refresh token still get an access token
 	SessionReuseGrace time.Duration
+	// AccessKeyMaxActive is the live access keys an account may hold; a realm may cap lower
+	AccessKeyMaxActive int
 }
 
 // ClientInfo reads the end user's IP and user agent from req.

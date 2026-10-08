@@ -47,6 +47,8 @@ func (c rpcCall) trigger() error {
 		switch c.action {
 		case "create":
 			return realmCreate()
+		case "set-max-keys":
+			return realmSetMaxKeys()
 		}
 	case "auth":
 		switch c.action {

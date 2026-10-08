@@ -1,6 +1,11 @@
 [extend]
 useDefault = true
 
+[[rules]]
+id = "goauth-access-key"
+description = "goauth access key"
+regex = '''gak_[A-Za-z0-9_-]{43}'''
+
 [allowlist]
 stopwords = [
     # PASSWORDS

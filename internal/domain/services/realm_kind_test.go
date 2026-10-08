@@ -34,6 +34,12 @@ func TestServiceRealmsRefusePasswordFlows(t *testing.T) {
 	assert.Equal(t, 403, codeOf(t, err))
 }
 
+func TestOnlyServiceAccountsHoldAccessKeys(t *testing.T) {
+	assert.NoError(t, KindOf(entities.Realm{Kind: entities.RealmKindService}).AssertAccessKeys())
+	assert.Equal(t, 403, codeOf(t, KindOf(entities.Realm{Kind: entities.RealmKindHuman}).AssertAccessKeys()))
+	assert.Equal(t, 403, codeOf(t, KindOf(entities.Realm{}).AssertAccessKeys()))
+}
+
 func TestServiceAccountsHaveASlugAnActorAndNoPassword(t *testing.T) {
 	realm := entities.Realm{ID: uuid.New(), Name: "bots", Kind: entities.RealmKindService}
 	kind := KindOf(realm)
