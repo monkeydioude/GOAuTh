@@ -33,6 +33,9 @@ func LayoutBoot(
 	if err := dropLegacyColumns(dbRes.Result()); err != nil {
 		return result.Error[handlers.Layout](err)
 	}
+	if err := dropLegacyIndexes(dbRes.Result()); err != nil {
+		return result.Error[handlers.Layout](err)
+	}
 	userParams := UsersParamsBoot(loginConstraints, passwordConstraints)
 	gorm := dbRes.Result()
 	gormSetupHydrate(gorm, userParams)

@@ -28,17 +28,17 @@ func AuthSignup(
 	if err := userParams.AssertAllConstraints(user.Login, nil, user.Password, nil); err != nil {
 		return errors.UnprocessableEntity(err)
 	}
-	tmp_u := &entities.User{}
-	res := db.First(tmp_u, "login = ?", user.Login)
-	if res.Error == nil && tmp_u.ID != 0 {
-		slog.Error(consts.ERR_USER_ALREADY_EXIST)
-		return errors.BadRequest(go_errors.New(consts.ERR_USER_ALREADY_EXIST))
-	}
-
 	var realm entities.Realm
 	if err := db.Where("name = ?", user.RealmName).First(&realm).Error; err != nil {
 		slog.Error(err.Error(), "realm_name", user.RealmName)
 		return errors.BadRequest(err)
+	}
+	// a login is unique within its realm only
+	tmp_u := &entities.User{}
+	res := db.First(tmp_u, "login = ? AND realm_id = ?", user.Login, realm.ID)
+	if res.Error == nil && tmp_u.ID != 0 {
+		slog.Error(consts.ERR_USER_ALREADY_EXIST)
+		return errors.BadRequest(go_errors.New(consts.ERR_USER_ALREADY_EXIST))
 	}
 	user.RealmID = realm.ID
 
