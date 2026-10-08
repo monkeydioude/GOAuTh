@@ -24,8 +24,9 @@ type AccessKeyCreateIn struct {
 	Actor string
 }
 
-// accountInRealm loads the account of realm, with the realm. An account of
-// another realm is not found either: a consumer only reaches its own.
+// accountInRealm loads the account and its realm. The account must belong to
+// the named realm: a uid from another realm is "not found", same as an unknown
+// one, so a mixed-up uid and realm pair can't act on the wrong account.
 func accountInRealm(db *gorm.DB, accountID uint, realmName string) (entities.User, entities.Realm, error) {
 	var realm entities.Realm
 	if err := db.Where("name = ?", realmName).First(&realm).Error; err != nil {
