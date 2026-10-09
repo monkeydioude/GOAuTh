@@ -31,7 +31,7 @@ func (h *JWTRPCHandler) Status(ctx context.Context, req *StatusIn) (*StatusOut, 
 	if err != nil {
 		return nil, StatusBadRequest("could not find access token in metadata or payload")
 	}
-	res, err := services.JWTStatus(token, *h.AccessTokenFactory)
+	res, err := services.JWTStatus(ctx, token, *h.AccessTokenFactory)
 	if err != nil {
 		return nil, StatusFromErr(err)
 	}
@@ -60,7 +60,7 @@ func (h *JWTRPCHandler) Refresh(ctx context.Context, req *RefreshIn) (*RefreshOu
 		atf = atf.WithExpiresIn(timed.Seconds(*req.AccessExpiresInSeconds))
 	}
 	// refresh_expires_in_seconds is ignored: a refresh token lives as long as its session
-	res, err := services.JWTRefresh(token, req.GetClient().IntoClientInfo(), *atf, *h.RefreshTokenFactory, h.SessionReuseGrace, h.DB)
+	res, err := services.JWTRefresh(token, req.GetClient().IntoClientInfo(), *atf, *h.RefreshTokenFactory, h.SessionReuseGrace, h.DB.WithContext(ctx))
 	if err != nil {
 		return nil, StatusFromErr(err)
 	}

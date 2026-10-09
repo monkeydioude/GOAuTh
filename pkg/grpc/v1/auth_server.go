@@ -35,7 +35,7 @@ func (h *AuthRPCHandler) Signup(ctx context.Context, req *UserRequest) (*Respons
 	}
 	h.Plugins.TriggerBefore(plugins.OnUserCreation, nil)
 	user := entities.NewUser(req.Login, req.Password, req.Realm)
-	err := services.AuthSignup(user, h.UserParams, h.DB)
+	err := services.AuthSignup(user, h.UserParams, h.DB.WithContext(ctx))
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
@@ -58,7 +58,7 @@ func (h *AuthRPCHandler) Login(ctx context.Context, req *UserRequest) (*Response
 		atf = h.AccessTokenFactory.WithExpiresIn(time.Second * time.Duration(*req.AccessExpiresInSeconds))
 	}
 	// refresh_expires_in_seconds is ignored: a refresh token lives as long as its session
-	accessToken, refreshToken, err := services.AuthLogin(user, req.GetClient().IntoClientInfo(), h.DB, h.UserParams, atf, h.RefreshTokenFactory, h.MaxActiveSessions)
+	accessToken, refreshToken, err := services.AuthLogin(user, req.GetClient().IntoClientInfo(), h.DB.WithContext(ctx), h.UserParams, atf, h.RefreshTokenFactory, h.MaxActiveSessions)
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
@@ -74,7 +74,7 @@ func (h *AuthRPCHandler) Delete(ctx context.Context, req *AuthIdRequest) (*Respo
 	if req == nil {
 		return InternalServerError("no req pointer"), errors.New("no req pointer")
 	}
-	if err := services.AuthDeactivate(uint(req.GetUid()), req.GetActor(), h.DB, h.RefreshTokenFactory.TimeFn()); err != nil {
+	if err := services.AuthDeactivate(uint(req.GetUid()), req.GetActor(), h.DB.WithContext(ctx), h.RefreshTokenFactory.TimeFn()); err != nil {
 		return FromErrToResponse(err), nil
 	}
 	return Ok(), nil
@@ -102,7 +102,7 @@ func (h *AuthRPCHandler) Logout(ctx context.Context, req *LogoutRequest) (*Respo
 	if token == "" {
 		cookie, err := rpc.FetchCookieFromContext(ctx, consts.AuthorizationCookie)
 		if err != nil {
-			return Ok(), services.AuthLogout(uint(req.Uid), req.Realm, h.DB, h.RefreshTokenFactory.TimeFn())
+			return Ok(), services.AuthLogout(uint(req.Uid), req.Realm, h.DB.WithContext(ctx), h.RefreshTokenFactory.TimeFn())
 		}
 		if token, err = services.GetTokenFromBearer(cookie.Value); err != nil {
 			return FromErrToResponse(err), nil
@@ -114,7 +114,7 @@ func (h *AuthRPCHandler) Logout(ctx context.Context, req *LogoutRequest) (*Respo
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	if err := services.LogoutSession(h.DB, jwt.Claims, factory.TimeFn()); err != nil {
+	if err := services.LogoutSession(h.DB.WithContext(ctx), jwt.Claims, factory.TimeFn()); err != nil {
 		return FromErrToResponse(goauthErrors.DBError(err)), nil
 	}
 	return Ok(), nil

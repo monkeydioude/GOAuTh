@@ -36,7 +36,7 @@ func (h *SessionRPCHandler) caller(ctx context.Context) (crypt.JWTDefaultClaims,
 	if err != nil {
 		return crypt.JWTDefaultClaims{}, err
 	}
-	jwt, err := services.AuthenticateAccessToken(token, *h.AccessTokenFactory)
+	jwt, err := services.AuthenticateAccessToken(ctx, token, *h.AccessTokenFactory)
 	if err != nil {
 		return crypt.JWTDefaultClaims{}, err
 	}
@@ -48,7 +48,7 @@ func (h *SessionRPCHandler) List(ctx context.Context, req *ListSessionsRequest) 
 	if err != nil {
 		return fromErrToListSessionsResponse(err), nil
 	}
-	sessions, err := services.ListSessions(h.DB, claims.UID, req.GetIncludeRevoked(), h.AccessTokenFactory.TimeFn())
+	sessions, err := services.ListSessions(h.DB.WithContext(ctx), claims.UID, req.GetIncludeRevoked(), h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		return fromErrToListSessionsResponse(errors.DBError(err)), nil
 	}
@@ -66,7 +66,7 @@ func (h *SessionRPCHandler) Revoke(ctx context.Context, req *RevokeSessionReques
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	revoked, err := services.RevokeSession(h.DB, claims.UID, req.GetSessionId(), entities.SessionRevokedByUser, h.AccessTokenFactory.TimeFn())
+	revoked, err := services.RevokeSession(h.DB.WithContext(ctx), claims.UID, req.GetSessionId(), entities.SessionRevokedByUser, h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		return FromErrToResponse(errors.DBError(err)), nil
 	}
@@ -86,7 +86,7 @@ func (h *SessionRPCHandler) RevokeAll(ctx context.Context, req *RevokeAllSession
 	if req.GetKeepCurrent() {
 		keepSID = claims.SID
 	}
-	if err := services.RevokeAllSessions(h.DB, claims.UID, keepSID, h.AccessTokenFactory.TimeFn()); err != nil {
+	if err := services.RevokeAllSessions(h.DB.WithContext(ctx), claims.UID, keepSID, h.AccessTokenFactory.TimeFn()); err != nil {
 		return FromErrToResponse(errors.DBError(err)), nil
 	}
 	return Ok(), nil

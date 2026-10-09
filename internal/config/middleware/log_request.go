@@ -2,15 +2,15 @@ package middleware
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
+	"time"
 
-	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type responseRecorder struct {
@@ -33,10 +33,11 @@ func (r *responseRecorder) WriteHeader(code int) {
 
 func APILogRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[%s] >>> API call on %s", r.Header.Get(consts.X_REQUEST_ID_LABEL), r.URL)
+		slog.InfoContext(r.Context(), ">>> API call", "method", r.Method, "path", r.URL.Path)
 		rec := &responseRecorder{rw: w, status: 200}
+		start := time.Now()
 		handler.ServeHTTP(rec, r)
-		log.Printf("[%s] <<< %d on API %s", r.Header.Get(consts.X_REQUEST_ID_LABEL), rec.status, r.URL)
+		slog.InfoContext(r.Context(), "<<< API call", "method", r.Method, "path", r.URL.Path, "status", rec.status, "duration", time.Since(start).String())
 	})
 }
 
@@ -46,13 +47,18 @@ func GRPCLogRequest(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (any, error) {
-	xReqId, ok := rpc.GetFirstIncomingMeta(ctx, consts.X_REQUEST_ID_LABEL)
-	if !ok {
-		xReqId = uuid.NewString()
-	}
 	md, _ := metadata.FromIncomingContext(ctx)
-	log.Printf("[%s] >>> RPC call on %s, with metadata: %+v\n", xReqId, info.FullMethod, redactMetadata(md))
-	return handler(ctx, req)
+	slog.InfoContext(ctx, ">>> RPC call", "method", info.FullMethod, "metadata", redactMetadata(md))
+	start := time.Now()
+	res, err := handler(ctx, req)
+	elapsed := time.Since(start).String()
+	if err != nil {
+		st := status.Convert(err)
+		slog.WarnContext(ctx, "<<< RPC call", "method", info.FullMethod, "code", st.Code().String(), "error", st.Message(), "duration", elapsed)
+		return res, err
+	}
+	slog.InfoContext(ctx, "<<< RPC call", "method", info.FullMethod, "code", "OK", "duration", elapsed)
+	return res, err
 }
 
 const redactedValue = "[redacted]"

@@ -1,7 +1,7 @@
 package user
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
@@ -19,21 +19,21 @@ func Deactivate(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
-		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())
+		slog.WarnContext(req.Context(), "could not retrieve cookie", "cookie", consts.AuthorizationCookie, "error", err.Error())
 		response.Unauthorized("No JWT provided in the request", w)
 		return
 	}
 
 	// only an active session may deactivate the account
-	jwt, err := services.AuthenticateBearer(cookie.Value, *h.AccessTokenFactory)
+	jwt, err := services.AuthenticateBearer(req.Context(), cookie.Value, *h.AccessTokenFactory)
 	if err != nil {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
+		slog.ErrorContext(req.Context(), err.Error())
 		errors.HTTPError(err, w)
 		return
 	}
-	err = services.AuthDeactivate(jwt.Claims.UID, "", h.DB, h.AccessTokenFactory.TimeFn())
+	err = services.AuthDeactivate(jwt.Claims.UID, "", h.DB.WithContext(req.Context()), h.AccessTokenFactory.TimeFn())
 	if err != nil {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
+		slog.ErrorContext(req.Context(), err.Error())
 		errors.HTTPError(err, w)
 		return
 	}

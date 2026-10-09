@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
@@ -17,7 +17,7 @@ func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
-		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())
+		slog.WarnContext(req.Context(), "could not retrieve cookie", "cookie", consts.AuthorizationCookie, "error", err.Error())
 		response.Unauthorized("No JWT provided in the request", w)
 		return
 	}
@@ -27,7 +27,7 @@ func Status(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		response.Unauthorized(err.Error(), w)
 		return
 	}
-	res, err := services.JWTStatus(tok, *h.AccessTokenFactory)
+	res, err := services.JWTStatus(req.Context(), tok, *h.AccessTokenFactory)
 	if err != nil {
 		response.Unauthorized(err.Error(), w)
 		return

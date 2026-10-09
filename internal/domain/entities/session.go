@@ -2,6 +2,7 @@ package entities
 
 import (
 	"errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
@@ -45,7 +46,7 @@ func (Session) TableName() string {
 // BeforeCreate is a GORM hook impl
 func (s *Session) BeforeCreate(tx *gorm.DB) error {
 	if s.UserID == 0 || s.TokenHash == "" {
-		slog.Error("user_id or token_hash cannot be empty")
+		slog.ErrorContext(logs.DBContext(tx), "user_id or token_hash cannot be empty")
 		return errors.New("user_id or token_hash cannot be empty")
 	}
 	if s.ID == uuid.Nil {

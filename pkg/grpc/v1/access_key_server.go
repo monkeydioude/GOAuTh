@@ -40,7 +40,7 @@ func (h *AccessKeyRPCHandler) Create(ctx context.Context, req *CreateAccessKeyRe
 		at := req.GetExpiresAt().AsTime()
 		expiresAt = &at
 	}
-	key, info, err := services.AccessKeyCreate(h.DB, services.AccessKeyCreateIn{
+	key, info, err := services.AccessKeyCreate(h.DB.WithContext(ctx), services.AccessKeyCreateIn{
 		AccountID: uint(req.GetAccountId()),
 		Realm:     req.GetRealm(),
 		Name:      req.GetName(),
@@ -63,7 +63,7 @@ func (h *AccessKeyRPCHandler) List(ctx context.Context, req *ListAccessKeysReque
 	if req == nil {
 		return &ListAccessKeysResponse{Code: http.StatusInternalServerError, Message: "no req pointer"}, nil
 	}
-	keys, err := services.AccessKeyList(h.DB, uint(req.GetAccountId()), req.GetRealm(), req.GetIncludeRevoked(), h.AccessTokenFactory.TimeFn())
+	keys, err := services.AccessKeyList(h.DB.WithContext(ctx), uint(req.GetAccountId()), req.GetRealm(), req.GetIncludeRevoked(), h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		res := FromErrToResponse(err)
 		return &ListAccessKeysResponse{Code: res.Code, Message: res.Message}, nil
@@ -79,7 +79,7 @@ func (h *AccessKeyRPCHandler) Revoke(ctx context.Context, req *RevokeAccessKeyRe
 	if req == nil {
 		return InternalServerError("no req pointer"), nil
 	}
-	if err := services.AccessKeyRevoke(h.DB, uint(req.GetAccountId()), req.GetRealm(), req.GetKeyId(), req.GetActor(), h.AccessTokenFactory.TimeFn()); err != nil {
+	if err := services.AccessKeyRevoke(h.DB.WithContext(ctx), uint(req.GetAccountId()), req.GetRealm(), req.GetKeyId(), req.GetActor(), h.AccessTokenFactory.TimeFn()); err != nil {
 		return FromErrToResponse(err), nil
 	}
 	return Ok(), nil
@@ -90,7 +90,7 @@ func (h *AccessKeyRPCHandler) Verify(ctx context.Context, req *VerifyAccessKeyRe
 	if req == nil {
 		return &VerifyAccessKeyResponse{Code: http.StatusInternalServerError, Message: "no req pointer"}, nil
 	}
-	verified, err := services.AccessKeyVerify(h.DB, req.GetKey(), h.AccessTokenFactory.TimeFn())
+	verified, err := services.AccessKeyVerify(h.DB.WithContext(ctx), req.GetKey(), h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		res := FromErrToResponse(err)
 		return &VerifyAccessKeyResponse{Code: res.Code, Message: res.Message}, nil

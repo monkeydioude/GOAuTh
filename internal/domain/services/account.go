@@ -2,6 +2,7 @@ package services
 
 import (
 	stdErr "errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
@@ -27,7 +28,7 @@ func AccountCreate(db *gorm.DB, in AccountCreateIn) (*entities.User, error) {
 	var realm entities.Realm
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
 		if stdErr.Is(err, gorm.ErrRecordNotFound) {
-			slog.Error(consts.ERR_REALM_NOT_FOUND, "realm_name", in.Realm)
+			slog.ErrorContext(logs.DBContext(db), consts.ERR_REALM_NOT_FOUND, "realm_name", in.Realm)
 			return nil, errors.NotFound(stdErr.New(consts.ERR_REALM_NOT_FOUND))
 		}
 		return nil, errors.DBError(err)
@@ -42,7 +43,7 @@ func AccountCreate(db *gorm.DB, in AccountCreateIn) (*entities.User, error) {
 		return nil, errors.DBError(err)
 	}
 	if taken > 0 {
-		slog.Error(consts.ERR_USER_ALREADY_EXIST, "login", in.Login, "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), consts.ERR_USER_ALREADY_EXIST, "login", in.Login, "realm_name", in.Realm)
 		return nil, errors.Conflict(stdErr.New(consts.ERR_USER_ALREADY_EXIST))
 	}
 	if err := db.Create(account).Error; err != nil {

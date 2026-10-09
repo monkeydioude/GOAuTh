@@ -2,6 +2,7 @@ package entities
 
 import (
 	"errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
@@ -36,12 +37,12 @@ type User struct {
 // BeforeCreate is a GORM hook impl
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if tx == nil {
-		slog.Error("nil *gorm.DB")
+		slog.ErrorContext(logs.DBContext(tx), "nil *gorm.DB")
 		return errors.New("nil *gorm.DB")
 	}
 	// a password is the business of the realm's kind: a service account has none
 	if u.Login == "" || u.RealmName == "" {
-		slog.Error("login or realm_name cannot be empty")
+		slog.ErrorContext(logs.DBContext(tx), "login or realm_name cannot be empty")
 		return errors.New("login or realm_name cannot be empty")
 	}
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/pkg/http/rpc"
 
 	"github.com/google/uuid"
@@ -13,19 +14,19 @@ import (
 
 func APIXRequestID(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		xRequestID := consts.NO_X_REQUEST_ID
-		tmpXReqID := r.Header.Get(consts.X_REQUEST_ID_LABEL)
-		if tmpXReqID != "" {
-			xRequestID = tmpXReqID
-		} else {
+		xRequestID := r.Header.Get(consts.X_REQUEST_ID_LABEL)
+		if xRequestID == "" {
 			xRequestID = uuid.NewString()
 			r.Header.Add(consts.X_REQUEST_ID_LABEL, xRequestID)
 		}
+		r = r.WithContext(logs.WithXRequestID(r.Context(), xRequestID))
 		handler.ServeHTTP(w, r)
 		w.Header().Add(consts.X_REQUEST_ID_LABEL, xRequestID)
 	})
 }
 
+// GRPXRequestID puts the caller's X-Request-ID, or a new one, in the context.
+// Chain it before GRPCLogRequest, so the request logs carry it.
 func GRPXRequestID(
 	ctx context.Context,
 	req any,
@@ -33,11 +34,11 @@ func GRPXRequestID(
 	handler grpc.UnaryHandler,
 ) (any, error) {
 	xReqID, ok := rpc.GetFirstIncomingMeta(ctx, consts.X_REQUEST_ID_LABEL)
-	if !ok {
-		xReqID = consts.NO_X_REQUEST_ID
-		ctx = rpc.WriteIncomingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, uuid.NewString()})
+	if !ok || xReqID == "" {
+		xReqID = uuid.NewString()
+		ctx = rpc.WriteIncomingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, xReqID})
 	}
-
+	ctx = logs.WithXRequestID(ctx, xReqID)
 	ctx = rpc.WriteOutgoingMetas(ctx, [2]string{consts.X_REQUEST_ID_LABEL, xReqID})
 	return handler(ctx, req)
 }

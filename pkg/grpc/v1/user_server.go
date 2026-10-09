@@ -33,11 +33,11 @@ func (h *UserRPCHandler) Deactivate(ctx context.Context, _ *Empty) (*Response, e
 	}
 
 	// only an active session may deactivate the account
-	jwt, err := services.AuthenticateBearer(cookie.Value, *h.JWTFactory)
+	jwt, err := services.AuthenticateBearer(ctx, cookie.Value, *h.JWTFactory)
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
-	err = services.AuthDeactivate(jwt.Claims.UID, "", h.DB, h.JWTFactory.TimeFn())
+	err = services.AuthDeactivate(jwt.Claims.UID, "", h.DB.WithContext(ctx), h.JWTFactory.TimeFn())
 	if err != nil {
 		return InternalServerError("could not deactivate user"), nil
 	}
@@ -61,9 +61,9 @@ func (h *UserRPCHandler) EditUser(ctx context.Context, payload *EditUserRequest)
 		UserParams:  h.UserParams,
 	}
 	if payload.NewLogin != "" {
-		err = services.UserEditLogin(cookie.Value, h.JWTFactory, h.DB, &editUserPayload)
+		err = services.UserEditLogin(cookie.Value, h.JWTFactory, h.DB.WithContext(ctx), &editUserPayload)
 	} else if payload.NewPassword != "" {
-		err = services.UserEditPassword(cookie.Value, h.JWTFactory, h.DB, &editUserPayload)
+		err = services.UserEditPassword(cookie.Value, h.JWTFactory, h.DB.WithContext(ctx), &editUserPayload)
 	} else {
 		return InternalServerError("could not call any user function"), nil
 	}

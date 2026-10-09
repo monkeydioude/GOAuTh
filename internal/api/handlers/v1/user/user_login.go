@@ -1,7 +1,7 @@
 package user
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
@@ -20,20 +20,20 @@ func EditLogin(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	cookie, err := req.Cookie(consts.AuthorizationCookie)
 	if err != nil {
-		log.Printf("[%s] ERR while retrieving %s cookie: %s", req.Header.Get(consts.X_REQUEST_ID_LABEL), consts.AuthorizationCookie, err.Error())
+		slog.WarnContext(req.Context(), "could not retrieve cookie", "cookie", consts.AuthorizationCookie, "error", err.Error())
 		response.Unauthorized("No JWT provided in the request", w)
 		return
 	}
 	rawPayload := request.Json[entities.EditUserPayload](req)
 	if rawPayload.IsErr() {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), rawPayload.Error.Error())
+		slog.ErrorContext(req.Context(), rawPayload.Error.Error())
 		response.InternalServerError(rawPayload.Error.Error(), w)
 		return
 	}
 	editUserPayload := rawPayload.Result()
 	editUserPayload.UserParams = h.UserParams
-	if err := services.UserEditLogin(cookie.Value, h.AccessTokenFactory, h.DB, editUserPayload); err != nil {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
+	if err := services.UserEditLogin(cookie.Value, h.AccessTokenFactory, h.DB.WithContext(req.Context()), editUserPayload); err != nil {
+		slog.ErrorContext(req.Context(), err.Error())
 		errors.HTTPError(err, w)
 		return
 	}

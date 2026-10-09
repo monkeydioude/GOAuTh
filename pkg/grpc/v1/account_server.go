@@ -37,7 +37,7 @@ func (h *AccountRPCHandler) Create(ctx context.Context, req *CreateAccountReques
 	if req == nil {
 		return &CreateAccountResponse{Code: http.StatusInternalServerError, Message: "no req pointer"}, nil
 	}
-	account, err := services.AccountCreate(h.DB, services.AccountCreateIn{
+	account, err := services.AccountCreate(h.DB.WithContext(ctx), services.AccountCreateIn{
 		Realm: req.GetRealm(),
 		Login: req.GetLogin(),
 		Actor: req.GetActor(),

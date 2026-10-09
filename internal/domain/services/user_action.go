@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
@@ -31,7 +32,7 @@ func UserActionCreate(
 ) (UserActionCreateOut, error) {
 	var realm entities.Realm
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
-		slog.Error(err.Error(), "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), err.Error(), "realm_name", in.Realm)
 		return UserActionCreateOut{}, errors.BadRequest(err)
 	}
 	if err := KindOf(realm).AssertPasswordFlows(); err != nil {
@@ -39,7 +40,7 @@ func UserActionCreate(
 	}
 	user := entities.User{}
 	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), err.Error(), "login", in.Login, "realm_name", in.Realm)
 		return UserActionCreateOut{}, errors.BadRequest(err)
 	}
 	action := entities.UserAction{}
@@ -88,14 +89,14 @@ func getUserAndAction(
 		}
 		user := entities.User{}
 		if err := db.First(&user, "id = ?", action.UserID).Error; err != nil {
-			slog.Error(err.Error(), "user_id", action.UserID)
+			slog.ErrorContext(logs.DBContext(db), err.Error(), "user_id", action.UserID)
 			return nil, nil, errors.BadRequest(err)
 		}
 		return &user, &action, nil
 	}
 	user := entities.User{}
 	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), err.Error(), "login", in.Login, "realm_name", in.Realm)
 		return nil, nil, errors.BadRequest(err)
 	}
 	action := entities.UserAction{}
@@ -113,7 +114,7 @@ func UserActionValidate(
 ) (string, error) {
 	var realm entities.Realm
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
-		slog.Error(err.Error(), "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), err.Error(), "realm_name", in.Realm)
 		return "", errors.BadRequest(err)
 	}
 	if err := KindOf(realm).AssertPasswordFlows(); err != nil {
@@ -184,7 +185,7 @@ func UserActionStatus(
 ) ([]UserActionStatusOut, error) {
 	var realm entities.Realm
 	if err := db.Where("name = ?", in.Realm).First(&realm).Error; err != nil {
-		slog.Error(err.Error(), "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), err.Error(), "realm_name", in.Realm)
 		return []UserActionStatusOut{}, errors.BadRequest(err)
 	}
 	if err := KindOf(realm).AssertPasswordFlows(); err != nil {
@@ -192,7 +193,7 @@ func UserActionStatus(
 	}
 	user := entities.User{}
 	if err := db.First(&user, "login = ? AND realm_id = ?", in.Login, realm.ID).Error; err != nil {
-		slog.Error(err.Error(), "login", in.Login, "realm_name", in.Realm)
+		slog.ErrorContext(logs.DBContext(db), err.Error(), "login", in.Login, "realm_name", in.Realm)
 		return []UserActionStatusOut{}, errors.BadRequest(err)
 	}
 	actions := []entities.UserAction{}

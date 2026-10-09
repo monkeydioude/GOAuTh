@@ -30,7 +30,7 @@ func Signup(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 
 	h.Plugins.TriggerBefore(plugins.OnUserCreation, nil)
-	err := services.AuthSignup(user, h.UserParams, h.DB)
+	err := services.AuthSignup(user, h.UserParams, h.DB.WithContext(req.Context()))
 	if err != nil {
 		errors.HTTPError(err, w)
 		return

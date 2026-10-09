@@ -1,7 +1,9 @@
 package services
 
 import (
+	"context"
 	stdErr "errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -26,12 +28,12 @@ func GetTokenFromBearer(tokenWithBearer string) (string, error) {
 }
 
 // AuthenticateBearer checks a "Bearer {token}" value with AuthenticateAccessToken.
-func AuthenticateBearer(tokenWithBearer string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
+func AuthenticateBearer(ctx context.Context, tokenWithBearer string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	token, err := GetTokenFromBearer(tokenWithBearer)
 	if err != nil {
 		return entities.JWT[crypt.JWTDefaultClaims]{}, err
 	}
-	return AuthenticateAccessToken(token, factory)
+	return AuthenticateAccessToken(ctx, token, factory)
 }
 
 // SessionOfToken reads which session a token belongs to: signed, of the factory's
@@ -53,33 +55,38 @@ func SessionOfToken(token string, factory JWTFactory) (entities.JWT[crypt.JWTDef
 
 // AuthenticateAccessToken validates an access token: signed, of the access type,
 // not expired, and belonging to a session that is still active.
-func AuthenticateAccessToken(token string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
+func AuthenticateAccessToken(ctx context.Context, token string, factory JWTFactory) (entities.JWT[crypt.JWTDefaultClaims], error) {
 	var none entities.JWT[crypt.JWTDefaultClaims]
 	jwt, err := SessionOfToken(token, factory)
 	if err != nil {
 		return none, err
 	}
+	claims := jwt.Claims
 	now := factory.TimeFn()
-	if jwt.Claims.Expire < now.Unix() {
+	if claims.Expire < now.Unix() {
+		slog.InfoContext(ctx, "access token rejected: expired", "uid", claims.UID, "realm", claims.Realm, "sid", claims.SID, "expired_since", now.Sub(time.Unix(claims.Expire, 0)).String())
 		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_EXPIRED))
 	}
 	// no checker means no way to know: refuse
 	if factory.RevocationCheckerFn == nil {
+		slog.ErrorContext(ctx, "access token rejected: no revocation checker", "uid", claims.UID, "realm", claims.Realm, "sid", claims.SID)
 		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
 	}
-	revoked, err := factory.RevocationCheckerFn(jwt.Claims, now)
+	revoked, err := factory.RevocationCheckerFn(claims, now)
 	if err != nil {
+		slog.ErrorContext(ctx, "access token rejected: revocation check failed", "uid", claims.UID, "realm", claims.Realm, "sid", claims.SID, "error", err.Error())
 		return none, errors.DBError(err)
 	}
 	if revoked {
+		slog.InfoContext(ctx, "access token rejected: session revoked", "uid", claims.UID, "realm", claims.Realm, "sid", claims.SID)
 		return none, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))
 	}
 	return jwt, nil
 }
 
 // JWTStatus checks an access token (AuthenticateAccessToken) and hands it back as a cookie.
-func JWTStatus(token string, factory JWTFactory) (http.Cookie, error) {
-	jwt, err := AuthenticateAccessToken(token, factory)
+func JWTStatus(ctx context.Context, token string, factory JWTFactory) (http.Cookie, error) {
+	jwt, err := AuthenticateAccessToken(ctx, token, factory)
 	if err != nil {
 		return http.Cookie{}, err
 	}
@@ -188,7 +195,7 @@ func refreshWithoutRotation(
 		if err := RevokeSessions(db, entities.SessionRevokedReuseDetected, attempt.now, "id = ?", attempt.sessionID); err != nil {
 			return RefreshResult{}, errors.DBError(err)
 		}
-		slog.Warn("refresh token reused: session revoked", "uid", attempt.userID, "sid", attempt.sessionID)
+		slog.WarnContext(logs.DBContext(db), "refresh token reused: session revoked", "uid", attempt.userID, "sid", attempt.sessionID)
 		return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REUSED))
 	default:
 		return RefreshResult{}, errors.Unauthorized(stdErr.New(consts.ERR_TOKEN_REVOKED))

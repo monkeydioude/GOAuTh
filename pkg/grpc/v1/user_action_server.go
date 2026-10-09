@@ -30,7 +30,7 @@ func (h *UserActionRPCHandler) Create(
 	ctx context.Context,
 	payload *UserActionRequest,
 ) (*Response, error) {
-	res, err := services.UserActionCreate(h.DB, services.UserActionCreateIn{
+	res, err := services.UserActionCreate(h.DB.WithContext(ctx), services.UserActionCreateIn{
 		Login:  payload.Login,
 		Realm:  payload.Realm,
 		Action: payload.Action,
@@ -48,7 +48,7 @@ func (h *UserActionRPCHandler) Validate(
 	ctx context.Context,
 	payload *UserActionValidation,
 ) (*Response, error) {
-	email, err := services.UserActionValidate(h.DB, h.UserParams, services.UserActionValidateIn{
+	email, err := services.UserActionValidate(h.DB.WithContext(ctx), h.UserParams, services.UserActionValidateIn{
 		Login:             payload.Login,
 		Realm:             payload.Realm,
 		Data:              payload.Data,
@@ -69,7 +69,7 @@ func (h *UserActionRPCHandler) Status(
 	ctx context.Context,
 	payload *UserActionRequest,
 ) (*UserActionStatusResponse, error) {
-	res, err := services.UserActionStatus(h.DB, services.UserActionStatusIn{
+	res, err := services.UserActionStatus(h.DB.WithContext(ctx), services.UserActionStatusIn{
 		Realm:  payload.Realm,
 		Login:  payload.Login,
 		Action: payload.Action,

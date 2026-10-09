@@ -2,6 +2,7 @@ package services
 
 import (
 	stdErr "errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
@@ -218,7 +219,7 @@ func touchAccessKey(db *gorm.DB, keyID uuid.UUID, now time.Time) {
 		Where("id = ? AND (last_used_at IS NULL OR last_used_at < ?)", keyID, now.Add(-accessKeyUsedWindow)).
 		Update("last_used_at", now).Error
 	if err != nil {
-		slog.Warn("could not write the access key's last use", "key_id", keyID, "error", err.Error())
+		slog.WarnContext(logs.DBContext(db), "could not write the access key's last use", "key_id", keyID, "error", err.Error())
 	}
 }
 

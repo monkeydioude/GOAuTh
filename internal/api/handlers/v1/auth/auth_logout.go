@@ -28,7 +28,7 @@ func Logout(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// a session already revoked or expired is left as is
-	if err := services.LogoutSession(h.DB, jwt.Claims, factory.TimeFn()); err != nil {
+	if err := services.LogoutSession(h.DB.WithContext(req.Context()), jwt.Claims, factory.TimeFn()); err != nil {
 		errors.HTTPError(errors.DBError(err), w)
 		return
 	}

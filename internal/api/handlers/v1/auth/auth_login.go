@@ -1,11 +1,10 @@
 package auth
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
-	"github.com/monkeydioude/goauth/v2/internal/config/consts"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/internal/domain/services"
 	"github.com/monkeydioude/goauth/v2/pkg/errors"
@@ -27,7 +26,7 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	}
 	rawPayload := request.Json[LoginIn](req)
 	if rawPayload.IsErr() {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), rawPayload.Error.Error())
+		slog.ErrorContext(req.Context(), rawPayload.Error.Error())
 		response.InternalServerError(rawPayload.Error.Error(), w)
 		return
 	}
@@ -41,9 +40,9 @@ func Login(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		Password:  dto.Password,
 		RealmName: dto.RealmName,
 	}
-	accessToken, refreshToken, err := services.AuthLogin(&user, h.ClientInfo(req), h.DB, h.UserParams, h.AccessTokenFactory, h.RefreshTokenFactory, h.MaxActiveSessions)
+	accessToken, refreshToken, err := services.AuthLogin(&user, h.ClientInfo(req), h.DB.WithContext(req.Context()), h.UserParams, h.AccessTokenFactory, h.RefreshTokenFactory, h.MaxActiveSessions)
 	if err != nil {
-		log.Printf("[%s] ERR %s\n", req.Header.Get(consts.X_REQUEST_ID_LABEL), err.Error())
+		slog.ErrorContext(req.Context(), err.Error())
 		errors.HTTPError(err, w)
 		return
 	}

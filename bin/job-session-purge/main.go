@@ -7,11 +7,16 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/services"
 )
 
 func main() {
+	godotenv.Load()
+	logs.SetupSlogger()
 	sessionEnv, err := boot.SessionBoot()
 	if err != nil {
 		log.Fatal(err)

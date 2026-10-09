@@ -2,6 +2,7 @@ package entities
 
 import (
 	"errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
@@ -31,11 +32,11 @@ func (UserAction) TableName() string {
 // BeforeCreate is a GORM hook impl
 func (ua *UserAction) BeforeCreate(tx *gorm.DB) error {
 	if tx == nil {
-		slog.Error("nil *gorm.DB")
+		slog.ErrorContext(logs.DBContext(tx), "nil *gorm.DB")
 		return errors.New("nil *gorm.DB")
 	}
 	if ua.UserID == 0 || ua.RealmID.String() == "" || ua.Data == "" {
-		slog.Error("user_id, realm_id or data cannot be empty")
+		slog.ErrorContext(logs.DBContext(tx), "user_id, realm_id or data cannot be empty")
 		return errors.New("user_id, realm_id or data cannot be empty")
 	}
 	ua.CreatedAt = time.Now()

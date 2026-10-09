@@ -2,6 +2,7 @@ package services
 
 import (
 	stdErr "errors"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
@@ -55,7 +56,7 @@ func UserEditPassword(
 		return errors.BadRequest(err)
 	}
 	// only an active session may change the password
-	jwt, err := AuthenticateBearer(tokenWithBearer, *factory)
+	jwt, err := AuthenticateBearer(logs.DBContext(db), tokenWithBearer, *factory)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func UserEditLogin(
 	}
 
 	// only an active session may change the login
-	jwt, err := AuthenticateBearer(tokenWithBearer, *factory)
+	jwt, err := AuthenticateBearer(logs.DBContext(db), tokenWithBearer, *factory)
 	if err != nil {
 		return err
 	}
@@ -114,7 +115,7 @@ func UserEditLogin(
 	if err := db.Find(user, "id = ? AND password = ?", jwt.Claims.UID, signedPasswd).Error; err != nil {
 		return errors.InternalServerError(err)
 	}
-	slog.Info("trying to change login", "login_before", user.Login, "login_after", *editEntity.NewLogin)
+	slog.InfoContext(logs.DBContext(db), "trying to change login", "login_before", user.Login, "login_after", *editEntity.NewLogin)
 	if user.Login == *editEntity.NewLogin {
 		return nil
 	}

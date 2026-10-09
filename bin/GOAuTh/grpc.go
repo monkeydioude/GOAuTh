@@ -28,8 +28,8 @@ func setupGRPCServer(settings *boot.Settings) (*grpc.Server, net.Listener) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	server := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		middleware.GRPCLogRequest,
 		middleware.GRPXRequestID,
+		middleware.GRPCLogRequest,
 	))
 	grpcHandlers(server, settings.Layout)
 	return server, lis

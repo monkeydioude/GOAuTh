@@ -2,6 +2,7 @@ package boot
 
 import (
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
 	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 
@@ -22,6 +23,7 @@ func Please(
 	passwordConstraints []constraints.PasswordConstraint,
 ) result.R[Settings] {
 	godotenv.Load()
+	logs.SetupSlogger()
 	layout := LayoutBoot(dbentity, loginConstraints, passwordConstraints)
 	if layout.IsErr() {
 		return result.Error[Settings](layout.Error)

@@ -44,7 +44,7 @@ func caller(h *handlers.Layout, req *http.Request) (crypt.JWTDefaultClaims, erro
 	if err != nil {
 		return crypt.JWTDefaultClaims{}, err
 	}
-	jwt, err := services.AuthenticateAccessToken(token, *h.AccessTokenFactory)
+	jwt, err := services.AuthenticateAccessToken(req.Context(), token, *h.AccessTokenFactory)
 	if err != nil {
 		return crypt.JWTDefaultClaims{}, err
 	}
@@ -64,7 +64,7 @@ func List(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	includeRevoked := req.URL.Query().Get("include_revoked") == "true"
-	sessions, err := services.ListSessions(h.DB, claims.UID, includeRevoked, h.AccessTokenFactory.TimeFn())
+	sessions, err := services.ListSessions(h.DB.WithContext(req.Context()), claims.UID, includeRevoked, h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		errors.HTTPError(errors.DBError(err), w)
 		return
@@ -87,7 +87,7 @@ func Revoke(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 		errors.HTTPError(err, w)
 		return
 	}
-	revoked, err := services.RevokeSession(h.DB, claims.UID, req.PathValue("id"), entities.SessionRevokedByUser, h.AccessTokenFactory.TimeFn())
+	revoked, err := services.RevokeSession(h.DB.WithContext(req.Context()), claims.UID, req.PathValue("id"), entities.SessionRevokedByUser, h.AccessTokenFactory.TimeFn())
 	if err != nil {
 		errors.HTTPError(errors.DBError(err), w)
 		return
@@ -115,7 +115,7 @@ func RevokeAll(h *handlers.Layout, w http.ResponseWriter, req *http.Request) {
 	if req.URL.Query().Get("keep_current") == "true" {
 		keepSID = claims.SID
 	}
-	if err := services.RevokeAllSessions(h.DB, claims.UID, keepSID, h.AccessTokenFactory.TimeFn()); err != nil {
+	if err := services.RevokeAllSessions(h.DB.WithContext(req.Context()), claims.UID, keepSID, h.AccessTokenFactory.TimeFn()); err != nil {
 		errors.HTTPError(errors.DBError(err), w)
 		return
 	}

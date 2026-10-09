@@ -4,6 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
 	"github.com/monkeydioude/goauth/v2/internal/config/boot"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities/constraints"
 	"github.com/monkeydioude/goauth/v2/pkg/tools/result"
 )
@@ -26,6 +27,7 @@ func bootPlease(
 	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
+	logs.SetupSlogger()
 	layout := layoutBoot(loginConstraints, passwordConstraints)
 	if layout.IsErr() {
 		return result.Error[boot.Settings](layout.Error)
