@@ -2,10 +2,10 @@ package entities
 
 import (
 	"errors"
-	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/models"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 

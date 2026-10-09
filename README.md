@@ -130,7 +130,7 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 | `Signup(UserRequest) → Response`   | Create a new user     |
 | `Login(UserRequest) → Response`    | Authenticate a user   |
 | `Delete(AuthIdRequest) → Response` | Close `uid`'s account the way its realm's kind says: soft-deleted, sessions revoked; already gone is a no-op. A service account requires `actor`, who asked as the consumer names them (`422` without) |
-| `Logout(LogoutRequest) → Response` | End the calling session, named by the access token in the `Authorization` metadata or by `refresh_token`; an expired or revoked one is a no-op. Without either, ends all of `uid`'s sessions in `realm` (deprecated) |
+| `Logout(LogoutRequest) → Response` | End the calling session, named by the access token in the `Authorization` metadata or by `refresh_token`; an expired or revoked one is a no-op. Without either, `401` and nothing ends. `uid` and `realm` are deprecated and ignored |
 
 ### JWT Service
 

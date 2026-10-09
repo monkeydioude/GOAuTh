@@ -3,13 +3,13 @@ package services
 import (
 	"context"
 	stdErr "errors"
-	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
 	"github.com/monkeydioude/goauth/v2/pkg/errors"
