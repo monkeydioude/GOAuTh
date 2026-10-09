@@ -2,9 +2,10 @@ package entities
 
 import (
 	"errors"
-	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
+
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
