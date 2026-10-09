@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/api/handlers"
@@ -92,8 +93,7 @@ func NewAuthRPCHandler(layout *handlers.Layout) *AuthRPCHandler {
 }
 
 // Logout ends the calling session, named by refresh_token or by the access token in
-// the Authorization metadata. Without either, it ends all of uid's sessions in realm,
-// for callers that don't send a token yet.
+// the Authorization metadata. Without either, it is refused and ends nothing.
 func (h *AuthRPCHandler) Logout(ctx context.Context, req *LogoutRequest) (*Response, error) {
 	if req == nil {
 		return InternalServerError("no req pointer"), errors.New("no req pointer")
@@ -102,7 +102,8 @@ func (h *AuthRPCHandler) Logout(ctx context.Context, req *LogoutRequest) (*Respo
 	if token == "" {
 		cookie, err := rpc.FetchCookieFromContext(ctx, consts.AuthorizationCookie)
 		if err != nil {
-			return Ok(), services.AuthLogout(uint(req.Uid), req.Realm, h.DB.WithContext(ctx), h.RefreshTokenFactory.TimeFn())
+			slog.WarnContext(ctx, "logout refused: no access token in the Authorization metadata nor refresh_token")
+			return Unauthorized("no access token in the Authorization metadata nor refresh_token"), nil
 		}
 		if token, err = services.GetTokenFromBearer(cookie.Value); err != nil {
 			return FromErrToResponse(err), nil
