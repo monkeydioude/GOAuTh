@@ -60,7 +60,7 @@ dev: install
 
 .PHONY: docker-build
 docker-build:
-	docker buildx build --platform linux/amd64,linux/arm64 -t drannoc/goauth:latest --push .
+	docker buildx build --platform linux/arm64 -t drannoc/goauth:latest --push .
 
 .PHONY: dpsql
 dpsql:
