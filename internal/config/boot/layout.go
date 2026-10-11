@@ -30,6 +30,10 @@ func LayoutBoot(
 	if err != nil {
 		return result.Error[handlers.Layout](err)
 	}
+	seedRealmsConfig, err := SeedRealmsBoot()
+	if err != nil {
+		return result.Error[handlers.Layout](err)
+	}
 	dbRes := PostgreSQLBoot(dbentity...)
 	if dbRes.IsErr() {
 		return result.Error[handlers.Layout](dbRes.Error)
@@ -38,6 +42,9 @@ func LayoutBoot(
 		return result.Error[handlers.Layout](err)
 	}
 	if err := dropLegacyIndexes(dbRes.Result()); err != nil {
+		return result.Error[handlers.Layout](err)
+	}
+	if err := seedRealms(dbRes.Result(), seedRealmsConfig); err != nil {
 		return result.Error[handlers.Layout](err)
 	}
 	userParams := UsersParamsBoot(loginConstraints, passwordConstraints)

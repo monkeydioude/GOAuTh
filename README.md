@@ -87,8 +87,25 @@ Environment variables can be provided through a `.env` file in GOAuTh's working 
 | `SESSION_REUSE_GRACE_SECONDS` | `30` | After a refresh, how long the previous refresh token still gets an access token, for refreshes racing each other. A gRPC consumer that doesn't store rotated tokens needs it as long as a session until it does |
 | `SESSION_RETENTION_DAYS` | `90` | Days revoked and expired sessions stay listed before `job-session-purge` deletes them |
 | `ACCESS_KEY_MAX_ACTIVE` | `20` | Live access keys an account may hold. A realm's `access_key_max_active` may cap lower, never higher |
+| `SEED_REALMS` | — | Realms to create at boot when missing: comma-separated `name:kind[:signup]` entries, where kind is `human` or `service` |
 
 > **Security note:** `JWT_SECRET` and `PASSWD_SALT` should be provided via system environment variables or a secrets manager in production. The `.env` file is only suitable for development.
+
+For example, `SEED_REALMS=spendbaker:human:signup,spendbaker-access-keys:service`
+creates a human realm with signup enabled and a service realm with signup disabled,
+after database migration and before either server starts. Without `signup`,
+`allow_new_user` is false. New realms have an empty description and inherit
+`ACCESS_KEY_MAX_ACTIVE`; operators can tune their settings afterwards with `bin/client`.
+
+Seeding only creates: an existing live realm of the same kind keeps all its settings.
+A different kind, an empty name, an unknown kind or flag, or `service:signup` stops
+boot with an error naming the realm or entry. Concurrent instances can seed the same
+realms. An unset or empty `SEED_REALMS` does nothing.
+
+A soft-deleted realm is skipped with a warning asking to remove it from `SEED_REALMS`;
+it stays deleted and boot continues. A realm deleted from the table entirely has no
+such protection and will be created again. To delete a seeded realm, soft-delete it
+or remove its entry from `SEED_REALMS` before deleting its row.
 
 ### Defaults
 
