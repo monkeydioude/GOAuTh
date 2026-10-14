@@ -401,3 +401,4 @@ Additional utility binaries live in `bin/`. Each has its own README:
 - [`bin/min-grpc-server/`](./bin/min-grpc-server/) — Minimal gRPC-only server (no HTTP)
 - [`bin/job-session-purge/`](./bin/job-session-purge/) — Daily job deleting sessions ended more than `SESSION_RETENTION_DAYS` ago
 - [`bin/spy-token/`](./bin/spy-token/) — JWT token generator for development/debugging
+- [`bin/dev/`](./bin/dev/) — Developer shortcuts against the database, such as minting an access key
