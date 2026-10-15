@@ -248,7 +248,7 @@ func TestRPCLogoutWithAnAccessTokenEndsItsSessionOnly(t *testing.T) {
 	defer conn.Close()
 	client := v1.NewAuthClient(conn)
 
-	// uid and realm are ignored once a token names the session
+	// uid and realm are deprecated and ignored: the token names the session
 	res, err := client.Logout(withAccessToken(laptop.accessToken), &v1.LogoutRequest{Uid: int32(user.ID), Realm: login})
 	assert.NoError(t, err)
 	assert.Equal(t, int32(200), res.Code)

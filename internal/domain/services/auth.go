@@ -3,12 +3,12 @@ package services
 import (
 	go_errors "errors"
 	"fmt"
-	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/internal/domain/models"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"
@@ -149,21 +149,4 @@ func AuthDeactivate(
 	return db.Transaction(func(tx *gorm.DB) error {
 		return KindOf(realm).Delete(tx, &user, actor, now)
 	})
-}
-
-// AuthLogout ends every session of the user of realm, as logout did when a
-// user had a single session.
-func AuthLogout(
-	uid uint,
-	realm string,
-	db *gorm.DB,
-	now time.Time,
-) error {
-	if db == nil {
-		return go_errors.New("nil pointer(s) in AuthLogout param")
-	}
-	user := db.Model(&entities.User{}).
-		Select("id").
-		Where("id = ? AND realm_id = (?)", uid, db.Table("realms").Select("id").Where("name = ?", realm))
-	return RevokeSessions(db, entities.SessionRevokedLogout, now, "user_id IN (?)", user)
 }

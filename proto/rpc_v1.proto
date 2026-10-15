@@ -24,10 +24,10 @@ message AuthIdRequest {
 }
 
 // Logout ends the session of the access token in the Authorization metadata, or
-// of refresh_token. Without either, it ends all of uid's sessions in realm (deprecated).
+// of refresh_token. Without either, it is refused with 401 and ends nothing.
 message LogoutRequest {
-    int32 uid = 1;
-    string realm = 2;
+    int32 uid = 1 [deprecated = true]; // ignored: the token names the session
+    string realm = 2 [deprecated = true]; // ignored: the token names the session
     string refresh_token = 3;
 }
 

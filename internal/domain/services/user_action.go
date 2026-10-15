@@ -2,11 +2,11 @@ package services
 
 import (
 	"fmt"
-	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"log/slog"
 	"time"
 
 	"github.com/calqs/gopkg/dt"
+	"github.com/monkeydioude/goauth/v2/internal/config/logs"
 	"github.com/monkeydioude/goauth/v2/internal/domain/entities"
 	"github.com/monkeydioude/goauth/v2/internal/domain/models"
 	"github.com/monkeydioude/goauth/v2/pkg/crypt"

@@ -27,11 +27,15 @@ pub struct AuthIdRequest {
     pub actor: ::core::option::Option<::prost::alloc::string::String>,
 }
 /// Logout ends the session of the access token in the Authorization metadata, or
-/// of refresh_token. Without either, it ends all of uid's sessions in realm (deprecated).
+/// of refresh_token. Without either, it is refused with 401 and ends nothing.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LogoutRequest {
+    /// ignored: the token names the session
+    #[deprecated]
     #[prost(int32, tag = "1")]
     pub uid: i32,
+    /// ignored: the token names the session
+    #[deprecated]
     #[prost(string, tag = "2")]
     pub realm: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
