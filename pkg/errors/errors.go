@@ -60,6 +60,15 @@ func Conflict(err error) Err {
 	}
 }
 
+// Gone: what was asked for existed but can no longer be used, as an expired user action.
+func Gone(err error) Err {
+	return Err{
+		code:         response.GoneCode,
+		err:          err,
+		httpCallback: response.Gone,
+	}
+}
+
 func UnprocessableEntity(err error) Err {
 	return Err{
 		code:         response.UnprocessableEntityCode,

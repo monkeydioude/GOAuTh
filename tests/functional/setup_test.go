@@ -86,7 +86,7 @@ func setupRPC(t *testing.T, layout *handlers.Layout) *grpc.ClientConn {
 
 func cleanup(layout *handlers.Layout) {
 	if layout.DB != nil {
-		if sql, err := layout.DB.DB(); err != nil {
+		if sql, err := layout.DB.DB(); err == nil {
 			sql.Close()
 		}
 	}

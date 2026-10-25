@@ -16,6 +16,7 @@ const (
 	UnauthorizedCode        int = 401
 	ForbiddenCode           int = 403
 	ConflictCode            int = 409
+	GoneCode                int = 410
 	UnprocessableEntityCode int = 422
 	InternalServerErrorCode int = 500
 )
@@ -95,6 +96,20 @@ func UnprocessableEntity(msg string, w http.ResponseWriter) {
 	w.WriteHeader(UnprocessableEntityCode)
 	res, err := json.Marshal(HTTPResponse{
 		Code:    UnprocessableEntityCode,
+		Message: msg,
+	})
+	if err != nil {
+		w.Write([]byte("Could not marshal matters"))
+		return
+	}
+	w.Write(res)
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func Gone(msg string, w http.ResponseWriter) {
+	w.WriteHeader(GoneCode)
+	res, err := json.Marshal(HTTPResponse{
+		Code:    GoneCode,
 		Message: msg,
 	})
 	if err != nil {

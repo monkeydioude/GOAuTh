@@ -79,14 +79,14 @@ func TestPasswordResetRevokesEverySession(t *testing.T) {
 		Login:  login,
 		Realm:  login,
 		Action: entities.UserActionTypePassword,
-	}, uuid.NewString)
+	}, uuid.NewString, layout.AccessTokenFactory.TimeFn)
 	assert.NoError(t, err)
 	_, err = services.UserActionValidate(gormDB, layout.UserParams, services.UserActionValidateIn{
 		Login:   login,
 		Realm:   login,
 		Data:    created.Data,
 		Against: "newpassword",
-	})
+	}, layout.AccessTokenFactory.TimeFn)
 	assert.NoError(t, err)
 
 	assertRevoked(t, layout, laptop, entities.SessionRevokedPasswordReset)

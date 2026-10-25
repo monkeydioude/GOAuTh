@@ -167,9 +167,9 @@ Defined in [`proto/rpc_v1.proto`](./proto/rpc_v1.proto).
 
 | RPC                                                   | Description                  |
 |-------------------------------------------------------|------------------------------|
-| `Create(UserActionRequest) → Response`                | Create a user action         |
+| `Create(UserActionRequest) → Response`                | Create a user action, with an optional expiry and try limit ([User Actions](#user-actions)) |
 | `Validate(UserActionValidation) → Response`           | Validate a user action       |
-| `Status(UserActionRequest) → UserActionStatusResponse` | Get user action status      |
+| `Status(UserActionRequest) → UserActionStatusResponse` | Get user action status, with its expiry and tries |
 
 ### Session Service
 
@@ -280,20 +280,43 @@ Account events revoke sessions too: a password change revokes every session but 
 
 ### User Actions
 
+A user action is a code goauth keeps for a login until it is validated: an email verification, a password reset (`reset-password`, whose code is a UUID goauth makes). Creating one cancels the login's pending action of the same type.
+
 ```protobuf
 message UserActionRequest {
     string login = 1;
     string realm = 2;
     string action = 3;
-    string data = 4;
+    string data = 4;                     // the code; empty (or reset-password): a UUID
+    optional int64 ttl_seconds = 5;      // Create: expires that long after; unset or 0: never
+    optional int32 max_attempts = 6;     // Create: wrong codes allowed; unset or 0: no limit
 }
 
 message UserActionValidation {
-    string realm = 1;
-    string data = 2;
-    string against = 3;
+    string login = 1;
+    string realm = 2;
+    string data = 3;
+    string against = 4;                  // reset-password: the new password
+    bool self_contained_code = 5;        // data alone names the action (no login)
+    string action = 6;                   // with login: checks data against the pending action of this type
 }
 ```
+
+`Status` lists a login's actions of a type, newest first, with `expires_at` (unset: never), `attempts` and `max_attempts`, so a caller can show "3 tries left" or wait before sending a new code.
+
+Validate answers:
+
+| Case | Code |
+|------|------|
+| Right code, in time, tries left | `200` |
+| Wrong code | `404`; with `login` + `action`, it uses one try |
+| Past `expires_at` | `410 UserActionExpired` |
+| Tries used up | `410 UserActionTooManyAttempts`, even for the right code |
+
+- Without `ttl_seconds` and `max_attempts`, an action never expires and takes any number of tries, as before they existed. Negative values: `422 InvalidInputUserActionLimits`.
+- Wrong codes are only counted with `login` + `action`: without `action`, a wrong code matches no action, so there is nothing to count. The try that reaches `max_attempts` burns the action; a new one starts with 0 tries.
+- Tries are counted in one statement, and the right code is accepted only while tries are left, so codes sent at once can't get more than `max_attempts` wrong guesses.
+- A self-contained code expires, but has no try limit: there is no login to count against, and a UUID can't be guessed.
 
 ## Architecture
 
