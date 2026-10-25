@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/calqs/gopkg/dt"
 	"github.com/google/uuid"
@@ -17,12 +18,15 @@ type UserActionRPCHandler struct {
 	UnimplementedUserActionServer
 	DB         *gorm.DB
 	UserParams *models.UsersParams
+	// AccessTokenFactory gives the clock (TimeFn) user actions expire by, as for sessions
+	AccessTokenFactory *services.JWTFactory
 }
 
 func NewUserActionRPCHandler(layout *handlers.Layout) *UserActionRPCHandler {
 	return &UserActionRPCHandler{
-		DB:         layout.DB,
-		UserParams: layout.UserParams,
+		DB:                 layout.DB,
+		UserParams:         layout.UserParams,
+		AccessTokenFactory: layout.AccessTokenFactory,
 	}
 }
 
@@ -31,12 +35,15 @@ func (h *UserActionRPCHandler) Create(
 	payload *UserActionRequest,
 ) (*Response, error) {
 	res, err := services.UserActionCreate(h.DB.WithContext(ctx), services.UserActionCreateIn{
-		Login:  payload.Login,
-		Realm:  payload.Realm,
-		Action: payload.Action,
-		Data:   dt.PtrNilOnEmpty(payload.Data),
+		Login:       payload.Login,
+		Realm:       payload.Realm,
+		Action:      payload.Action,
+		Data:        dt.PtrNilOnEmpty(payload.Data),
+		TTL:         time.Duration(payload.GetTtlSeconds()) * time.Second,
+		MaxAttempts: int(payload.GetMaxAttempts()),
 	},
 		func() string { return uuid.NewString() },
+		h.AccessTokenFactory.TimeFn,
 	)
 	if err != nil {
 		return FromErrToResponse(err), nil
@@ -54,7 +61,8 @@ func (h *UserActionRPCHandler) Validate(
 		Data:              payload.Data,
 		Against:           payload.Against,
 		SelfContainedCode: payload.SelfContainedCode,
-	})
+		Action:            payload.Action,
+	}, h.AccessTokenFactory.TimeFn)
 	if err != nil {
 		return FromErrToResponse(err), nil
 	}
@@ -92,6 +100,11 @@ func (h *UserActionRPCHandler) Status(
 			if uas.ValidatedAt != nil {
 				res.ValidatedAt = timestamppb.New(*uas.ValidatedAt)
 			}
+			if uas.ExpiresAt != nil {
+				res.ExpiresAt = timestamppb.New(uas.ExpiresAt.UTC())
+			}
+			res.Attempts = int32(uas.Attempts)
+			res.MaxAttempts = int32(uas.MaxAttempts)
 			return res
 		}),
 	}, nil

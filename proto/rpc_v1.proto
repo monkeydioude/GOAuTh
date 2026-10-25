@@ -86,6 +86,11 @@ message UserActionRequest {
     string realm = 2;
     string action = 3;
     string data = 4;
+    // Create only: the action expires this many seconds after its creation; unset or 0: never
+    optional int64 ttl_seconds = 5;
+    // Create only: the wrong codes Validate takes with login + action before refusing the
+    // action for good; unset or 0: no limit
+    optional int32 max_attempts = 6;
 }
 
 message UserActionValidation {
@@ -94,6 +99,9 @@ message UserActionValidation {
     string data = 3;
     string against = 4;
     bool self_contained_code = 5;
+    // with login: data is checked against the user's pending action of this type, so a
+    // wrong code counts as a try; empty: the action is the one whose data matches
+    string action = 6;
 }
 
 message UserActionStatus {
@@ -104,6 +112,12 @@ message UserActionStatus {
     google.protobuf.Timestamp created_at = 5;
     google.protobuf.Timestamp updated_at = 6;
     google.protobuf.Timestamp validated_at = 7;
+    // unset: never expires
+    google.protobuf.Timestamp expires_at = 8;
+    // wrong codes tried with login + action
+    int32 attempts = 9;
+    // 0: no limit
+    int32 max_attempts = 10;
 }
 
 message UserActionStatusResponse {

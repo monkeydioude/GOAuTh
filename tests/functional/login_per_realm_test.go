@@ -96,7 +96,7 @@ func TestUserActionActsOnTheUserOfItsRealm(t *testing.T) {
 		Login:  login,
 		Realm:  "realm-b",
 		Action: entities.UserActionTypePassword,
-	}, uuid.NewString)
+	}, uuid.NewString, layout.AccessTokenFactory.TimeFn)
 	assert.NoError(t, err)
 	var action entities.UserAction
 	assert.NoError(t, gormDB.First(&action, "data = ?", created.Data).Error)
@@ -107,7 +107,7 @@ func TestUserActionActsOnTheUserOfItsRealm(t *testing.T) {
 		Realm:   "realm-b",
 		Data:    created.Data,
 		Against: "newpassword",
-	})
+	}, layout.AccessTokenFactory.TimeFn)
 	assert.NoError(t, err)
 
 	// only realm-b's user got the new password

@@ -23,6 +23,22 @@ type UserAction struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	ValidatedAt *time.Time
+	// ExpiresAt: from then on, the action can't be validated; nil: never expires
+	ExpiresAt *time.Time
+	// Attempts are the wrong codes tried with a login and the action's type
+	Attempts int `gorm:"not null;default:0"`
+	// MaxAttempts: once Attempts reach it, the action can't be validated; 0: no limit
+	MaxAttempts int `gorm:"not null;default:0"`
+}
+
+// Expired tells if the action can no longer be validated at now.
+func (ua UserAction) Expired(now time.Time) bool {
+	return ua.ExpiresAt != nil && !now.Before(*ua.ExpiresAt)
+}
+
+// TriesUsedUp tells if the wrong codes tried reached the action's limit.
+func (ua UserAction) TriesUsedUp() bool {
+	return ua.MaxAttempts > 0 && ua.Attempts >= ua.MaxAttempts
 }
 
 func (UserAction) TableName() string {
