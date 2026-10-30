@@ -49,8 +49,10 @@ func AccountCreate(db *gorm.DB, in AccountCreateIn) (account *entities.User, cre
 	if err != nil {
 		return nil, false, err
 	}
-	// in one statement, so two calls at once still make a single account
-	inserted := db.Clauses(liveLoginConflict).Create(account)
+	// in one statement, so two calls at once still make a single account; the
+	// account comes back as stored, created_at in Postgres' microseconds, as a
+	// later call that finds it answers it
+	inserted := db.Clauses(liveLoginConflict, clause.Returning{}).Create(account)
 	if inserted.Error != nil {
 		return nil, false, errors.DBError(inserted.Error)
 	}
