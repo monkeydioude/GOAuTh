@@ -189,7 +189,7 @@ The accounts a trusted backend manages: those of a `service` realm. People sign 
 
 | RPC                                                   | Description                  |
 |-------------------------------------------------------|------------------------------|
-| `Create(CreateAccountRequest) → CreateAccountResponse` | Make an account in `realm` for `login` (a slug: lowercase letters, digits and `:._-`, never an email) on behalf of `actor` (required, free-form, at most 255 characters, stored as `created_by`). The account has no password and cannot log in. `201` with `account_id`, `login`, `realm`, `realm_kind` and `created_at`; `404` unknown realm, `403` a realm whose kind has no such accounts, `422` bad login or actor, `409` login taken in the realm |
+| `Create(CreateAccountRequest) → CreateAccountResponse` | Make an account in `realm` for `login` (a slug: lowercase letters, digits and `:._-`, never an email) on behalf of `actor` (required, free-form, at most 255 characters, stored as `created_by`). The account has no password and cannot log in. `201` with `account_id`, `login`, `realm`, `realm_kind` and `created_at`; `404` unknown realm, `403` a realm whose kind has no such accounts, `422` bad login or actor. Idempotent on (`realm`, `login`): a login one of the realm's live accounts already has gives that account back, `200` with the same fields (its `created_by` stays the first actor), so a consumer that lost the id can ask again. A deleted account's login is free: it gets a new account |
 
 ### AccessKey Service
 

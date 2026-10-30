@@ -885,8 +885,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountClient interface {
 	// Create makes an account in realm: 201, or 404 for an unknown realm, 403 for
-	// a realm whose kind has no such accounts, 422 for a bad login or actor, 409
-	// for a login the realm already has.
+	// a realm whose kind has no such accounts, 422 for a bad login or actor. It is
+	// idempotent on (realm, login): a login one of the realm's live accounts has
+	// gives that account back, 200, with the same fields.
 	Create(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResponse, error)
 }
 
@@ -913,8 +914,9 @@ func (c *accountClient) Create(ctx context.Context, in *CreateAccountRequest, op
 // for forward compatibility.
 type AccountServer interface {
 	// Create makes an account in realm: 201, or 404 for an unknown realm, 403 for
-	// a realm whose kind has no such accounts, 422 for a bad login or actor, 409
-	// for a login the realm already has.
+	// a realm whose kind has no such accounts, 422 for a bad login or actor. It is
+	// idempotent on (realm, login): a login one of the realm's live accounts has
+	// gives that account back, 200, with the same fields.
 	Create(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error)
 	mustEmbedUnimplementedAccountServer()
 }

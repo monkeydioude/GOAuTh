@@ -62,7 +62,7 @@ func accountOf(db *gorm.DB, realm, login, actor string) (*entities.User, error) 
 	if res.RowsAffected > 0 {
 		return &account, nil
 	}
-	created, err := services.AccountCreate(db, services.AccountCreateIn{Realm: realm, Login: login, Actor: actor})
+	created, _, err := services.AccountCreate(db, services.AccountCreateIn{Realm: realm, Login: login, Actor: actor})
 	if err != nil {
 		return nil, err
 	}

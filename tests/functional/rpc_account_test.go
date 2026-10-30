@@ -3,6 +3,7 @@ package functional
 import (
 	"context"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/monkeydioude/goauth/v2/internal/config/consts"
@@ -99,9 +100,8 @@ func TestAccountCreateRefusesBadInput(t *testing.T) {
 		assert.Contains(t, res.Message, consts.ERR_INVALID_INPUT_ACTOR)
 	}
 	assert.Equal(t, int32(201), create(realm.Name, "bots", "human creation").Code)
-	res := create(realm.Name, "bots", "human creation")
-	assert.Equal(t, int32(409), res.Code)
-	assert.Contains(t, res.Message, consts.ERR_USER_ALREADY_EXIST)
+	// a login the realm has: that account again (TestAccountCreateIsIdempotent)
+	assert.Equal(t, int32(200), create(realm.Name, "bots", "human creation").Code)
 	// a slug is free in another realm
 	other := newRealm(t, gormDB, "TestAccountCreateRefusesBadInput-other", entities.RealmKindService)
 	assert.Equal(t, int32(201), create(other.Name, "bots", "human creation").Code)
@@ -109,6 +109,69 @@ func TestAccountCreateRefusesBadInput(t *testing.T) {
 	var count int64
 	assert.NoError(t, gormDB.Model(&entities.User{}).Where("login = ?", "bots").Count(&count).Error)
 	assert.Equal(t, int64(2), count)
+}
+
+func TestAccountCreateIsIdempotent(t *testing.T) {
+	layout, gormDB, _ := setup()
+	defer cleanup(layout)
+	realm := newRealm(t, gormDB, "TestAccountCreateIsIdempotent", entities.RealmKindService)
+	conn := setupRPC(t, layout)
+	defer conn.Close()
+	client := v1.NewAccountClient(conn)
+	ctx := context.Background()
+
+	first, err := client.Create(ctx, &v1.CreateAccountRequest{Realm: realm.Name, Login: "sb:org:42", Actor: "human creation"})
+	assert.NoError(t, err)
+	assert.Equal(t, int32(201), first.Code)
+	// the consumer lost the id: it asks again, maybe as someone else
+	again, err := client.Create(ctx, &v1.CreateAccountRequest{Realm: realm.Name, Login: "sb:org:42", Actor: "retry job"})
+	assert.NoError(t, err)
+
+	assert.Equal(t, int32(200), again.Code)
+	assert.Equal(t, first.AccountId, again.AccountId)
+	assert.Equal(t, "sb:org:42", again.Login)
+	assert.Equal(t, realm.Name, again.Realm)
+	assert.Equal(t, entities.RealmKindService, again.RealmKind)
+	assert.True(t, first.CreatedAt.AsTime().Equal(again.CreatedAt.AsTime()))
+	stored := storedUser(t, gormDB, uint(again.AccountId))
+	if assert.NotNil(t, stored.CreatedBy) {
+		assert.Equal(t, "human creation", *stored.CreatedBy, "the account as it was made")
+	}
+}
+
+func TestAccountCreateAtOnceMakesOneAccount(t *testing.T) {
+	layout, gormDB, _ := setup()
+	defer cleanup(layout)
+	realm := newRealm(t, gormDB, "TestAccountCreateAtOnceMakesOneAccount", entities.RealmKindService)
+	conn := setupRPC(t, layout)
+	defer conn.Close()
+	client := v1.NewAccountClient(conn)
+
+	answers := make(chan *v1.CreateAccountResponse, 10)
+	var wg sync.WaitGroup
+	for range 10 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			res, err := client.Create(context.Background(), &v1.CreateAccountRequest{Realm: realm.Name, Login: "sb:org:42", Actor: "human creation"})
+			assert.NoError(t, err)
+			answers <- res
+		}()
+	}
+	wg.Wait()
+	close(answers)
+
+	codes := map[int32]int{}
+	ids := map[int32]bool{}
+	for res := range answers {
+		codes[res.Code]++
+		ids[res.AccountId] = true
+	}
+	assert.Equal(t, map[int32]int{201: 1, 200: 9}, codes)
+	assert.Len(t, ids, 1, "every answer names the same account")
+	var count int64
+	assert.NoError(t, gormDB.Model(&entities.User{}).Where("realm_id = ?", realm.ID).Count(&count).Error)
+	assert.Equal(t, int64(1), count)
 }
 
 func TestAuthDeleteNeedsAnActorForServiceAccounts(t *testing.T) {
