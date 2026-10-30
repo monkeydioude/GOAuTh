@@ -212,8 +212,9 @@ message CreateAccountResponse {
 
 service Account {
     // Create makes an account in realm: 201, or 404 for an unknown realm, 403 for
-    // a realm whose kind has no such accounts, 422 for a bad login or actor, 409
-    // for a login the realm already has.
+    // a realm whose kind has no such accounts, 422 for a bad login or actor. It is
+    // idempotent on (realm, login): a login one of the realm's live accounts has
+    // gives that account back, 200, with the same fields.
     rpc Create(CreateAccountRequest) returns (CreateAccountResponse) {}
 }
 
